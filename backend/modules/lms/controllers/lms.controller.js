@@ -15,8 +15,8 @@ const enrollStudent = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
-// ── Attendance ─────────────────────────────────────────────────────────────────
-const markAttendance    = async (req, res, next) => { try { const a = await lmsService.markAttendance(req.tenantId, req.body, req.user._id); res.status(201).json({ success: true, data: a }); } catch (e) { next(e); } };
+// ── Legacy Attendance ──────────────────────────────────────────────────────────
+const markAttendance      = async (req, res, next) => { try { const a = await lmsService.markAttendance(req.tenantId, req.body, req.user._id); res.status(201).json({ success: true, data: a }); } catch (e) { next(e); } };
 const getCourseAttendance = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getCourseAttendance(req.tenantId, req.params.id) }); } catch (e) { next(e); } };
 
 // ── Assignments ────────────────────────────────────────────────────────────────
@@ -28,4 +28,56 @@ const submitAssignment = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
-module.exports = { getCourses, getCourse, createCourse, updateCourse, deleteCourse, enrollStudent, markAttendance, getCourseAttendance, createAssignment, submitAssignment };
+// ── Sessions ───────────────────────────────────────────────────────────────────
+const createSession       = async (req, res, next) => { try { const s = await lmsService.createSession(req.tenantId, req.params.courseId, req.body, req.user._id); res.status(201).json({ success: true, data: s }); } catch (e) { next(e); } };
+const getCourseSessions   = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getCourseSessions(req.tenantId, req.params.courseId) }); } catch (e) { next(e); } };
+const toggleSession       = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.toggleSession(req.tenantId, req.params.id, req.user._id) }); } catch (e) { next(e); } };
+const getSessionAttendance = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getSessionAttendance(req.tenantId, req.params.id) }); } catch (e) { next(e); } };
+const overrideAttendance  = async (req, res, next) => { try { const { status, reason } = req.body; res.json({ success: true, data: await lmsService.overrideAttendance(req.tenantId, req.params.id, req.params.studentId, status, reason, req.user._id) }); } catch (e) { next(e); } };
+
+// ── Student Self-Mark ──────────────────────────────────────────────────────────
+const markSelfAttendance     = async (req, res, next) => { try { const a = await lmsService.markSelfAttendance(req.tenantId, req.params.id, req.user._id, req.ip); res.status(201).json({ success: true, data: a }); } catch (e) { next(e); } };
+const getMyAttendanceSummary = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getMyAttendanceSummary(req.tenantId, req.params.courseId, req.user._id) }); } catch (e) { next(e); } };
+
+// ── LMS Documents ──────────────────────────────────────────────────────────────
+const uploadCourseDocument = async (req, res, next) => { try { const doc = await lmsService.uploadCourseDocument(req.tenantId, req.params.courseId, req.file, req.body, req.user._id); res.status(201).json({ success: true, data: doc }); } catch (e) { next(e); } };
+const getCourseDocuments   = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getCourseDocuments(req.tenantId, req.params.courseId, req.user.role) }); } catch (e) { next(e); } };
+const deleteCourseDocument = async (req, res, next) => { try { await lmsService.deleteCourseDocument(req.tenantId, req.params.id, req.user._id); res.json({ success: true, message: 'Document deleted.' }); } catch (e) { next(e); } };
+
+// ── Assignment Grading ─────────────────────────────────────────────────────────
+const gradeSubmission         = async (req, res, next) => { try { const { score, feedback } = req.body; res.json({ success: true, data: await lmsService.gradeSubmission(req.tenantId, req.params.assignmentId, req.params.studentId, score, feedback, req.user._id) }); } catch (e) { next(e); } };
+const getAssignmentSubmissions = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getAssignmentSubmissions(req.tenantId, req.params.id) }); } catch (e) { next(e); } };
+const getMySubmission         = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getMySubmission(req.tenantId, req.params.id, req.user._id) }); } catch (e) { next(e); } };
+
+// ── Quizzes ────────────────────────────────────────────────────────────────────
+const createQuiz        = async (req, res, next) => { try { const q = await lmsService.createQuiz(req.tenantId, req.params.courseId, req.body, req.user._id); res.status(201).json({ success: true, data: q }); } catch (e) { next(e); } };
+const addQuizQuestion   = async (req, res, next) => { try { const q = await lmsService.addQuizQuestion(req.tenantId, req.params.id, req.body); res.status(201).json({ success: true, data: q }); } catch (e) { next(e); } };
+const publishQuiz       = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.publishQuiz(req.tenantId, req.params.id, req.user._id) }); } catch (e) { next(e); } };
+const startQuizAttempt  = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.startQuizAttempt(req.tenantId, req.params.id, req.user._id) }); } catch (e) { next(e); } };
+const submitQuizAttempt = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.submitQuizAttempt(req.tenantId, req.params.id, req.user._id, req.body.answers) }); } catch (e) { next(e); } };
+const getQuizResults    = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getQuizResults(req.tenantId, req.params.id) }); } catch (e) { next(e); } };
+const getMyQuizAttempts = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getMyQuizAttempts(req.tenantId, req.params.id, req.user._id) }); } catch (e) { next(e); } };
+
+// ── Performance ────────────────────────────────────────────────────────────────
+const getCoursePerformance = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getCoursePerformance(req.tenantId, req.params.courseId) }); } catch (e) { next(e); } };
+const getMyPerformance     = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getMyPerformance(req.tenantId, req.params.courseId, req.user._id) }); } catch (e) { next(e); } };
+
+// ── Certificates ───────────────────────────────────────────────────────────────
+const generateCertificate    = async (req, res, next) => { try { const c = await lmsService.generateCertificate(req.tenantId, req.params.courseId, req.params.studentId, req.user._id); res.status(201).json({ success: true, data: c }); } catch (e) { next(e); } };
+const generateAllCertificates = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.generateAllCertificates(req.tenantId, req.params.courseId, req.user._id) }); } catch (e) { next(e); } };
+const getCourseCertificates  = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getCourseCertificates(req.tenantId, req.params.courseId) }); } catch (e) { next(e); } };
+const getMyCertificates      = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getMyCertificates(req.tenantId, req.user._id) }); } catch (e) { next(e); } };
+const verifyCertificate      = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.verifyCertificate(req.params.code) }); } catch (e) { next(e); } };
+
+module.exports = {
+  getCourses, getCourse, createCourse, updateCourse, deleteCourse, enrollStudent,
+  markAttendance, getCourseAttendance,
+  createAssignment, submitAssignment,
+  createSession, getCourseSessions, toggleSession, getSessionAttendance, overrideAttendance,
+  markSelfAttendance, getMyAttendanceSummary,
+  uploadCourseDocument, getCourseDocuments, deleteCourseDocument,
+  gradeSubmission, getAssignmentSubmissions, getMySubmission,
+  createQuiz, addQuizQuestion, publishQuiz, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
+  getCoursePerformance, getMyPerformance,
+  generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate,
+};

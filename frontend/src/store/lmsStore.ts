@@ -1,0 +1,296 @@
+import { create } from 'zustand';
+import * as lmsService from '../services/lms.service';
+
+interface Course {
+  _id: string;
+  title: string;
+  description?: string;
+  instructor?: any;
+  thumbnail?: string;
+  duration?: string;
+  isPublished: boolean;
+  status: 'draft' | 'active' | 'completed';
+  startDate?: string;
+  endDate?: string;
+  completionCriteria?: {
+    minAttendancePercent: number;
+    minAssignmentScore: number;
+    minQuizScore: number;
+  };
+  modules?: any[];
+  enrolledStudents?: any[];
+}
+
+interface Session {
+  _id: string;
+  tenantId: string;
+  courseId: string;
+  createdBy: any;
+  title: string;
+  date: string;
+  attendanceOpenAt?: string;
+  attendanceCloseAt?: string;
+  isOpen: boolean;
+}
+
+interface LmsDocument {
+  _id: string;
+  title: string;
+  description?: string;
+  fileUrl: string;
+  publicId: string;
+  fileType?: string;
+  fileSize?: number;
+  visibleToStudents: boolean;
+  uploadedBy: any;
+  createdAt: string;
+}
+
+interface Assignment {
+  _id: string;
+  title: string;
+  description?: string;
+  dueDate?: string;
+  maxMarks: number;
+  submissions?: any[];
+}
+
+interface Quiz {
+  _id: string;
+  title: string;
+  instructions?: string;
+  timeLimit?: number;
+  passMark: number;
+  maxAttempts: number;
+  shuffleQuestions: boolean;
+  showResultImmediately: boolean;
+  status: 'draft' | 'published' | 'closed';
+}
+
+interface Certificate {
+  _id: string;
+  courseId: any;
+  studentId: any;
+  certificateNumber: string;
+  issuedAt: string;
+  attendancePercent?: number;
+  averageAssignmentScore?: number;
+  averageQuizScore?: number;
+  fileUrl?: string;
+  publicId?: string;
+  verificationCode: string;
+  isValid: boolean;
+}
+
+interface Performance {
+  eligible: boolean;
+  reason: string | null;
+  attendancePercent: number;
+  assignmentScore: number;
+  quizScore: number;
+}
+
+interface LmsState {
+  courses: Course[];
+  currentCourse: Course | null;
+  sessions: Session[];
+  documents: LmsDocument[];
+  assignments: Assignment[];
+  quizzes: Quiz[];
+  certificates: Certificate[];
+  myPerformance: Performance | null;
+  isLoading: boolean;
+  error: string | null;
+
+  fetchCourses: () => Promise<void>;
+  fetchCourse: (id: string) => Promise<void>;
+  createCourse: (data: any) => Promise<void>;
+  
+  fetchSessions: (courseId: string) => Promise<void>;
+  createSession: (courseId: string, data: any) => Promise<void>;
+  toggleSession: (sessionId: string) => Promise<void>;
+  markPresent: (sessionId: string) => Promise<void>;
+  
+  fetchDocuments: (courseId: string) => Promise<void>;
+  uploadDocument: (courseId: string, formData: FormData) => Promise<void>;
+  
+  fetchAssignments: (courseId: string) => Promise<void>;
+  submitAssignment: (id: string, formData: FormData) => Promise<void>;
+  
+  fetchQuizzes: (courseId: string) => Promise<void>;
+  submitQuiz: (quizId: string, answers: any[]) => Promise<void>;
+  
+  fetchMyPerformance: (courseId: string) => Promise<void>;
+  fetchMyCertificates: () => Promise<void>;
+}
+
+export const useLmsStore = create<LmsState>((set) => ({
+  courses: [],
+  currentCourse: null,
+  sessions: [],
+  documents: [],
+  assignments: [],
+  quizzes: [],
+  certificates: [],
+  myPerformance: null,
+  isLoading: false,
+  error: null,
+
+  fetchCourses: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await lmsService.getCourses();
+      set({ courses: data.courses || data, isLoading: false });
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to fetch courses', isLoading: false });
+    }
+  },
+
+  fetchCourse: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await lmsService.getCourse(id);
+      set({ currentCourse: data, isLoading: false });
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to fetch course', isLoading: false });
+    }
+  },
+
+  createCourse: async (data) => {
+    set({ isLoading: true, error: null });
+    try {
+      const newCourse = await lmsService.createCourse(data);
+      set((state) => ({ courses: [newCourse, ...state.courses], isLoading: false }));
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to create course', isLoading: false });
+    }
+  },
+
+  fetchSessions: async (courseId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await lmsService.getCourseSessions(courseId);
+      set({ sessions: data, isLoading: false });
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to fetch sessions', isLoading: false });
+    }
+  },
+
+  createSession: async (courseId, data) => {
+    set({ isLoading: true, error: null });
+    try {
+      const newSession = await lmsService.createSession(courseId, data);
+      set((state) => ({ sessions: [newSession, ...state.sessions], isLoading: false }));
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to create session', isLoading: false });
+    }
+  },
+
+  toggleSession: async (sessionId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const updatedSession = await lmsService.toggleSession(sessionId);
+      set((state) => ({
+        sessions: state.sessions.map((s) => (s._id === sessionId ? updatedSession : s)),
+        isLoading: false,
+      }));
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to toggle session', isLoading: false });
+    }
+  },
+
+  markPresent: async (sessionId) => {
+    set({ isLoading: true, error: null });
+    try {
+      await lmsService.markSelfPresent(sessionId);
+      set({ isLoading: false });
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to mark present', isLoading: false });
+      throw error; // Rethrow to let the UI catch and show toast if needed
+    }
+  },
+
+  fetchDocuments: async (courseId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await lmsService.getCourseDocuments(courseId);
+      set({ documents: data, isLoading: false });
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to fetch documents', isLoading: false });
+    }
+  },
+
+  uploadDocument: async (courseId, formData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const newDoc = await lmsService.uploadCourseDocument(courseId, formData);
+      set((state) => ({ documents: [newDoc, ...state.documents], isLoading: false }));
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to upload document', isLoading: false });
+      throw error;
+    }
+  },
+
+  fetchAssignments: async (courseId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await lmsService.getCourseAssignments(courseId);
+      set({ assignments: data, isLoading: false });
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to fetch assignments', isLoading: false });
+    }
+  },
+
+  submitAssignment: async (id, formData) => {
+    set({ isLoading: true, error: null });
+    try {
+      await lmsService.submitAssignment(id, formData);
+      set({ isLoading: false });
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to submit assignment', isLoading: false });
+      throw error;
+    }
+  },
+
+  fetchQuizzes: async (courseId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await lmsService.getCourseQuizzes(courseId);
+      set({ quizzes: data, isLoading: false });
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to fetch quizzes', isLoading: false });
+    }
+  },
+
+  submitQuiz: async (quizId, answers) => {
+    set({ isLoading: true, error: null });
+    try {
+      await lmsService.submitQuiz(quizId, answers);
+      set({ isLoading: false });
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to submit quiz', isLoading: false });
+      throw error;
+    }
+  },
+
+  fetchMyPerformance: async (courseId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await lmsService.getMyPerformance(courseId);
+      set({ myPerformance: data, isLoading: false });
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to fetch performance', isLoading: false });
+    }
+  },
+
+  fetchMyCertificates: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await lmsService.getMyCertificates();
+      set({ certificates: data, isLoading: false });
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to fetch certificates', isLoading: false });
+    }
+  },
+
+}));

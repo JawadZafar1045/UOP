@@ -9,6 +9,7 @@ const api = axios.create({
   withCredentials: true,
 });
 
+// ── Request interceptor: attach access token ─────────────────────────────────
 api.interceptors.request.use(
   (config) => {
     const token = useStore.getState().accessToken;
@@ -20,19 +21,47 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// ── Response interceptor: silent token refresh on 401 ────────────────────────
 api.interceptors.response.use(
   (response) => response.data,
   async (error) => {
     const originalRequest = error.config;
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      try {
-        useStore.getState().logout();
+
+      const { refreshToken, setAuth, logout } = useStore.getState();
+
+      if (!refreshToken) {
+        logout();
         if (typeof window !== 'undefined') window.location.href = '/login';
-      } catch (err) {
-        useStore.getState().logout();
+        return Promise.reject(error.response?.data || error.message);
+      }
+
+      try {
+        // Call the refresh endpoint
+        const { data } = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/auth/refresh`,
+          { refreshToken },
+          { withCredentials: true }
+        );
+
+        const { accessToken, refreshToken: newRefreshToken, user } = data;
+
+        // Persist new tokens in the Zustand store
+        setAuth(user, accessToken, newRefreshToken);
+
+        // Retry the original request with the new access token
+        originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        // Refresh itself failed → full logout
+        logout();
+        if (typeof window !== 'undefined') window.location.href = '/login';
+        return Promise.reject(refreshError);
       }
     }
+
     return Promise.reject(error.response?.data || error.message);
   }
 );

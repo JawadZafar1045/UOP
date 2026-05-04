@@ -10,6 +10,18 @@ const courseSchema = new mongoose.Schema(
     duration:    { type: String }, // e.g. "8 weeks"
     isPublished: { type: Boolean, default: false },
 
+    // ── Status & Schedule ────────────────────────────────────────────────────────
+    status:    { type: String, enum: ['draft', 'active', 'completed'], default: 'draft' },
+    startDate: { type: Date },
+    endDate:   { type: Date },
+
+    // ── Completion Criteria ──────────────────────────────────────────────────────
+    completionCriteria: {
+      minAttendancePercent: { type: Number, default: 75 },
+      minAssignmentScore:   { type: Number, default: 60 },
+      minQuizScore:         { type: Number, default: 60 },
+    },
+
     // ── Curriculum ───────────────────────────────────────────────────────────────
     modules: [
       {

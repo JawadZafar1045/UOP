@@ -29,22 +29,49 @@ export default function Sidebar() {
       <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
         <p className="px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-3">Modules</p>
         
-        {navItems.map((item) => {
+        {navItems.filter(item => {
+          if (user?.role === 'student' || user?.role === 'teacher') {
+            if (item.name === 'CRM' || item.name === 'Employees') return false;
+          }
+          if (user?.role === 'hr') {
+            if (item.name === 'CRM') return false;
+          }
+          return true;
+        }).map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+          const isLmsExpanded = item.name === 'LMS' && isActive;
           
           return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? "bg-blue-50 text-blue-700"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-              }`}
-            >
-              <span className="text-base">{item.icon}</span>
-              {item.name}
-            </Link>
+            <div key={item.name}>
+              <Link
+                href={item.href}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  isActive
+                    ? "bg-blue-50 text-blue-700"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                }`}
+              >
+                <span className="text-base">{item.icon}</span>
+                {item.name}
+              </Link>
+              
+              {isLmsExpanded && (
+                <div className="ml-9 mt-1 mb-2 space-y-1 border-l-2 border-slate-100 pl-2">
+                  <Link 
+                    href="/lms" 
+                    className={`block px-3 py-2 rounded-md text-sm transition-colors ${pathname === '/lms' ? 'text-blue-700 font-medium bg-blue-50/50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
+                  >
+                    My Courses
+                  </Link>
+                  <Link 
+                    href="/lms/certificates" 
+                    className={`block px-3 py-2 rounded-md text-sm transition-colors ${pathname.startsWith('/lms/certificates') ? 'text-blue-700 font-medium bg-blue-50/50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
+                  >
+                    Certificates
+                  </Link>
+                </div>
+              )}
+            </div>
           );
         })}
       </nav>

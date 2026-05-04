@@ -26,7 +26,8 @@ const server = http.createServer(app);
 initializeSocket(server);
 
 // ── Connect to MongoDB ─────────────────────────────────────────────────────────
-connectDB();
+const { ensureIndexes } = require('./modules/lms/utils/ensureIndexes');
+connectDB().then(() => ensureIndexes());
 
 // ── Core Middleware ────────────────────────────────────────────────────────────
 app.use(helmet());
