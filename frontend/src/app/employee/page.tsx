@@ -8,9 +8,9 @@ import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Modal } from "@/components/ui/Modal";
-import { 
-  Plus, Search, Edit2, Trash2, Mail, Phone, 
-  Briefcase, User, AlertCircle, Loader2 
+import {
+  Plus, Search, Edit2, Trash2, Mail, Phone,
+  Briefcase, User, AlertCircle, Loader2
 } from "lucide-react";
 import Link from "next/link";
 
@@ -53,7 +53,7 @@ export default function EmployeeListPage() {
             <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Employees</h1>
             <p className="text-slate-500 mt-1 text-lg">Manage your team members and their organizational details.</p>
           </div>
-          <Button 
+          <Button
             onClick={() => router.push("/employee/new")}
             icon={Plus}
             className="md:w-auto"
@@ -156,15 +156,15 @@ export default function EmployeeListPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             icon={Edit2}
                             onClick={() => router.push(`/employee/${emp._id}/edit`)}
                           />
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             icon={Trash2}
                             className="text-red-400 hover:text-red-600 hover:bg-red-50"
                             onClick={() => setDeleteId(emp._id)}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Briefcase } from "lucide-react";
 
 const STAGES = ['Inquiry', 'Follow-up', 'Converted', 'Enrolled'];
 
@@ -36,39 +37,62 @@ export default function CRMPage() {
               List
             </button>
           </div>
-          <button className="px-4 py-2 bg-blue-600 text-sm font-medium text-white rounded-lg shadow-sm hover:bg-blue-700 transition-all elevation-1">
+          <button className="px-4 py-2 bg-blue-600 text-sm font-medium text-white rounded-lg shadow-sm hover:bg-blue-700 transition-all shadow-md">
             + New Lead
           </button>
         </div>
       </div>
 
       {activeView === 'pipeline' ? (
-        <div className="grid grid-cols-4 gap-5 h-[calc(100vh-14rem)] overflow-x-auto pb-4">
+        <div className="flex gap-6 h-[calc(100vh-16rem)] overflow-x-auto pb-6 px-1 custom-scrollbar">
           {STAGES.map(stage => {
             const stageLeads = leads.filter(l => l.stage === stage);
             return (
-              <div key={stage} className="bg-slate-100/60 rounded-xl border border-slate-200/60 flex flex-col min-w-[280px]">
-                <div className="p-4 border-b border-slate-200/60 flex justify-between items-center">
-                  <h3 className="font-semibold text-slate-700 text-sm">{stage}</h3>
-                  <span className="bg-slate-200 text-slate-600 text-xs font-bold px-2 py-0.5 rounded-full">{stageLeads.length}</span>
+              <div key={stage} className="flex-1 min-w-[320px] max-w-[400px] bg-slate-50/60 rounded-[2rem] border border-slate-200/60 flex flex-col shadow-sm">
+                <div className="p-5 border-b border-slate-200/60 flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+                    <h3 className="font-bold text-slate-800 text-sm tracking-tight">{stage}</h3>
+                  </div>
+                  <span className="bg-white text-slate-500 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-slate-200/50 shadow-sm">
+                    {stageLeads.length}
+                  </span>
                 </div>
-                <div className="flex-1 p-3 space-y-3 overflow-y-auto">
+                
+                <div className="flex-1 p-4 space-y-4 overflow-y-auto">
                   {stageLeads.map(lead => (
-                    <div key={lead.id} className="bg-white p-4 rounded-xl border border-slate-200 elevation-1 hover:elevation-2 transition-shadow cursor-grab">
-                      <div className="flex justify-between items-start mb-3">
-                        <p className="font-semibold text-slate-900 text-sm">{lead.name}</p>
-                        <button className="text-slate-400 hover:text-slate-600">•••</button>
+                    <div 
+                      key={lead.id} 
+                      className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-blue-100 transition-all cursor-grab group active:cursor-grabbing"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <p className="font-bold text-slate-900 text-sm group-hover:text-blue-600 transition-colors">{lead.name}</p>
+                        <button className="text-slate-300 hover:text-slate-600 transition-colors p-1">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                        </button>
                       </div>
-                      <p className="text-xs text-slate-500 mb-4">{lead.company}</p>
-                      <div className="flex items-center gap-2 text-xs font-medium text-green-700 bg-green-50 px-2 py-1 rounded w-max">
-                        {lead.value}
+                      <p className="text-xs font-medium text-slate-400 mb-4 flex items-center gap-1.5">
+                        <Briefcase className="w-3 h-3" /> {lead.company}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <div className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100/50">
+                          {lead.value}
+                        </div>
+                        <div className="flex -space-x-2">
+                          <div className="w-6 h-6 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-blue-600">
+                            {lead.name.charAt(0)}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))}
-                  {/* Empty state placeholder for columns */}
+                  
                   {stageLeads.length === 0 && (
-                    <div className="h-24 border-2 border-dashed border-slate-200 rounded-xl flex items-center justify-center">
-                      <span className="text-xs font-medium text-slate-400">No leads</span>
+                    <div className="h-32 border-2 border-dashed border-slate-200/80 rounded-[1.5rem] flex flex-col items-center justify-center gap-2 bg-slate-100/30">
+                      <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-300">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                      </div>
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">No Leads</span>
                     </div>
                   )}
                 </div>
@@ -77,7 +101,7 @@ export default function CRMPage() {
           })}
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-slate-200 elevation-1 overflow-hidden">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
