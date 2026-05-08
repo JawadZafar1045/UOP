@@ -12,6 +12,17 @@ const sessionSchema = new mongoose.Schema(
     attendanceOpenAt:    { type: Date },
     attendanceCloseAt:   { type: Date },
     isOpen:              { type: Boolean, default: false },
+
+    // ── Material ─────────────────────────────────────────────────────────────────
+    materialUrl:         { type: String },
+    materialPublicId:    { type: String },
+    materials: [
+      {
+        name: String,
+        url: String,
+        publicId: String
+      }
+    ],
   },
   { timestamps: true }
 );

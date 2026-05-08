@@ -19,6 +19,11 @@ interface Course {
   };
   modules?: any[];
   enrolledStudents?: any[];
+  stats?: {
+    sessions: number;
+    assignments: number;
+    quizzes: number;
+  };
 }
 
 interface Session {
@@ -31,6 +36,7 @@ interface Session {
   attendanceOpenAt?: string;
   attendanceCloseAt?: string;
   isOpen: boolean;
+  materialUrl?: string;
 }
 
 interface LmsDocument {
@@ -48,10 +54,13 @@ interface LmsDocument {
 
 interface Assignment {
   _id: string;
+  courseId: string;
   title: string;
   description?: string;
+  instructions?: string;
   dueDate?: string;
   maxMarks: number;
+  materials?: any[];
   submissions?: any[];
 }
 
@@ -65,6 +74,7 @@ interface Quiz {
   shuffleQuestions: boolean;
   showResultImmediately: boolean;
   status: 'draft' | 'published' | 'closed';
+  questionCount?: number;
 }
 
 interface Certificate {
@@ -96,6 +106,7 @@ interface LmsState {
   sessions: Session[];
   documents: LmsDocument[];
   assignments: Assignment[];
+  currentAssignmentSubmissions: any | null;
   quizzes: Quiz[];
   certificates: Certificate[];
   myPerformance: Performance | null;
@@ -115,7 +126,10 @@ interface LmsState {
   uploadDocument: (courseId: string, formData: FormData) => Promise<void>;
   
   fetchAssignments: (courseId: string) => Promise<void>;
+  createAssignment: (formData: FormData) => Promise<void>;
   submitAssignment: (id: string, formData: FormData) => Promise<void>;
+  fetchAssignmentSubmissions: (id: string) => Promise<void>;
+  gradeAssignment: (assignmentId: string, studentId: string, data: any) => Promise<void>;
   
   fetchQuizzes: (courseId: string) => Promise<void>;
   submitQuiz: (quizId: string, answers: any[]) => Promise<void>;
@@ -241,6 +255,17 @@ export const useLmsStore = create<LmsState>((set) => ({
     }
   },
 
+  createAssignment: async (formData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const newAssignment = await lmsService.createAssignment(formData);
+      set((state) => ({ assignments: [newAssignment, ...state.assignments], isLoading: false }));
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to create assignment', isLoading: false });
+      throw error;
+    }
+  },
+
   submitAssignment: async (id, formData) => {
     set({ isLoading: true, error: null });
     try {
@@ -248,6 +273,27 @@ export const useLmsStore = create<LmsState>((set) => ({
       set({ isLoading: false });
     } catch (error: any) {
       set({ error: error?.message || 'Failed to submit assignment', isLoading: false });
+      throw error;
+    }
+  },
+
+  fetchAssignmentSubmissions: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await lmsService.getAssignmentSubmissions(id);
+      set({ currentAssignmentSubmissions: data, isLoading: false });
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to fetch submissions', isLoading: false });
+    }
+  },
+
+  gradeAssignment: async (assignmentId, studentId, data) => {
+    set({ isLoading: true, error: null });
+    try {
+      await lmsService.gradeSubmission(assignmentId, studentId, data);
+      set({ isLoading: false });
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to grade assignment', isLoading: false });
       throw error;
     }
   },

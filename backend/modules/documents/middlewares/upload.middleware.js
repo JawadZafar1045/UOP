@@ -12,6 +12,8 @@ const fileFilter = (req, file, cb) => {
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'image/jpeg', 'image/png', 'image/gif',
     'text/plain',
+    'video/mp4', 'video/webm', 'video/x-matroska', 'video/quicktime',
+    'application/zip', 'application/x-zip-compressed'
   ];
 
   if (allowed.includes(file.mimetype)) {

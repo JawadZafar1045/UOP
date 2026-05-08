@@ -5,7 +5,7 @@ const { authorize } = require('../../shared/middlewares/rbac.middleware');
 const {
   register, registerValidation,
   login, loginValidation,
-  refresh, logout, getMe, getUsers,
+  refresh, logout, getMe, getUsers, updateProfile,
 } = require('../controllers/auth.controller');
 
 // Public routes
@@ -16,6 +16,7 @@ router.post('/refresh', refresh);
 // Protected routes
 router.post('/logout', protect, logout);
 router.get('/me', protect, getMe);
+router.patch('/profile', protect, updateProfile);
 router.get('/users', protect, authorize('admin', 'hr'), getUsers);
 
 module.exports = router;

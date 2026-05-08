@@ -3,7 +3,7 @@ const router  = express.Router();
 const { protect }         = require('../../shared/middlewares/auth.middleware');
 const { authorize }       = require('../../shared/middlewares/rbac.middleware');
 const { tenantIsolation } = require('../../shared/middlewares/tenant.middleware');
-const upload = require('../../documents/middlewares/upload.middleware');
+const { upload } = require('../../documents/middlewares/upload.middleware');
 const ctrl   = require('../controllers/lms.controller');
 
 // ── Public certificate verification (no auth) ──────────────────────────────────
@@ -27,11 +27,12 @@ router.post('/attendance',              authorize('admin', 'teacher'),          
 router.get('/courses/:id/attendance',   authorize('admin', 'teacher'),                  ctrl.getCourseAttendance);
 
 // ── Assignments ────────────────────────────────────────────────────────────────
-router.post('/assignments',             authorize('admin', 'teacher'),                  ctrl.createAssignment);
-router.post('/assignments/:id/submit',  authorize('student'),                           ctrl.submitAssignment);
+router.post('/assignments',             authorize('admin', 'teacher'), upload.array('materials', 5), ctrl.createAssignment);
+router.get('/courses/:courseId/assignments', authorize('admin', 'teacher', 'student'), ctrl.getCourseAssignments);
+router.post('/assignments/:id/submit',  authorize('student'), upload.single('file'), ctrl.submitAssignment);
 
 // ── Sessions ───────────────────────────────────────────────────────────────────
-router.post('/courses/:courseId/sessions',                  authorize('admin', 'teacher'),                     ctrl.createSession);
+router.post('/courses/:courseId/sessions',                  authorize('admin', 'teacher'), upload.array('materials', 5),  ctrl.createSession);
 router.get('/courses/:courseId/sessions',                   authorize('admin', 'teacher', 'student'),          ctrl.getCourseSessions);
 router.patch('/sessions/:id/toggle',                        authorize('admin', 'teacher'),                     ctrl.toggleSession);
 router.get('/sessions/:id/attendance',                      authorize('admin', 'teacher'),                     ctrl.getSessionAttendance);
@@ -53,6 +54,7 @@ router.get('/assignments/:id/submissions/mine',             authorize('student')
 
 // ── Quizzes ────────────────────────────────────────────────────────────────────
 router.post('/courses/:courseId/quizzes',     authorize('admin', 'teacher'),                                  ctrl.createQuiz);
+router.get('/courses/:courseId/quizzes',      authorize('admin', 'teacher', 'student'),                       ctrl.getCourseQuizzes);
 router.post('/quizzes/:id/questions',         authorize('admin', 'teacher'),                                  ctrl.addQuizQuestion);
 router.patch('/quizzes/:id/publish',          authorize('admin', 'teacher'),                                  ctrl.publishQuiz);
 router.post('/quizzes/:id/start',             authorize('student'),                                           ctrl.startQuizAttempt);

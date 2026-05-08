@@ -40,7 +40,10 @@ export const getCourseSessions = async (courseId: string) => {
 };
 
 export const createSession = async (courseId: string, data: any) => {
-  const res = await api.post(`/lms/courses/${courseId}/sessions`, data);
+  const isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
+  const res = await api.post(`/lms/courses/${courseId}/sessions`, data, {
+    headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : undefined,
+  });
   return res.data;
 };
 
@@ -92,8 +95,10 @@ export const getCourseAssignments = async (courseId: string) => {
   return res.data;
 };
 
-export const createAssignment = async (data: any) => {
-  const res = await api.post('/lms/assignments', data);
+export const createAssignment = async (formData: FormData) => {
+  const res = await api.post('/lms/assignments', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
   return res.data;
 };
 

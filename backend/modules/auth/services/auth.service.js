@@ -99,4 +99,22 @@ const getTenantUsers = async (tenantId) => {
   return User.find({ tenantId }).select('-password -refreshToken').sort({ createdAt: -1 });
 };
 
-module.exports = { registerUser, loginUser, refreshAccessToken, logoutUser, getTenantUsers, generateTokens };
+/**
+ * Update user profile.
+ */
+const updateUser = async (userId, data) => {
+  // Only allow updating specific fields
+  const allowedUpdates = ['name', 'avatar'];
+  const updates = {};
+  
+  allowedUpdates.forEach(field => {
+    if (data[field] !== undefined) updates[field] = data[field];
+  });
+
+  const user = await User.findByIdAndUpdate(userId, updates, { new: true, runValidators: true }).select('-password -refreshToken');
+  if (!user) throw Object.assign(new Error('User not found.'), { statusCode: 404 });
+  
+  return user;
+};
+
+module.exports = { registerUser, loginUser, refreshAccessToken, logoutUser, getTenantUsers, generateTokens, updateUser };

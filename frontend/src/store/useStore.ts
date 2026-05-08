@@ -18,6 +18,7 @@ interface AppState {
   setAuth: (user: User, accessToken: string, refreshToken: string) => void;
   logout: () => void;
   addNotification: (note: any) => void;
+  updateUser: (data: Partial<User>) => void;
 }
 
 export const useStore = create<AppState>()(
@@ -33,6 +34,10 @@ export const useStore = create<AppState>()(
         set({ user: null, accessToken: null, refreshToken: null, notifications: [] }),
       addNotification: (note) =>
         set((state) => ({ notifications: [note, ...state.notifications] })),
+      updateUser: (data) =>
+        set((state) => ({ 
+          user: state.user ? { ...state.user, ...data } : null 
+        })),
     }),
     {
       name: 'uop-storage',

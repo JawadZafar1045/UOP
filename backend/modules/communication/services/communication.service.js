@@ -3,7 +3,10 @@ const EmailLog = require('../models/emailLog.model');
 const { sendEmail: mailerSend } = require('../../shared/services/emailService');
 
 const getChatHistory = async (tenantId, conversationId, limit = 50) => {
-  return ChatMessage.find({ tenantId, conversationId })
+  const filter = { conversationId };
+  if (tenantId) filter.tenantId = tenantId;
+  
+  return ChatMessage.find(filter)
     .populate('senderId', 'name avatar role')
     .sort({ createdAt: -1 })
     .limit(limit);

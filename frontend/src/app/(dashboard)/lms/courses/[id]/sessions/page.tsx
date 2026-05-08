@@ -3,9 +3,9 @@
 import { useEffect, useState, use } from 'react';
 import { useLmsStore } from '@/store/lmsStore';
 import { useStore } from '@/store/useStore';
-import { Calendar, Plus, CheckCircle2, XCircle, Clock, Users } from 'lucide-react';
+import { Calendar, Plus, CheckCircle2, XCircle, Clock, Users, Download, FileText } from 'lucide-react';
 import Link from 'next/link';
-import { api } from '@/services/api'; // Assuming you have api exported, or I'll just use the service directly.
+import api from '@/services/api'; // Assuming you have api exported, or I'll just use the service directly.
 import * as lmsService from '@/services/lms.service';
 
 export default function SessionsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -16,8 +16,13 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
   
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({ title: '', date: '', attendanceCloseAt: '' });
+  const [materialFiles, setMaterialFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isMarking, setIsMarking] = useState<string | null>(null);
   const [attendanceSummary, setAttendanceSummary] = useState<{ total: number, present: number, percentage: number } | null>(null);
+  const [showAttendanceModal, setShowAttendanceModal] = useState(false);
+  const [currentAttendanceList, setCurrentAttendanceList] = useState<any[]>([]);
+  const [activeSessionName, setActiveSessionName] = useState('');
 
   const isTeacherOrAdmin = user?.role === 'teacher' || user?.role === 'admin';
 
@@ -34,9 +39,22 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await createSession(courseId, formData);
+      const submitData = new FormData();
+      submitData.append('title', formData.title);
+      submitData.append('date', formData.date);
+      if (formData.attendanceCloseAt) {
+        submitData.append('attendanceCloseAt', formData.attendanceCloseAt);
+      }
+      if (materialFiles && materialFiles.length > 0) {
+        materialFiles.forEach(file => {
+          submitData.append('materials', file);
+        });
+      }
+
+      await createSession(courseId, submitData);
       setShowModal(false);
       setFormData({ title: '', date: '', attendanceCloseAt: '' });
+      setMaterialFiles([]);
     } catch (err) {
       console.error(err);
     } finally {
@@ -49,6 +67,7 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
   };
 
   const handleMarkPresent = async (sessionId: string) => {
+    setIsMarking(sessionId);
     try {
       await markPresent(sessionId);
       alert('Successfully marked present!');
@@ -60,7 +79,27 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
       }
     } catch (err: any) {
       alert(err.message || 'Failed to mark attendance.');
+    } finally {
+      setIsMarking(null);
     }
+  };
+  
+  const handleViewAttendance = async (sessionId: string, sessionTitle: string) => {
+    try {
+      const list = await lmsService.getSessionAttendance(sessionId);
+      setCurrentAttendanceList(list);
+      setActiveSessionName(sessionTitle);
+      setShowAttendanceModal(true);
+    } catch (err) {
+      alert('Failed to load attendance list');
+    }
+  };
+
+  const getDownloadUrl = (url: string) => {
+    if (url.includes('cloudinary.com') && url.includes('/upload/')) {
+      return url.replace('/upload/', '/upload/fl_attachment/');
+    }
+    return url;
   };
 
   if (isLoading && sessions.length === 0) {
@@ -108,6 +147,7 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
               <tr>
                 <th className="px-6 py-4 font-medium">Session Title</th>
                 <th className="px-6 py-4 font-medium">Date</th>
+                <th className="px-6 py-4 font-medium">Material</th>
                 <th className="px-6 py-4 font-medium">Status</th>
                 <th className="px-6 py-4 font-medium text-right">Action</th>
               </tr>
@@ -120,6 +160,25 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
                     {new Date(session.date).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4">
+                    {session.materials && session.materials.length > 0 ? (
+                      <div className="flex flex-col gap-1">
+                        {session.materials.map((m: any, idx: number) => (
+                          <a key={idx} href={getDownloadUrl(m.url)} target="_blank" rel="noopener noreferrer" download className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800">
+                            <Download className="w-3.5 h-3.5" />
+                            <span className="truncate max-w-[150px]" title={m.name}>{m.name}</span>
+                          </a>
+                        ))}
+                      </div>
+                    ) : session.materialUrl ? (
+                      <a href={getDownloadUrl(session.materialUrl)} target="_blank" rel="noopener noreferrer" download className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800">
+                        <Download className="w-3.5 h-3.5" />
+                        Download
+                      </a>
+                    ) : (
+                      <span className="text-sm text-slate-400">None</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${session.isOpen ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-700 border border-slate-200'}`}>
                       {session.isOpen ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
                       {session.isOpen ? 'Open' : 'Closed'}
@@ -127,16 +186,21 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
                   </td>
                   <td className="px-6 py-4 text-right">
                     {isTeacherOrAdmin ? (
-                      <button onClick={() => handleToggle(session._id)} className="text-blue-600 hover:text-blue-800 font-medium">
-                        {session.isOpen ? 'Close Attendance' : 'Open Attendance'}
-                      </button>
+                      <div className="flex flex-col items-end gap-1">
+                        <button onClick={() => handleToggle(session._id)} className="text-blue-600 hover:text-blue-800 font-medium text-xs">
+                          {session.isOpen ? 'Close Attendance' : 'Open Attendance'}
+                        </button>
+                        <button onClick={() => handleViewAttendance(session._id, session.title)} className="text-emerald-600 hover:text-emerald-800 font-medium text-[11px] flex items-center gap-1">
+                          <Users className="w-3 h-3" /> View List
+                        </button>
+                      </div>
                     ) : (
                       <button 
                         onClick={() => handleMarkPresent(session._id)}
-                        disabled={!session.isOpen}
+                        disabled={!session.isOpen || isMarking === session._id}
                         className={`px-3 py-1.5 rounded-md font-medium transition-all ${session.isOpen ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}
                       >
-                        {session.isOpen ? 'Mark Present' : 'Closed'}
+                        {isMarking === session._id ? 'Marking...' : session.isOpen ? 'Mark Present' : 'Closed'}
                       </button>
                     )}
                   </td>
@@ -170,6 +234,11 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
                 <label className="block text-sm font-medium text-slate-700 mb-1">Attendance Close At (Optional)</label>
                 <input type="datetime-local" value={formData.attendanceCloseAt} onChange={e => setFormData({...formData, attendanceCloseAt: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none" />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Session Materials (Optional)</label>
+                <input type="file" multiple onChange={e => setMaterialFiles(Array.from(e.target.files || []))} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none bg-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                <p className="text-xs text-slate-500 mt-1">Upload multiple PDFs, documents, or videos (max 20MB total).</p>
+              </div>
               <div className="pt-4 flex justify-end gap-3">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800">Cancel</button>
                 <button type="submit" disabled={isSubmitting} className="px-4 py-2 bg-blue-600 text-sm font-medium text-white rounded-lg shadow-sm hover:bg-blue-700 disabled:opacity-50">
@@ -177,6 +246,44 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Attendance List Modal */}
+      {showAttendanceModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[80vh]">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">Attendance: {activeSessionName}</h2>
+                <p className="text-xs text-slate-500">{currentAttendanceList.length} Students Present</p>
+              </div>
+              <button onClick={() => setShowAttendanceModal(false)} className="text-slate-400 hover:text-slate-600">
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-4 overflow-y-auto">
+              {currentAttendanceList.length === 0 ? (
+                <div className="text-center py-8 text-slate-400 text-sm">No attendance records found for this session.</div>
+              ) : (
+                <div className="space-y-2">
+                  {currentAttendanceList.map((record, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-100">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">{record.studentId?.name || 'Unknown Student'}</p>
+                        <p className="text-[11px] text-slate-500">{record.studentId?.email || ''}</p>
+                      </div>
+                      <span className="text-[10px] text-slate-400">{new Date(record.markedAt || record.createdAt).toLocaleTimeString()}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="p-4 border-t border-slate-100 bg-slate-50/30 flex justify-end">
+              <button onClick={() => setShowAttendanceModal(false)} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-all shadow-sm">
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

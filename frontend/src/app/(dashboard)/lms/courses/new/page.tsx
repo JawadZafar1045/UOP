@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useLmsStore } from '@/store/lmsStore';
 import { BookOpen, CheckCircle, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import api from '@/services/api';
 
 export default function NewCoursePage() {
   const router = useRouter();
@@ -21,7 +22,8 @@ export default function NewCoursePage() {
       minAttendancePercent: 75,
       minAssignmentScore: 60,
       minQuizScore: 60
-    }
+    },
+    status: 'active'
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -36,7 +38,6 @@ export default function NewCoursePage() {
     setIsSubmitting(true);
     try {
       // Direct API call since createCourse in store doesn't return the course ID directly easily without modifying the store signature
-      const { api } = await import('@/services/api');
       const res = await api.post('/lms/courses', formData);
       router.push(`/lms/courses/${res.data?.data?._id || res.data?._id}`);
     } catch (err: any) {

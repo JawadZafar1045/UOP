@@ -1,78 +1,90 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { useStore } from "@/store/useStore";
+import * as lmsService from "@/services/lms.service";
+import { Search, MessageSquare, BookOpen } from "lucide-react";
+
+interface Course {
+  _id: string;
+  title: string;
+  instructor: {
+    name: string;
+  };
+}
+
 export default function ChatPage() {
+  const { user } = useStore();
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch courses
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const data = await lmsService.getCourses();
+        setCourses(data.courses || []);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchCourses();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="h-[calc(100vh-8rem)] flex items-center justify-center bg-white rounded-xl shadow-sm border border-slate-200">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="h-[calc(100vh-8rem)] flex bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-      {/* Sidebar */}
-      <div className="w-1/3 border-r border-slate-200 flex flex-col">
-        <div className="p-4 border-b border-slate-200">
+    <div className="h-[calc(100vh-8rem)] flex flex-col bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+      <div className="max-w-4xl mx-auto w-full">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">My Course Discussions</h1>
+          <p className="text-slate-500">Select a course to see discussion details. (Messaging feature currently disabled)</p>
+        </div>
+
+        <div className="relative mb-6">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input 
             type="text" 
-            placeholder="Search conversations..." 
-            className="w-full px-3 py-2 bg-slate-100 border-transparent rounded-lg text-sm focus:border-blue-500 focus:bg-white focus:ring-0 transition-colors"
+            placeholder="Search your courses..." 
+            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:border-blue-500 focus:bg-white focus:ring-0 transition-all shadow-sm"
           />
         </div>
-        <div className="flex-1 overflow-y-auto">
-          {[1,2,3,4,5].map(i => (
-            <div key={i} className={`p-4 border-b border-slate-100 hover:bg-slate-50 cursor-pointer ${i === 1 ? 'bg-blue-50/50' : ''}`}>
-              <div className="flex justify-between items-start mb-1">
-                <h4 className="font-semibold text-slate-800 text-sm">Design Team</h4>
-                <span className="text-xs text-slate-400">10:42 AM</span>
+
+        {courses.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+            <BookOpen className="w-12 h-12 text-slate-300 mb-4" />
+            <h3 className="text-lg font-bold text-slate-800 mb-1">No Courses Found</h3>
+            <p className="text-sm text-slate-500 max-w-xs">You are not enrolled in any courses yet.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {courses.map(course => (
+              <div 
+                key={course._id} 
+                className="p-6 bg-white border border-slate-200 rounded-2xl hover:border-blue-200 hover:shadow-md transition-all group cursor-default"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                    <MessageSquare className="w-5 h-5" />
+                  </div>
+                </div>
+                <h4 className="font-bold text-slate-800 mb-1 group-hover:text-blue-600 transition-colors">{course.title}</h4>
+                <p className="text-xs text-slate-500 mb-4">Instructor: {course.instructor.name}</p>
+                <div className="pt-4 border-t border-slate-100">
+                  <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Discussion Group</span>
+                </div>
               </div>
-              <p className="text-sm text-slate-500 truncate">Here's the latest mockup for the dashboard.</p>
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      {/* Chat Area */}
-      <div className="flex-1 flex flex-col bg-slate-50/50">
-        <div className="p-4 border-b border-slate-200 bg-white flex justify-between items-center">
-          <div>
-            <h3 className="font-bold text-slate-800">Design Team</h3>
-            <p className="text-xs text-green-500 font-medium">4 online</p>
+            ))}
           </div>
-          <button className="text-slate-400 hover:text-slate-600">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-            </svg>
-          </button>
-        </div>
-        
-        <div className="flex-1 p-4 overflow-y-auto space-y-4">
-          <div className="flex justify-start">
-            <div className="bg-white px-4 py-2.5 rounded-lg rounded-tl-none shadow-sm border border-slate-200 max-w-md">
-              <p className="text-sm text-slate-800">Could someone review the CRM pipeline layout?</p>
-              <p className="text-left text-[10px] text-slate-400 mt-1">10:35 AM</p>
-            </div>
-          </div>
-          <div className="flex justify-end">
-            <div className="bg-blue-600 px-4 py-2.5 rounded-lg rounded-tr-none shadow-sm text-white max-w-md">
-              <p className="text-sm">Looks great! Just one minor tweak to the colors needed.</p>
-              <p className="text-right text-[10px] text-blue-200 mt-1">10:42 AM</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="p-4 bg-white border-t border-slate-200">
-          <div className="flex items-center space-x-2">
-            <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-              </svg>
-            </button>
-            <input 
-              type="text" 
-              placeholder="Type your message..." 
-              className="flex-1 px-4 py-2.5 bg-slate-100 border-transparent rounded-lg text-sm focus:border-blue-500 focus:bg-white focus:ring-0 transition-colors"
-            />
-            <button className="p-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clipRule="evenodd" />
-              </svg>
-            </button>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

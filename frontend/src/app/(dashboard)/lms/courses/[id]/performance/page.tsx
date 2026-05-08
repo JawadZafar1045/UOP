@@ -3,9 +3,9 @@
 import { useEffect, useState, use } from 'react';
 import { useLmsStore } from '@/store/lmsStore';
 import { useStore } from '@/store/useStore';
-import { Award, CheckCircle2, XCircle, FileBadge } from 'lucide-react';
+import { Award, CheckCircle2, XCircle, FileBadge, Clock } from 'lucide-react';
 import Link from 'next/link';
-import { api } from '@/services/api';
+import api from '@/services/api';
 
 export default function PerformancePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -15,6 +15,8 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
   
   const [classPerformance, setClassPerformance] = useState<any[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedStudentPerf, setSelectedStudentPerf] = useState<any>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   const isTeacherOrAdmin = user?.role === 'teacher' || user?.role === 'admin';
 
@@ -23,7 +25,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
     if (isTeacherOrAdmin) {
       // Direct API call since it's not strongly typed in store yet
       api.get(`/lms/courses/${courseId}/performance`)
-        .then(res => setClassPerformance(res.data?.data || []))
+        .then(res => setClassPerformance(res.data || []))
         .catch(console.error);
     } else {
       fetchMyPerformance(courseId);
@@ -118,15 +120,23 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                     )}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    {perf.eligible && (
+                    <div className="flex justify-end gap-2">
                       <button 
-                        onClick={() => handleGenerateCertificate(perf.student._id)}
-                        disabled={isGenerating}
-                        className="text-indigo-600 hover:text-indigo-800 font-medium text-xs border border-indigo-200 px-3 py-1.5 rounded bg-indigo-50 hover:bg-indigo-100 transition-colors disabled:opacity-50"
+                        onClick={() => { setSelectedStudentPerf(perf); setShowDetailsModal(true); }}
+                        className="text-slate-600 hover:text-slate-800 font-medium text-xs border border-slate-200 px-3 py-1.5 rounded bg-white hover:bg-slate-50 transition-colors"
                       >
-                        Generate Cert
+                        Details
                       </button>
-                    )}
+                      {perf.eligible && (
+                        <button 
+                          onClick={() => handleGenerateCertificate(perf.student._id)}
+                          disabled={isGenerating}
+                          className="text-indigo-600 hover:text-indigo-800 font-medium text-xs border border-indigo-200 px-3 py-1.5 rounded bg-indigo-50 hover:bg-indigo-100 transition-colors disabled:opacity-50"
+                        >
+                          Generate Cert
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -198,6 +208,72 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
             </div>
           </div>
         )
+      )}
+      {/* Student Details Modal (Instructor View) */}
+      {showDetailsModal && selectedStudentPerf && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">{selectedStudentPerf.student.name}</h2>
+                <p className="text-xs text-slate-500">{selectedStudentPerf.student.email}</p>
+              </div>
+              <button onClick={() => setShowDetailsModal(false)} className="text-slate-400 hover:text-slate-600">
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-6 overflow-y-auto">
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="font-semibold text-slate-700">Attendance</span>
+                  <span className="text-slate-600">{selectedStudentPerf.attendanceCount} / {selectedStudentPerf.totalSessions} sessions</span>
+                </div>
+                <div className="w-full bg-slate-100 rounded-full h-2.5">
+                  <div className={`h-2.5 rounded-full ${selectedStudentPerf.attendancePercent >= criteria.minAttendancePercent ? 'bg-emerald-500' : 'bg-amber-500'}`} style={{ width: `${Math.min(selectedStudentPerf.attendancePercent, 100)}%` }}></div>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1.5">Requirement: {criteria.minAttendancePercent}% (Current: {selectedStudentPerf.attendancePercent}%)</p>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="font-semibold text-slate-700">Assignment Average</span>
+                  <span className="text-slate-600">{selectedStudentPerf.assignmentScore}%</span>
+                </div>
+                <div className="w-full bg-slate-100 rounded-full h-2.5">
+                  <div className={`h-2.5 rounded-full ${selectedStudentPerf.assignmentScore >= criteria.minAssignmentScore ? 'bg-emerald-500' : 'bg-amber-500'}`} style={{ width: `${Math.min(selectedStudentPerf.assignmentScore, 100)}%` }}></div>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1.5">Requirement: {criteria.minAssignmentScore}%</p>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="font-semibold text-slate-700">Quiz Average</span>
+                  <span className="text-slate-600">{selectedStudentPerf.quizScore}%</span>
+                </div>
+                <div className="w-full bg-slate-100 rounded-full h-2.5">
+                  <div className={`h-2.5 rounded-full ${selectedStudentPerf.quizScore >= criteria.minQuizScore ? 'bg-emerald-500' : 'bg-amber-500'}`} style={{ width: `${Math.min(selectedStudentPerf.quizScore, 100)}%` }}></div>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1.5">Requirement: {criteria.minQuizScore}%</p>
+              </div>
+
+              {!selectedStudentPerf.eligible && (
+                <div className="p-3 bg-red-50 border border-red-100 rounded-lg">
+                  <p className="text-xs font-bold text-red-700 mb-1 uppercase tracking-wider flex items-center gap-1">
+                    <XCircle className="w-3 h-3" /> Reasons for Ineligibility
+                  </p>
+                  <p className="text-xs text-red-600 leading-relaxed">{selectedStudentPerf.reason}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="p-4 border-t border-slate-100 bg-slate-50/30 flex justify-end">
+              <button onClick={() => setShowDetailsModal(false)} className="px-5 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-all shadow-sm">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

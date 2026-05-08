@@ -76,17 +76,17 @@ export default function Sidebar() {
         })}
       </nav>
       
-      <div className="p-4 border-t border-slate-100 bg-slate-50/50">
+      <Link href="/profile" className="p-4 border-t border-slate-100 bg-slate-50/50 hover:bg-slate-100 transition-colors group">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center text-slate-600 font-semibold text-sm">
+          <div className="w-9 h-9 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center text-slate-600 font-semibold text-sm group-hover:border-blue-300 group-hover:bg-blue-50 transition-colors">
             {user?.name?.charAt(0) || 'U'}
           </div>
           <div className="flex-1 overflow-hidden">
-            <p className="text-sm font-medium text-slate-900 truncate">{user?.name || 'User'}</p>
+            <p className="text-sm font-medium text-slate-900 truncate group-hover:text-blue-700 transition-colors">{user?.name || 'User'}</p>
             <p className="text-xs text-slate-500 truncate">{user?.role || 'Role'}</p>
           </div>
         </div>
-      </div>
+      </Link>
     </aside>
   );
 }

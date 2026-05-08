@@ -1,7 +1,7 @@
 const commService = require('../services/communication.service');
 
 const getChatHistory = async (req, res, next) => {
-  try { res.json({ success: true, data: await commService.getChatHistory(req.tenantId, req.params.conversationId) }); } catch (e) { next(e); }
+  try { res.json({ success: true, data: await commService.getChatHistory(null, req.params.conversationId) }); } catch (e) { next(e); }
 };
 
 const sendEmail = async (req, res, next) => {

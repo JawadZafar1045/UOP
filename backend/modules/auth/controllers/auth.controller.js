@@ -108,4 +108,12 @@ const getUsers = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { register, registerValidation, login, loginValidation, refresh, logout, getMe, getUsers };
+/** PATCH /api/auth/profile */
+const updateProfile = async (req, res, next) => {
+  try {
+    const user = await authService.updateUser(req.user._id, req.body);
+    res.json({ success: true, message: 'Profile updated successfully.', data: user });
+  } catch (err) { next(err); }
+};
+
+module.exports = { register, registerValidation, login, loginValidation, refresh, logout, getMe, getUsers, updateProfile };

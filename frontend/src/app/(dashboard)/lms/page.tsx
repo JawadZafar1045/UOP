@@ -26,10 +26,12 @@ export default function LMSPage() {
           </p>
         </div>
         {isTeacherOrAdmin && (
-          <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-sm font-medium text-white rounded-lg shadow-sm hover:bg-blue-700 transition-all">
-            <Plus className="w-4 h-4" />
-            Create Course
-          </button>
+          <Link href="/lms/courses/new">
+            <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-sm font-medium text-white rounded-lg shadow-sm hover:bg-blue-700 transition-all">
+              <Plus className="w-4 h-4" />
+              Create Course
+            </button>
+          </Link>
         )}
       </div>
 
@@ -66,10 +68,12 @@ export default function LMSPage() {
               : "You are not enrolled in any courses at the moment."}
           </p>
           {isTeacherOrAdmin && (
-            <button className="mt-6 flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-100 transition-all">
-              <Plus className="w-4 h-4" />
-              Create your first course
-            </button>
+            <Link href="/lms/courses/new">
+              <button className="mt-6 flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-100 transition-all">
+                <Plus className="w-4 h-4" />
+                Create your first course
+              </button>
+            </Link>
           )}
         </div>
       ) : (
@@ -83,9 +87,11 @@ export default function LMSPage() {
                   ) : (
                     <PlayCircle className="w-10 h-10 text-slate-300" />
                   )}
-                  <div className="absolute top-3 right-3 bg-white/90 backdrop-blur text-[10px] font-bold tracking-widest uppercase text-slate-700 px-2.5 py-1 rounded-full shadow-sm">
-                    {course.status}
-                  </div>
+                  {isTeacherOrAdmin && (
+                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur text-[10px] font-bold tracking-widest uppercase text-slate-700 px-2.5 py-1 rounded-full shadow-sm">
+                      {course.status}
+                    </div>
+                  )}
                 </div>
                 
                 <div className="p-6 flex-1 flex flex-col justify-between">
@@ -111,7 +117,7 @@ export default function LMSPage() {
                       </div>
                     </div>
                     <span className="text-sm font-medium text-blue-600 group-hover:text-blue-800 transition-colors flex items-center gap-1">
-                      {isTeacherOrAdmin ? 'Manage' : 'View Course'}
+                      {isTeacherOrAdmin ? 'Manage' : 'Go to Course'}
                       <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                     </span>
                   </div>
