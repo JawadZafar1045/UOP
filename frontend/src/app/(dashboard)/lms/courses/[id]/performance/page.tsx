@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import { useLmsStore } from '@/store/lmsStore';
 import { useStore } from '@/store/useStore';
-import { Award, CheckCircle2, XCircle, FileBadge, Clock } from 'lucide-react';
+import { Award, CheckCircle2, XCircle, FileBadge, Clock, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import api from '@/services/api';
 
@@ -65,22 +65,28 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
   const criteria = currentCourse?.completionCriteria || { minAttendancePercent: 75, minAssignmentScore: 60, minQuizScore: 60 };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <Link href={`/lms/courses/${courseId}`} className="text-sm text-blue-600 hover:underline mb-2 block">&larr; Back to Course</Link>
-          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">Performance & Certificates</h1>
+    <div className="space-y-6 max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+      <div className="space-y-4 mb-2">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <Link href={`/lms/courses/${courseId}`} className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all group active:scale-[0.98] shadow-blue-500/20">
+            <ChevronLeft className="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" />
+            Back to Course
+          </Link>
+          {isTeacherOrAdmin && (
+            <button 
+              onClick={handleGenerateAll}
+              disabled={isGenerating}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-sm font-bold text-white rounded-xl shadow-md hover:bg-indigo-700 transition-all disabled:opacity-50 active:scale-[0.98] shadow-indigo-500/20"
+            >
+              <FileBadge className="w-4 h-4" />
+              Generate All Eligible
+            </button>
+          )}
         </div>
-        {isTeacherOrAdmin && (
-          <button 
-            onClick={handleGenerateAll}
-            disabled={isGenerating}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-sm font-medium text-white rounded-lg hover:bg-indigo-700 transition-all disabled:opacity-50"
-          >
-            <FileBadge className="w-4 h-4" />
-            Generate All Eligible
-          </button>
-        )}
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Performance & Certificates</h1>
+          <p className="text-slate-500 text-sm mt-1">Monitor student progress and manage certificate issuance.</p>
+        </div>
       </div>
 
       {error && <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-100">{error}</div>}

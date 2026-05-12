@@ -8,7 +8,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900">
       <Sidebar />
       <TopNav />
-      <main className="ml-[260px] flex-1 p-6">
+      <main className="ml-[260px] flex-1 p-6 pt-24">
         <div className="max-w-[1400px] mx-auto">
           {children}
         </div>

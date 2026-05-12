@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import { useLmsStore } from '@/store/lmsStore';
 import { useStore } from '@/store/useStore';
-import { FileText, Plus, UploadCloud, XCircle, Calendar, Download, CheckCircle2, AlertCircle } from 'lucide-react';
+import { FileText, Plus, UploadCloud, XCircle, Calendar, Download, CheckCircle2, AlertCircle, ChevronLeft, ArrowRight, Clock } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AssignmentsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -131,91 +131,126 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <Link href={`/lms/courses/${courseId}`} className="text-sm text-blue-600 hover:underline mb-2 block">&larr; Back to Course</Link>
-          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">Assignments</h1>
+    <div className="space-y-8 max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+      {/* Header Section */}
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <Link href={`/lms/courses/${courseId}`} className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all group active:scale-[0.98] shadow-blue-500/20">
+            <ChevronLeft className="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" />
+            Back to Course
+          </Link>
+          
+          {isTeacherOrAdmin && (
+            <button 
+              onClick={() => setShowCreateModal(true)} 
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all active:scale-[0.98] shadow-blue-500/20"
+            >
+              <Plus className="w-4.5 h-4.5" />
+              Create Assignment
+            </button>
+          )}
         </div>
-        {isTeacherOrAdmin && (
-          <button onClick={() => setShowCreateModal(true)} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-sm font-medium text-white rounded-lg hover:bg-blue-700 transition-all">
-            <Plus className="w-4 h-4" />
-            Create Assignment
-          </button>
-        )}
+
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Assignments</h1>
+          <p className="text-slate-500 mt-1.5 text-[15px]">Manage and review student course work and submissions.</p>
+        </div>
       </div>
 
-      {error && <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-100">{error}</div>}
+      {error && (
+        <div className="p-4 bg-red-50/50 text-red-600 rounded-xl border border-red-100 backdrop-blur-sm">
+          <p className="text-sm font-medium">{error}</p>
+        </div>
+      )}
 
       {assignments.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-xl p-12 text-center">
-          <FileText className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-slate-900">No assignments yet</h3>
+        <div className="bg-white border border-slate-200/60 rounded-3xl p-16 flex flex-col items-center justify-center text-center shadow-sm">
+          <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mb-6 shadow-inner">
+            <FileText className="w-10 h-10 text-slate-300" />
+          </div>
+          <h3 className="text-2xl font-bold text-slate-900 mb-2">No assignments yet</h3>
+          <p className="text-slate-500 text-base max-w-sm leading-relaxed">
+            Create your first assignment to engage your students and track their progress.
+          </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {assignments.map((assignment) => {
             const mySub = assignment.submissions?.find((s: any) => s.studentId === user?._id || s.studentId?._id === user?._id);
             const status = mySub ? mySub.status : 'Not Submitted';
             
             return (
-              <div key={assignment._id} className="bg-white rounded-xl border border-slate-200 p-6 flex flex-col h-full">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="font-semibold text-slate-900 text-lg">{assignment.title}</h3>
-                  <span className="text-sm font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded">{assignment.maxMarks} pts</span>
+              <div key={assignment._id} className="bg-white rounded-2xl border border-slate-200/60 hover:border-blue-200/60 shadow-sm hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 flex flex-col group p-7">
+                <div className="flex justify-between items-start mb-4 gap-4">
+                  <h3 className="font-bold text-slate-900 text-xl leading-snug group-hover:text-blue-600 transition-colors">
+                    {assignment.title}
+                  </h3>
+                  <span className="shrink-0 inline-flex items-center px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-full border border-indigo-100 shadow-sm">
+                    {assignment.maxMarks} pts
+                  </span>
                 </div>
-                <p className="text-sm text-slate-600 mb-4 line-clamp-2">{assignment.description || 'No description'}</p>
+                
+                <p className="text-[15px] text-slate-500 line-clamp-2 leading-relaxed mb-6">
+                  {assignment.description || 'No description provided for this assignment.'}
+                </p>
                 
                 {assignment.materials && assignment.materials.length > 0 && (
-                  <div className="mb-4">
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Materials</p>
+                  <div className="mb-6">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Materials</p>
                     <div className="flex flex-wrap gap-2">
                       {assignment.materials.map((m: any, idx: number) => (
-                        <a key={idx} href={getDownloadUrl(m.url)} target="_blank" rel="noopener noreferrer" download className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs hover:bg-blue-100 transition-colors">
-                          <Download className="w-3 h-3" />
-                          <span className="truncate max-w-[120px]">{m.name}</span>
+                        <a 
+                          key={idx} 
+                          href={getDownloadUrl(m.url)} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          download 
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-xs font-semibold hover:bg-blue-50 hover:text-blue-700 border border-slate-100 transition-all"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span className="truncate max-w-[140px]">{m.name}</span>
                         </a>
                       ))}
                     </div>
                   </div>
                 )}
                 
-                <div className="mt-auto border-t border-slate-100 pt-4 flex items-center justify-between">
-                  <div className="text-sm text-slate-500 flex items-center gap-2">
-                    {assignment.dueDate && <span>Due: {new Date(assignment.dueDate).toLocaleDateString()}</span>}
+                <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-slate-400">
+                    <Calendar className="w-4 h-4 text-blue-400/60" />
+                    <span className="text-xs font-medium">
+                      {assignment.dueDate ? `Due: ${new Date(assignment.dueDate).toLocaleDateString()}` : 'No due date'}
+                    </span>
                   </div>
                   
                   {isTeacherOrAdmin ? (
                     <button 
                       onClick={() => { setActiveAssignment(assignment); fetchAssignmentSubmissions(assignment._id); setShowSubmissionsModal(true); }}
-                      className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                      className="inline-flex items-center gap-1.5 text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors group/btn"
                     >
-                      View Submissions ({assignment.submissions?.length || 0})
+                      Submissions ({assignment.submissions?.length || 0})
+                      <ArrowRight className="w-4 h-4 transform group-hover/btn:translate-x-1 transition-transform" />
                     </button>
                   ) : (
-                    <div>
+                    <div className="flex items-center">
                       {status === 'Not Submitted' ? (
                         <button 
                           onClick={() => { setActiveAssignment(assignment); setShowModal(true); }}
-                          className="px-4 py-2 bg-blue-50 text-blue-600 rounded-md text-sm font-medium hover:bg-blue-100"
+                          className="inline-flex items-center justify-center px-5 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 shadow-md shadow-blue-500/10 transition-all active:scale-[0.98]"
                         >
                           Submit Work
                         </button>
                       ) : status === 'graded' ? (
-                        <div className="flex flex-col items-end gap-1.5">
-                          <span className="text-emerald-600 font-bold text-sm bg-emerald-50 px-3 py-1.5 rounded-md border border-emerald-100">
-                            Score: {mySub.marks}/{assignment.maxMarks}
+                        <div className="flex flex-col items-end gap-2">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 font-bold text-xs rounded-lg border border-emerald-100">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            {mySub.marks}/{assignment.maxMarks} Marks
                           </span>
-                          {mySub.feedback && (
-                            <div className="mt-1 w-full bg-indigo-50 border border-indigo-100 rounded-lg p-3 text-left">
-                              <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1">Instructor Feedback</p>
-                              <p className="text-xs text-indigo-800 leading-relaxed italic">&ldquo;{mySub.feedback}&rdquo;</p>
-                            </div>
-                          )}
                         </div>
                       ) : (
-                        <span className="text-amber-600 font-medium text-sm bg-amber-50 px-3 py-1.5 rounded-md border border-amber-100">
-                          Submitted (Pending)
+                        <span className="inline-flex items-center px-3 py-1.5 bg-amber-50 text-amber-700 font-bold text-xs rounded-lg border border-amber-100">
+                          <Clock className="w-3.5 h-3.5 mr-1.5" />
+                          Pending Review
                         </span>
                       )}
                     </div>
@@ -226,6 +261,7 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
           })}
         </div>
       )}
+
 
       {/* Create Assignment Modal */}
       {showCreateModal && (

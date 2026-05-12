@@ -3,10 +3,14 @@
 import { useEffect, useState, use } from 'react';
 import { useLmsStore } from '@/store/lmsStore';
 import { useStore } from '@/store/useStore';
-import { Calendar, Plus, CheckCircle2, XCircle, Clock, Users, Download, FileText } from 'lucide-react';
+import { Calendar, Plus, CheckCircle2, XCircle, Clock, Users, Download, FileText, ChevronLeft, PieChart as PieIcon } from 'lucide-react';
 import Link from 'next/link';
 import api from '@/services/api'; // Assuming you have api exported, or I'll just use the service directly.
 import * as lmsService from '@/services/lms.service';
+import { Doughnut } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function SessionsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -25,6 +29,27 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
   const [activeSessionName, setActiveSessionName] = useState('');
 
   const isTeacherOrAdmin = user?.role === 'teacher' || user?.role === 'admin';
+
+  const attDoughnutData = {
+    datasets: [
+      {
+        data: [attendanceSummary?.present || 0, (attendanceSummary?.total || 0) - (attendanceSummary?.present || 0)],
+        backgroundColor: ['#6366F1', '#E2E8F0'],
+        borderWidth: 0,
+        hoverOffset: 0,
+      },
+    ],
+  };
+
+  const attDoughnutOptions = {
+    cutout: '75%',
+    plugins: {
+      legend: { display: false },
+      tooltip: { enabled: false },
+    },
+    maintainAspectRatio: false,
+    responsive: true,
+  };
 
   useEffect(() => {
     fetchSessions(courseId);
@@ -107,30 +132,69 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <Link href={`/lms/courses/${courseId}`} className="text-sm text-blue-600 hover:underline mb-2 block">&larr; Back to Course</Link>
-          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">Course Sessions</h1>
+    <div className="space-y-6 max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <Link href={`/lms/courses/${courseId}`} className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all group active:scale-[0.98] shadow-blue-500/20">
+            <ChevronLeft className="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" />
+            Back to Course
+          </Link>
+          
+          {isTeacherOrAdmin && (
+            <button 
+              onClick={() => setShowModal(true)} 
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all active:scale-[0.98] shadow-blue-500/20"
+            >
+              <Plus className="w-4.5 h-4.5" />
+              Create Session
+            </button>
+          )}
         </div>
-        {isTeacherOrAdmin && (
-          <button onClick={() => setShowModal(true)} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-sm font-medium text-white rounded-lg hover:bg-blue-700 transition-all">
-            <Plus className="w-4 h-4" />
-            Create Session
-          </button>
-        )}
+
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Course Sessions</h1>
+          <p className="text-slate-500 mt-1.5 text-[15px]">Manage and track attendance for your course lectures.</p>
+        </div>
       </div>
 
       {error && <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-100">{error}</div>}
 
       {!isTeacherOrAdmin && attendanceSummary && (
-        <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-6 flex items-center justify-between">
-          <div>
-            <h3 className="text-indigo-900 font-semibold mb-1">My Attendance Summary</h3>
-            <p className="text-indigo-700 text-sm">You have attended {attendanceSummary.present} out of {attendanceSummary.total} sessions.</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2 bg-indigo-50 border border-indigo-100 rounded-3xl p-8 flex flex-col sm:flex-row items-center justify-between shadow-sm">
+            <div className="flex items-center gap-6">
+              <div className="p-4 bg-indigo-100/50 rounded-2xl text-indigo-600">
+                <PieIcon className="w-8 h-8" />
+              </div>
+              <div>
+                <h3 className="text-indigo-900 font-bold text-xl mb-1">My Attendance Summary</h3>
+                <p className="text-indigo-700/80 font-medium text-sm sm:text-base">You have attended <span className="text-indigo-900 font-bold">{attendanceSummary.present}</span> out of <span className="text-indigo-900 font-bold">{attendanceSummary.total}</span> sessions.</p>
+                <div className="mt-4 flex gap-3">
+                  <span className="px-3 py-1 bg-white/60 rounded-full text-[10px] font-bold text-indigo-600 border border-indigo-100 uppercase tracking-wider">
+                    Target: 75%
+                  </span>
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider ${attendanceSummary.percentage >= 75 ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`}>
+                    {attendanceSummary.percentage >= 75 ? 'On Track' : 'Below Target'}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="relative w-32 h-32 mt-6 sm:mt-0">
+              <Doughnut data={attDoughnutData} options={attDoughnutOptions} />
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none -mt-1">
+                <span className="text-xl font-bold text-indigo-900 leading-none">{attendanceSummary.percentage}%</span>
+                <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-tighter mt-1">Attended</span>
+              </div>
+            </div>
           </div>
-          <div className="text-3xl font-bold text-indigo-600">
-            {attendanceSummary.percentage}%
+          
+          <div className="bg-white border border-slate-200 rounded-3xl p-8 flex flex-col items-center justify-center text-center shadow-sm">
+            <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl mb-4">
+              <Clock className="w-6 h-6" />
+            </div>
+            <h4 className="font-bold text-slate-900 mb-1">Next Session</h4>
+            <p className="text-slate-500 text-sm font-medium">No upcoming sessions scheduled.</p>
           </div>
         </div>
       )}
