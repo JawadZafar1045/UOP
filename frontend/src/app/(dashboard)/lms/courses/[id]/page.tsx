@@ -1,21 +1,65 @@
 "use client";
 
-import { useEffect, useState, use } from 'react';
-import { useLmsStore } from '@/store/lmsStore';
-import { useStore } from '@/store/useStore';
-import { Calendar, Users, FileText, CheckCircle, BookOpen, Clock, FileBadge, UserPlus, XCircle } from 'lucide-react';
-import Link from 'next/link';
-import * as lmsService from '@/services/lms.service';
+// Chart.js registration MUST be at the very top
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Tooltip,
+  Legend,
+  Filler,
+} from "chart.js";
 
-export default function CourseOverviewPage({ params }: { params: Promise<{ id: string }> }) {
+// Register all ChartJS components immediately
+if (typeof window !== "undefined") {
+  ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    ArcElement,
+    Tooltip,
+    Legend,
+    Filler,
+  );
+}
+
+import { useEffect, useState, use } from "react";
+import { useLmsStore } from "@/store/lmsStore";
+import { useStore } from "@/store/useStore";
+import {
+  Calendar,
+  Users,
+  FileText,
+  CheckCircle,
+  BookOpen,
+  Clock,
+  UserPlus,
+  XCircle,
+  ArrowRight,
+} from "lucide-react";
+import Link from "next/link";
+import * as lmsService from "@/services/lms.service";
+import { useRef } from "react";
+
+export default function CourseOverviewPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const resolvedParams = use(params);
   const courseId = resolvedParams.id;
   const { currentCourse, isLoading, error, fetchCourse } = useLmsStore();
   const { user } = useStore();
-  const isTeacherOrAdmin = user?.role === 'teacher' || user?.role === 'admin';
+  const isTeacherOrAdmin = user?.role === "teacher" || user?.role === "admin";
   const [showEnrollModal, setShowEnrollModal] = useState(false);
-  const [studentEmail, setStudentEmail] = useState('');
+  const [studentEmail, setStudentEmail] = useState("");
   const [isEnrolling, setIsEnrolling] = useState(false);
+  const doughnutChartRef = useRef<HTMLCanvasElement>(null);
+  const doughnutChartInstanceRef = useRef<ChartJS | null>(null);
 
   const handleEnroll = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,10 +68,14 @@ export default function CourseOverviewPage({ params }: { params: Promise<{ id: s
     try {
       await lmsService.enrollStudent(courseId, studentEmail);
       setShowEnrollModal(false);
-      setStudentEmail('');
+      setStudentEmail("");
       fetchCourse(courseId);
     } catch (err: any) {
-      alert(err?.response?.data?.message || err?.message || 'Failed to enroll student');
+      alert(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Failed to enroll student",
+      );
     } finally {
       setIsEnrolling(false);
     }
@@ -37,12 +85,70 @@ export default function CourseOverviewPage({ params }: { params: Promise<{ id: s
     fetchCourse(courseId);
   }, [courseId, fetchCourse]);
 
+  // Doughnut Chart for content distribution
+  useEffect(() => {
+    if (!currentCourse || !doughnutChartRef.current) return;
+
+    if (doughnutChartInstanceRef.current) {
+      doughnutChartInstanceRef.current.destroy();
+    }
+
+    const ctx = doughnutChartRef.current.getContext("2d");
+    if (!ctx) return;
+
+    try {
+      doughnutChartInstanceRef.current = new ChartJS(ctx, {
+        type: "doughnut",
+        data: {
+          labels: ["Sessions", "Assignments", "Quizzes"],
+          datasets: [
+            {
+              data: [
+                currentCourse.stats?.sessions || 1,
+                currentCourse.stats?.assignments || 1,
+                currentCourse.stats?.quizzes || 1,
+              ],
+              backgroundColor: ["#3b82f6", "#10b981", "#f59e0b"],
+              borderColor: "#ffffff",
+              borderWidth: 2,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: {
+                font: { size: 13 },
+                color: "#6b7280",
+                padding: 15,
+                usePointStyle: true,
+              },
+            },
+          },
+        } as any,
+      });
+    } catch (error) {
+      console.error("Error creating doughnut chart:", error);
+    }
+
+    return () => {
+      if (doughnutChartInstanceRef.current) {
+        doughnutChartInstanceRef.current.destroy();
+      }
+    };
+  }, [currentCourse]);
+
   if (isLoading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-32 bg-slate-100 rounded-xl"></div>
+        <div className="h-80 bg-slate-100 rounded-2xl"></div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => <div key={i} className="h-24 bg-slate-100 rounded-xl"></div>)}
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-24 bg-slate-100 rounded-xl"></div>
+          ))}
         </div>
       </div>
     );
@@ -51,134 +157,186 @@ export default function CourseOverviewPage({ params }: { params: Promise<{ id: s
   if (error || !currentCourse) {
     return (
       <div className="bg-red-50 text-red-600 p-6 rounded-xl border border-red-100 flex flex-col items-center justify-center text-center">
-        <p className="font-medium">{error || 'Course not found'}</p>
-        <Link href="/lms" className="mt-3 text-sm text-red-700 underline hover:text-red-800">
+        <p className="font-medium">{error || "Course not found"}</p>
+        <Link
+          href="/lms"
+          className="mt-3 text-sm text-red-700 underline hover:text-red-800"
+        >
           Back to Courses
         </Link>
       </div>
     );
   }
 
-  const tabs = [
-    { name: 'Sessions', icon: Calendar, href: `/lms/courses/${courseId}/sessions`, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-    { name: 'Assignments', icon: FileText, href: `/lms/courses/${courseId}/assignments`, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    { name: 'Quizzes', icon: CheckCircle, href: `/lms/courses/${courseId}/quiz`, color: 'text-rose-600', bg: 'bg-rose-50' },
-    { name: 'Performance', icon: BookOpen, href: `/lms/courses/${courseId}/performance`, color: 'text-blue-600', bg: 'bg-blue-50' },
+  const navigationTabs = [
+    {
+      name: "Sessions",
+      icon: Calendar,
+      href: `/lms/courses/${courseId}/sessions`,
+      color: "from-blue-600 to-cyan-600",
+    },
+    {
+      name: "Assignments",
+      icon: FileText,
+      href: `/lms/courses/${courseId}/assignments`,
+      color: "from-emerald-600 to-teal-600",
+    },
+    {
+      name: "Quizzes",
+      icon: CheckCircle,
+      href: `/lms/courses/${courseId}/quiz`,
+      color: "from-amber-600 to-orange-600",
+    },
+    {
+      name: "Performance",
+      icon: BookOpen,
+      href: `/lms/courses/${courseId}/performance`,
+      color: "from-purple-600 to-pink-600",
+    },
   ];
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl -mr-20 -mt-20 opacity-50"></div>
-        
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-3">
-              {isTeacherOrAdmin && (
-                <span className={`text-[10px] font-bold tracking-widest px-2.5 py-1 rounded-full uppercase border ${
-                  currentCourse.status === 'active' ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 
-                  currentCourse.status === 'draft' ? 'text-amber-700 bg-amber-50 border-amber-200' :
-                  'text-slate-700 bg-slate-100 border-slate-200'
-                }`}>
+      {/* Abstract Hero Section */}
+      <div className="relative w-full min-h-80 rounded-2xl overflow-hidden bg-white border border-slate-200">
+        {/* Abstract background patterns */}
+        <svg
+          className="absolute inset-0 w-full h-full"
+          viewBox="0 0 1200 400"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Animated background circles */}
+          <defs>
+            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop
+                offset="0%"
+                style={{ stopColor: "#3b82f6", stopOpacity: 0.1 }}
+              />
+              <stop
+                offset="100%"
+                style={{ stopColor: "#8b5cf6", stopOpacity: 0.05 }}
+              />
+            </linearGradient>
+            <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop
+                offset="0%"
+                style={{ stopColor: "#10b981", stopOpacity: 0.08 }}
+              />
+              <stop
+                offset="100%"
+                style={{ stopColor: "#06b6d4", stopOpacity: 0.05 }}
+              />
+            </linearGradient>
+          </defs>
+
+          {/* Large circles */}
+          <circle cx="100" cy="80" r="120" fill="url(#grad1)" />
+          <circle cx="1100" cy="320" r="150" fill="url(#grad2)" />
+
+          {/* Wave patterns */}
+          <path
+            d="M 0 200 Q 300 100 600 200 T 1200 200 L 1200 400 L 0 400 Z"
+            fill="#f0f9ff"
+            opacity="0.3"
+          />
+
+          {/* Floating shapes */}
+          <rect
+            x="850"
+            y="50"
+            width="80"
+            height="80"
+            rx="12"
+            fill="url(#grad1)"
+            opacity="0.6"
+          />
+          <polygon
+            points="200,350 250,280 300,350"
+            fill="url(#grad2)"
+            opacity="0.5"
+          />
+        </svg>
+
+        {/* Content overlay */}
+        <div className="relative z-10 h-full p-8 lg:p-12 flex flex-col justify-between">
+          <div>
+            {/* Status Badge */}
+            {isTeacherOrAdmin && (
+              <div className="inline-block mb-6">
+                <span
+                  className={`text-xs font-bold tracking-wider px-3 py-1.5 rounded-full uppercase ${
+                    currentCourse.status === "active"
+                      ? "bg-emerald-100 text-emerald-700 border border-emerald-300"
+                      : currentCourse.status === "draft"
+                        ? "bg-amber-100 text-amber-700 border border-amber-300"
+                        : "bg-slate-100 text-slate-700 border border-slate-300"
+                  }`}
+                >
                   {currentCourse.status}
                 </span>
-              )}
+              </div>
+            )}
+
+            <h1 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-3 tracking-tight">
+              {currentCourse.title}
+            </h1>
+            <p className="text-lg text-slate-600 max-w-2xl leading-relaxed mb-8">
+              {currentCourse.description ||
+                "No description provided for this course."}
+            </p>
+          </div>
+
+          {/* Bottom section with duration and button */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-8">
               {currentCourse.duration && (
-                <span className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                  <Clock className="w-3.5 h-3.5" />
-                  {currentCourse.duration}
+                <div className="flex items-center gap-2 text-slate-600">
+                  <Clock className="w-5 h-5" />
+                  <span className="font-medium">{currentCourse.duration}</span>
+                </div>
+              )}
+              <div className="flex items-center gap-2 text-slate-600">
+                <Users className="w-5 h-5" />
+                <span className="font-medium">
+                  {currentCourse.enrolledStudents?.length || 0} Enrolled
                 </span>
-              )}
-            </div>
-            
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">{currentCourse.title}</h1>
-            <p className="text-slate-600 max-w-2xl leading-relaxed">
-              {currentCourse.description || 'No description provided for this course.'}
-            </p>
-            <div className="mt-4">
-              {isTeacherOrAdmin && (
-                <button 
-                  onClick={() => setShowEnrollModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-sm font-medium text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  <UserPlus className="w-4 h-4" />
-                  Enroll Student
-                </button>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex-shrink-0 bg-white rounded-2xl p-5 border-2 border-slate-200 shadow-sm min-w-[220px]">
-            <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-1">Instructor</p>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-100 border-2 border-white shadow-sm flex items-center justify-center text-blue-700 font-bold">
-                {currentCourse.instructor?.name?.charAt(0) || 'I'}
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-slate-900">{currentCourse.instructor?.name || 'Unassigned'}</p>
-                <p className="text-xs text-slate-500">{currentCourse.instructor?.email || ''}</p>
               </div>
             </div>
+
+            {isTeacherOrAdmin && (
+              <button
+                onClick={() => setShowEnrollModal(true)}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
+              >
+                <UserPlus className="w-5 h-5" />
+                Enroll Student
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-            <Users className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-slate-900">{currentCourse.enrolledStudents?.length || 0}</p>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-              {isTeacherOrAdmin ? 'Students' : 'Learners'}
-            </p>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-            <Calendar className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-slate-900">{currentCourse.stats?.sessions || 0}</p>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Sessions</p>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-            <FileText className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-slate-900">{currentCourse.stats?.assignments || 0}</p>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Assignments</p>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
-            <CheckCircle className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-slate-900">{currentCourse.stats?.quizzes || 0}</p>
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Quizzes</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation Grid */}
-      <div className="pt-4">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">Course Content</h2>
+      {/* Primary Action - Course Content Navigation */}
+      <div className="space-y-4 mb-2">
+        <h2 className="text-base font-semibold text-slate-900 tracking-tight">
+          Course Content
+        </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {tabs.map((tab) => (
+          {navigationTabs.map((tab) => (
             <Link key={tab.name} href={tab.href}>
-              <div className="group bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md hover:border-slate-300 transition-all cursor-pointer h-full flex flex-col">
-                <div className={`w-10 h-10 rounded-lg ${tab.bg} ${tab.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+              <div className="group bg-white border border-slate-200 rounded-lg p-5 hover:shadow-md hover:border-slate-300 transition-all h-full cursor-pointer hover:bg-slate-50/50">
+                <div
+                  className={`w-11 h-11 rounded-lg bg-gradient-to-br ${tab.color} text-white flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
+                >
                   <tab.icon className="w-5 h-5" />
                 </div>
-                <h3 className="font-semibold text-slate-900 mb-1">{tab.name}</h3>
-                <p className="text-xs text-slate-500 mt-auto">
-                  {isTeacherOrAdmin ? `Manage course ${tab.name.toLowerCase()}` : `View course ${tab.name.toLowerCase()}`}
+                <h3 className="font-semibold text-slate-900 mb-1 text-sm">
+                  {tab.name}
+                </h3>
+                <p className="text-xs text-slate-600 group-hover:text-slate-700 transition-colors">
+                  {isTeacherOrAdmin
+                    ? `Manage ${tab.name.toLowerCase()}`
+                    : `View ${tab.name.toLowerCase()}`}
                 </p>
               </div>
             </Link>
@@ -186,38 +344,227 @@ export default function CourseOverviewPage({ params }: { params: Promise<{ id: s
         </div>
       </div>
 
+      {/* Divider */}
+      <div className="h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent my-8"></div>
+
+      {/* Analytics Section - 4 Column Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Instructor Card */}
+        <div className="lg:col-span-1 bg-white border border-slate-200 rounded-lg p-6 flex flex-col hover:shadow-md hover:border-slate-300 transition-all">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-6">
+            Instructor
+          </p>
+
+          <div className="flex flex-col items-center text-center flex-1">
+            {/* Avatar with gradient ring */}
+            <div className="relative mb-4">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full blur-md opacity-50"></div>
+              <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-2xl shadow-md border-2 border-white">
+                {currentCourse.instructor?.name?.charAt(0) || "I"}
+              </div>
+            </div>
+
+            {/* Instructor Info */}
+            <h3 className="text-sm font-bold text-slate-900 mb-1 leading-snug">
+              {currentCourse.instructor?.name || "Unassigned"}
+            </h3>
+            <p className="text-xs text-slate-500 break-all line-clamp-2 mb-4">
+              {currentCourse.instructor?.email || "No email provided"}
+            </p>
+
+            {/* Divider */}
+            <div className="w-full h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent my-4"></div>
+
+            {/* Quick Stats */}
+            <div className="w-full space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                  <span className="text-xs text-slate-600 font-medium">
+                    Students
+                  </span>
+                </div>
+                <span className="text-sm font-bold text-blue-600">
+                  {currentCourse.enrolledStudents?.length || 0}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                  <span className="text-xs text-slate-600 font-medium">
+                    Sessions
+                  </span>
+                </div>
+                <span className="text-sm font-bold text-indigo-600">
+                  {currentCourse.stats?.sessions || 0}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                  <span className="text-xs text-slate-600 font-medium">
+                    Assignments
+                  </span>
+                </div>
+                <span className="text-sm font-bold text-emerald-600">
+                  {currentCourse.stats?.assignments || 0}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Content Distribution Chart */}
+        <div className="lg:col-span-1 bg-white border border-slate-200 rounded-lg p-6 flex flex-col">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-6">
+            Content Distribution
+          </p>
+          <div
+            style={{
+              height: "240px",
+              position: "relative",
+              width: "100%",
+              flex: 1,
+            }}
+          >
+            <canvas ref={doughnutChartRef} width="300" height="240"></canvas>
+          </div>
+        </div>
+
+        {/* Quick Stats - 2 columns */}
+        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-lg p-6">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-6">
+            Course Statistics
+          </p>
+
+          <div className="grid grid-cols-4 gap-3 mb-6">
+            <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+              <p className="text-2xl font-bold text-blue-600">
+                {currentCourse.enrolledStudents?.length || 0}
+              </p>
+              <p className="text-xs text-slate-600 mt-1 font-medium uppercase leading-tight">
+                {isTeacherOrAdmin ? "Students" : "Learners"}
+              </p>
+            </div>
+            <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-100">
+              <p className="text-2xl font-bold text-indigo-600">
+                {currentCourse.stats?.sessions || 0}
+              </p>
+              <p className="text-xs text-slate-600 mt-1 font-medium uppercase leading-tight">
+                Sessions
+              </p>
+            </div>
+            <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
+              <p className="text-2xl font-bold text-emerald-600">
+                {currentCourse.stats?.assignments || 0}
+              </p>
+              <p className="text-xs text-slate-600 mt-1 font-medium uppercase leading-tight">
+                Assignments
+              </p>
+            </div>
+            <div className="p-3 bg-rose-50 rounded-lg border border-rose-100">
+              <p className="text-2xl font-bold text-rose-600">
+                {currentCourse.stats?.quizzes || 0}
+              </p>
+              <p className="text-xs text-slate-600 mt-1 font-medium uppercase leading-tight">
+                Quizzes
+              </p>
+            </div>
+          </div>
+
+          {/* Progress bars */}
+          <div className="space-y-4 border-t border-slate-100 pt-6">
+            {[
+              {
+                label: "Sessions",
+                value: currentCourse.stats?.sessions || 0,
+                color: "bg-blue-500",
+              },
+              {
+                label: "Assignments",
+                value: currentCourse.stats?.assignments || 0,
+                color: "bg-emerald-500",
+              },
+              {
+                label: "Quizzes",
+                value: currentCourse.stats?.quizzes || 0,
+                color: "bg-rose-500",
+              },
+            ].map((item) => {
+              const total =
+                (currentCourse.stats?.sessions || 0) +
+                (currentCourse.stats?.assignments || 0) +
+                (currentCourse.stats?.quizzes || 0);
+              const percentage = Math.round(
+                (item.value / Math.max(1, total)) * 100,
+              );
+              return (
+                <div key={item.label}>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs font-medium text-slate-700">
+                      {item.label}
+                    </span>
+                    <span className="text-xs font-semibold text-slate-600">
+                      {percentage}%
+                    </span>
+                  </div>
+                  <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full ${item.color} rounded-full transition-all duration-500`}
+                      style={{ width: `${percentage}%` }}
+                    ></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Enroll Modal */}
       {showEnrollModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-slate-900">Enroll Student</h2>
-              <button onClick={() => setShowEnrollModal(false)} className="text-slate-400 hover:text-slate-600">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-white">Enroll Student</h2>
+              <button
+                onClick={() => setShowEnrollModal(false)}
+                className="text-white/80 hover:text-white"
+              >
                 <XCircle className="w-6 h-6" />
               </button>
             </div>
             <form onSubmit={handleEnroll} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Student Email *</label>
+                <label className="block text-sm font-semibold text-slate-900 mb-2">
+                  Student Email *
+                </label>
                 <input
                   required
                   type="email"
                   value={studentEmail}
                   onChange={(e) => setStudentEmail(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
-                  placeholder="Enter the student's email"
+                  className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                  placeholder="name@example.com"
                 />
-                <p className="text-xs text-slate-500 mt-1">Provide the registered email address of the student.</p>
+                <p className="text-xs text-slate-600 mt-2">
+                  Enter the registered email address of the student.
+                </p>
               </div>
               <div className="pt-4 flex justify-end gap-3">
-                <button type="button" onClick={() => setShowEnrollModal(false)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowEnrollModal(false)}
+                  className="px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isEnrolling}
-                  className="px-4 py-2 bg-blue-600 text-sm font-medium text-white rounded-lg shadow-sm hover:bg-blue-700 disabled:opacity-50"
+                  className="px-5 py-2.5 bg-blue-600 text-sm font-semibold text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
                 >
-                  {isEnrolling ? 'Enrolling...' : 'Enroll'}
+                  {isEnrolling ? "Enrolling..." : "Enroll"}
                 </button>
               </div>
             </form>
