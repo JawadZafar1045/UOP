@@ -109,7 +109,7 @@ export default function CourseOverviewPage({ params }: { params: Promise<{ id: s
             </div>
           </div>
           
-          <div className="flex-shrink-0 bg-slate-50 rounded-xl p-4 border border-slate-100 min-w-[200px]">
+          <div className="flex-shrink-0 bg-white rounded-2xl p-5 border-2 border-slate-200 shadow-sm min-w-[220px]">
             <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-1">Instructor</p>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-blue-100 border-2 border-white shadow-sm flex items-center justify-center text-blue-700 font-bold">
