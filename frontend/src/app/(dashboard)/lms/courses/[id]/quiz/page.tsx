@@ -261,67 +261,92 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <Link href={`/lms/courses/${courseId}`} className="text-sm text-blue-600 hover:underline mb-2 block">&larr; Back to Course</Link>
-          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">Quizzes</h1>
+    <div className="space-y-8 max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+      {/* Header Section */}
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <Link href={`/lms/courses/${courseId}`} className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all group active:scale-[0.98] shadow-blue-500/20">
+            <ChevronLeft className="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" />
+            Back to Course
+          </Link>
+          
+          {isTeacherOrAdmin && (
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all active:scale-[0.98] shadow-blue-500/20"
+            >
+              <Plus className="w-4.5 h-4.5" />
+              Create Quiz
+            </button>
+          )}
         </div>
-        {isTeacherOrAdmin && (
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-sm font-medium text-white rounded-lg hover:bg-blue-700 transition-all"
-          >
-            <Plus className="w-4 h-4" />
-            Create Quiz
-          </button>
-        )}
+
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Quizzes</h1>
+          <p className="text-slate-500 mt-1.5 text-[15px]">Assessment and evaluation management for students.</p>
+        </div>
       </div>
 
-      {error && <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-100">{error}</div>}
+      {error && (
+        <div className="p-4 bg-red-50/50 text-red-600 rounded-xl border border-red-100 backdrop-blur-sm">
+          <p className="text-sm font-medium">{error}</p>
+        </div>
+      )}
 
       {quizzes.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-xl p-12 text-center">
-          <CheckCircle className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-slate-900">No quizzes available</h3>
-          <p className="text-slate-500 mt-2">Create your first quiz to get started.</p>
+        <div className="bg-white border border-slate-200/60 rounded-3xl p-16 flex flex-col items-center justify-center text-center shadow-sm">
+          <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mb-6 shadow-inner">
+            <CheckCircle className="w-10 h-10 text-slate-300" />
+          </div>
+          <h3 className="text-2xl font-bold text-slate-900 mb-2">No quizzes available</h3>
+          <p className="text-slate-500 text-base max-w-sm leading-relaxed">
+            Assess student knowledge by creating your first quiz for this course.
+          </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {quizzes.map((quiz) => (
-            <div key={quiz._id} className="bg-white rounded-xl border border-slate-200 p-6 flex flex-col h-full">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="font-semibold text-slate-900 text-lg">{quiz.title}</h3>
-                <span className={`text-[10px] font-bold tracking-widest px-2 py-0.5 rounded uppercase border ${
-                  quiz.status === 'published' ? 'text-emerald-700 bg-emerald-50 border-emerald-200' :
-                  quiz.status === 'closed' ? 'text-slate-700 bg-slate-50 border-slate-200' :
-                  'text-amber-700 bg-amber-50 border-amber-200'
+            <div key={quiz._id} className="bg-white rounded-2xl border border-slate-200/60 hover:border-blue-200/60 shadow-sm hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 flex flex-col group p-7 relative">
+              {/* Status Badge */}
+              <div className="absolute top-7 right-7">
+                <span className={`text-[10px] font-bold tracking-[0.1em] px-3 py-1.5 rounded-full uppercase border ${
+                  quiz.status === 'published' ? 'text-emerald-700 bg-emerald-50 border-emerald-100' :
+                  quiz.status === 'closed' ? 'text-slate-600 bg-slate-50 border-slate-100' :
+                  'text-amber-700 bg-amber-50 border-amber-100'
                 }`}>
                   {quiz.status}
                 </span>
               </div>
 
-              <p className="text-sm text-slate-600 mb-4 flex-1">{quiz.instructions || 'No instructions provided'}</p>
+              <div className="mb-5">
+                <h3 className="font-bold text-slate-900 text-xl leading-snug mb-3 group-hover:text-blue-600 transition-colors">
+                  {quiz.title}
+                </h3>
+                <p className="text-[15px] text-slate-500 line-clamp-2 leading-relaxed">
+                  {quiz.instructions || 'Test your knowledge with this comprehensive assessment.'}
+                </p>
+              </div>
 
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center gap-4 text-sm text-slate-500">
-                  <span className="flex items-center gap-1">
-                    <FileText className="w-4 h-4" />
-                    {quiz.questionCount || 0} questions
-                  </span>
-                  {quiz.timeLimit && (
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      {quiz.timeLimit} mins
-                    </span>
-                  )}
-                  <span>Pass: {quiz.passMark}%</span>
+              <div className="flex flex-wrap items-center gap-5 mb-8">
+                <div className="flex items-center gap-2 text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100/60">
+                  <FileText className="w-4 h-4 text-blue-400" />
+                  <span className="text-xs font-semibold">{quiz.questionCount || 0} Questions</span>
+                </div>
+                {quiz.timeLimit && (
+                  <div className="flex items-center gap-2 text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100/60">
+                    <Clock className="w-4 h-4 text-blue-400" />
+                    <span className="text-xs font-semibold">{quiz.timeLimit} mins</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100/60">
+                  <Award className="w-4 h-4 text-blue-400" />
+                  <span className="text-xs font-semibold">Pass: {quiz.passMark}%</span>
                 </div>
               </div>
 
-              <div className="mt-auto border-t border-slate-100 pt-4 flex items-center justify-between">
+              <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
                 {isTeacherOrAdmin ? (
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-4">
                     {quiz.status === 'draft' && (
                       <>
                         <button
@@ -329,7 +354,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                             setCurrentQuiz(quiz);
                             setShowQuestionBuilder(true);
                           }}
-                          className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                          className="text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1.5 transition-colors"
                         >
                           <Edit className="w-4 h-4" />
                           Add Questions
@@ -337,9 +362,9 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                         {(quiz.questionCount || 0) > 0 && (
                           <button
                             onClick={() => handlePublishQuiz(quiz._id)}
-                            className="text-sm font-medium text-emerald-600 hover:text-emerald-800 flex items-center gap-1"
+                            className="text-sm font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1.5 transition-colors"
                           >
-                            <CheckCircle className="w-4 h-4" />
+                            <CheckCircle2 className="w-4 h-4" />
                             Publish
                           </button>
                         )}
@@ -348,7 +373,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                     {(quiz.status === 'published' || quiz.status === 'closed') && (
                       <button
                         onClick={() => handleViewResults(quiz)}
-                        className="text-sm font-medium text-purple-600 hover:text-purple-800 flex items-center gap-1"
+                        className="text-sm font-bold text-purple-600 hover:text-purple-700 flex items-center gap-1.5 transition-colors"
                       >
                         <BarChart3 className="w-4 h-4" />
                         View Results
@@ -356,44 +381,42 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                     )}
                   </div>
                 ) : (
-                  <div className="flex flex-col gap-3 w-full">
-                    <div className="flex gap-2">
+                  <div className="flex items-center gap-3 w-full">
+                    <button
+                      onClick={() => handleStartQuiz(quiz)}
+                      disabled={quiz.status !== 'published' || ((quiz.myAttempts || 0) >= (quiz.maxAttempts || 1))}
+                      className={`flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm active:scale-[0.98] ${
+                        quiz.status === 'published' && ((quiz.myAttempts || 0) < (quiz.maxAttempts || 1))
+                          ? 'bg-blue-600 text-white hover:bg-blue-700'
+                          : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                      }`}
+                    >
+                      <Play className="w-4 h-4" />
+                      {(quiz.myAttempts || 0) > 0 ? 'Retake Quiz' : 'Start Quiz'}
+                    </button>
+                    
+                    {((quiz.myAttempts || 0) > 0 || quiz.bestScore !== null) && (
                       <button
-                        onClick={() => handleStartQuiz(quiz)}
-                        disabled={quiz.status !== 'published' || ((quiz.myAttempts || 0) >= (quiz.maxAttempts || 1))}
-                        className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm active:scale-[0.98] ${
-                          quiz.status === 'published' && ((quiz.myAttempts || 0) < (quiz.maxAttempts || 1))
-                            ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'
-                            : 'bg-slate-100 text-slate-400 cursor-not-allowed pointer-events-none'
-                        }`}
-                      >
-                        <Play className="w-4 h-4" />
-                        {(quiz.myAttempts || 0) > 0 ? 'Retake Quiz' : 'Start Quiz'}
-                      </button>
-                      
-                      {((quiz.myAttempts || 0) > 0 || quiz.bestScore !== null) && (
-                        <button
-                          onClick={async () => {
-                            try {
-                              const res = await lmsService.getMyAttempts(quiz._id);
-                              const payload = res?.data ?? res;
-                              if (payload && payload.length > 0) {
-                                setQuizResult(payload[0]); 
-                                setQuizPlayerQuiz(quiz);
-                                setQuizPlayerPhase('result');
-                                setShowQuizPlayer(true);
-                              }
-                            } catch (e) {
-                              alert('Failed to load your results');
+                        onClick={async () => {
+                          try {
+                            const res = await lmsService.getMyAttempts(quiz._id);
+                            const payload = res?.data ?? res;
+                            if (payload && payload.length > 0) {
+                              setQuizResult(payload[0]); 
+                              setQuizPlayerQuiz(quiz);
+                              setQuizPlayerPhase('result');
+                              setShowQuizPlayer(true);
                             }
-                          }}
-                          className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl hover:bg-slate-50 transition-all shadow-sm active:scale-[0.98] cursor-pointer"
-                        >
-                          <Eye className="w-4 h-4" />
-                          View Result
-                        </button>
-                      )}
-                    </div>
+                          } catch (e) {
+                            alert('Failed to load your results');
+                          }
+                        }}
+                        className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl hover:bg-slate-50 transition-all active:scale-[0.98]"
+                      >
+                        <Eye className="w-4 h-4 text-slate-400" />
+                        Result
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -401,6 +424,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
           ))}
         </div>
       )}
+
 
       {/* Create Quiz Modal */}
       {showCreateModal && (

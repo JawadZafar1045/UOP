@@ -215,13 +215,21 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const res: any = await api.post("/auth/login", { email, password, tenantId });
+      const res: any = await api.post("/auth/login", {
+        email,
+        password,
+        tenantId,
+      });
       const { accessToken, refreshToken, user } = res.data;
 
       setAuth(user, accessToken, refreshToken);
       router.push("/dashboard");
     } catch (err: any) {
-      setError(err?.response?.data?.message || err?.message || "Login failed. Please check your credentials.");
+      setError(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Login failed. Please check your credentials.",
+      );
     } finally {
       setLoading(false);
     }
@@ -243,16 +251,19 @@ export default function LoginPage() {
             <ShieldCheck className="w-4 h-4" />
             Secure Enterprise Login
           </div>
-          <h2 className="text-4xl font-bold mb-6 tracking-tight">Your entire business, Unified.</h2>
+          <h2 className="text-4xl font-bold mb-6 tracking-tight">
+            Your entire business, Unified.
+          </h2>
           <p className="text-xl text-blue-100/90 leading-relaxed mb-8">
-            Access your CRM, LMS, and communication tools in one secure environment. Seamless operations start here.
+            Access your CRM, LMS, and communication tools in one secure
+            environment. Seamless operations start here.
           </p>
           <div className="space-y-4">
             {[
               "Unified CRM & Lead Tracking",
               "Powerful Learning Management",
               "Real-time Team Communication",
-              "Centralized Employee Directory"
+              "Centralized Employee Directory",
             ].map((text, i) => (
               <div key={i} className="flex items-center gap-3">
                 <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-white">
@@ -280,7 +291,9 @@ export default function LoginPage() {
               </div>
             </Link>
             <h1 className="text-3xl font-bold text-slate-900">Welcome Back</h1>
-            <p className="text-slate-500 mt-2">Enter your details to access your workspace</p>
+            <p className="text-slate-500 mt-2">
+              Enter your details to access your workspace
+            </p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
@@ -360,9 +373,21 @@ export default function LoginPage() {
               {loading ? (
                 <>Signing in...</>
               ) : (
-                <>Sign in to UOP <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>
+                <>
+                  Sign in to UOP{" "}
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </>
               )}
             </button>
+            <p className="text-center text-slate-500 mt-8 text-sm">
+              Don&apos;t have an account?{" "}
+              <Link
+                href="/signup"
+                className="text-blue-600 font-bold hover:text-blue-700 transition-colors"
+              >
+                Create a workspace
+              </Link>
+            </p>
           </form>
         </div>
       </div>
