@@ -11,6 +11,7 @@ const lmsDocumentSchema = new mongoose.Schema(
     // ── Cloudinary asset info ────────────────────────────────────────────────────
     fileUrl:           { type: String, required: true },
     publicId:          { type: String, required: true }, // Cloudinary public ID
+    resourceType:      { type: String, enum: ['image', 'raw', 'video', 'auto'], default: 'raw' },
 
     // ── File metadata ────────────────────────────────────────────────────────────
     fileType:          { type: String, enum: ['pdf', 'docx', 'pptx', 'mp4', 'image', 'other'] },

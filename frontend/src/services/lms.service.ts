@@ -1,4 +1,6 @@
 import api from './api';
+import axios from 'axios';
+import { useStore } from '../store/useStore';
 
 // ── Courses ────────────────────────────────────────────────────────────────────
 
@@ -86,6 +88,44 @@ export const uploadCourseDocument = async (courseId: string, formData: FormData)
 export const deleteCourseDocument = async (docId: string) => {
   const res = await api.delete(`/lms/documents/${docId}`);
   return res;
+};
+
+export const downloadCourseDocument = async (docId: string, fileName: string) => {
+  const token = useStore.getState().accessToken;
+  const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+  const response = await axios.get(`${baseURL}/lms/documents/${docId}/access`, {
+    responseType: 'blob',
+    headers: { Authorization: `Bearer ${token}` },
+    withCredentials: true,
+  });
+  const blob = response.data;
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
+};
+
+export const downloadFileByUrl = async (fileUrl: string, fileName: string) => {
+  const token = useStore.getState().accessToken;
+  const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+  const response = await axios.post(`${baseURL}/lms/files/sign`, { url: fileUrl }, {
+    responseType: 'blob',
+    headers: { Authorization: `Bearer ${token}` },
+    withCredentials: true,
+  });
+  const blob = response.data;
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
 };
 
 // ── Assignments ────────────────────────────────────────────────────────────────

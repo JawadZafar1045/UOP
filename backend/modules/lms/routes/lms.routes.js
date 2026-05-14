@@ -46,6 +46,7 @@ router.get('/courses/:courseId/attendance/mine',            authorize('student')
 router.post('/courses/:courseId/documents',   authorize('admin', 'teacher'), upload.single('file'),           ctrl.uploadCourseDocument);
 router.get('/courses/:courseId/documents',    authorize('admin', 'teacher', 'student'),                       ctrl.getCourseDocuments);
 router.delete('/documents/:id',               authorize('admin', 'teacher'),                                  ctrl.deleteCourseDocument);
+router.get('/documents/:id/access',           authorize('admin', 'teacher', 'student'),                       ctrl.getCourseDocumentAccess);
 
 // ── Assignment Grading ─────────────────────────────────────────────────────────
 router.patch('/submissions/:assignmentId/grade/:studentId', authorize('admin', 'teacher'),                    ctrl.gradeSubmission);
@@ -71,5 +72,7 @@ router.post('/courses/:courseId/certificates/generate/:studentId', authorize('ad
 router.post('/courses/:courseId/certificates/generate-all',        authorize('admin', 'teacher'),             ctrl.generateAllCertificates);
 router.get('/courses/:courseId/certificates',                      authorize('admin', 'teacher'),             ctrl.getCourseCertificates);
 router.get('/certificates/mine',                                   authorize('student'),                      ctrl.getMyCertificates);
+
+router.post('/files/sign', authorize('admin', 'teacher', 'student'), ctrl.signFileUrl);
 
 module.exports = router;

@@ -31,6 +31,9 @@ const getCourses = async ({ tenantId, userId, role, page = 1, limit = 20 }) => {
       { tenantId: tenantId, status: 'active' }
     ];
     delete filter.tenantId;
+  } else if (role === 'teacher') {
+    // Teachers only see courses they are assigned to as instructor
+    filter.instructor = userId;
   }
 
   const [courses, total] = await Promise.all([
@@ -271,10 +274,10 @@ const overrideAttendance = async (tenantId, sessionId, studentId, status, reason
 
 // ── LMS Documents ──────────────────────────────────────────────────────────────
 const uploadCourseDocument = async (tenantId, courseId, file, data, userId) => {
-  const { url, publicId } = await uploadFile(file, 'lms_documents');
+  const { url, publicId, resourceType } = await uploadFile(file, 'lms_documents');
   return LmsDocument.create({
     tenantId, courseId, uploadedBy: userId,
-    fileUrl: url, publicId,
+    fileUrl: url, publicId, resourceType,
     fileSize: file.size,
     ...data,
   });
@@ -292,6 +295,30 @@ const deleteCourseDocument = async (tenantId, documentId, userId) => {
   await deleteFile(doc.publicId);
   await doc.deleteOne();
   await logActivity({ userId, tenantId, action: 'DELETE_LMS_DOCUMENT', entityType: 'LmsDocument', entityId: documentId });
+};
+
+const getLmsDocumentById = async (tenantId, documentId) => {
+  return LmsDocument.findOne({ _id: documentId, tenantId });
+};
+
+const getCourseDocumentAccess = async (tenantId, documentId) => {
+  const doc = await getLmsDocumentById(tenantId, documentId);
+  if (!doc) throw err('Document not found.', 404);
+  
+  const cloudinary = require('../../../config/cloudinary');
+  const isRaw = doc.fileUrl.includes('/raw/');
+
+  if (!isRaw) {
+    return { url: doc.fileUrl };
+  }
+
+  const url = cloudinary.utils.url(doc.publicId, {
+    resource_type: 'raw',
+    sign_url: true,
+    secure: true
+  });
+
+  return { url, fileName: doc.fileName || doc.title || 'document' };
 };
 
 // ── Assignment Grading ─────────────────────────────────────────────────────────
@@ -515,7 +542,7 @@ module.exports = {
   createAssignment, submitAssignment, getCourseAssignments,
   createSession, toggleSession, getCourseSessions, getSessionAttendance, overrideAttendance,
   markSelfAttendance, getMyAttendanceSummary,
-  uploadCourseDocument, getCourseDocuments, deleteCourseDocument,
+  uploadCourseDocument, getCourseDocuments, deleteCourseDocument, getLmsDocumentById, getCourseDocumentAccess,
   gradeSubmission, getAssignmentSubmissions, getMySubmission,
   createQuiz, addQuizQuestion, publishQuiz, getCourseQuizzes, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
   getCoursePerformance, getMyPerformance, checkEligibility, generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate,

@@ -6,11 +6,8 @@ import { useStore } from "../../store/useStore";
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: "📊" },
-  { name: "CRM", href: "/crm", icon: "🤝" },
   { name: "LMS", href: "/lms", icon: "🎓" },
-  { name: "Employees", href: "/employees", icon: "👥" },
   { name: "Documents", href: "/documents", icon: "📁" },
-  { name: "Communication", href: "/communication", icon: "💬" },
 ];
 
 export default function Sidebar() {
@@ -29,15 +26,7 @@ export default function Sidebar() {
       <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
         <p className="px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-3">Modules</p>
         
-        {navItems.filter(item => {
-          if (user?.role === 'student' || user?.role === 'teacher') {
-            if (item.name === 'CRM' || item.name === 'Employees') return false;
-          }
-          if (user?.role === 'hr') {
-            if (item.name === 'CRM') return false;
-          }
-          return true;
-        }).map((item) => {
+        {navItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
           const isLmsExpanded = item.name === 'LMS' && isActive;
           

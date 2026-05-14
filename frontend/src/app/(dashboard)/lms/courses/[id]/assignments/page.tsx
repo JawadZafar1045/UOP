@@ -119,11 +119,14 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
     }
   };
 
-  const getDownloadUrl = (url: string) => {
-    if (url && url.includes('cloudinary.com') && url.includes('/upload/')) {
-      return url.replace('/upload/', '/upload/fl_attachment/');
+  const handleFileDownload = async (url: string, name?: string) => {
+    try {
+      const { downloadFileByUrl } = await import('@/services/lms.service');
+      await downloadFileByUrl(url, name || 'file');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to download file.');
     }
-    return url;
   };
 
   if (isLoading && assignments.length === 0) {
@@ -199,17 +202,14 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Materials</p>
                     <div className="flex flex-wrap gap-2">
                       {assignment.materials.map((m: any, idx: number) => (
-                        <a 
+                        <button 
                           key={idx} 
-                          href={getDownloadUrl(m.url)} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          download 
+                          onClick={() => handleFileDownload(m.url, m.name)}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-xs font-semibold hover:bg-blue-50 hover:text-blue-700 border border-slate-100 transition-all"
                         >
                           <Download className="w-3.5 h-3.5" />
                           <span className="truncate max-w-[140px]">{m.name}</span>
-                        </a>
+                        </button>
                       ))}
                     </div>
                   </div>
@@ -373,16 +373,13 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
                             </div>
                           )}
                           {sub.fileUrl && (
-                            <a 
-                              href={getDownloadUrl(sub.fileUrl)} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              download 
+                            <button 
+                              onClick={() => handleFileDownload(sub.fileUrl, `submission_${sub.studentId?.name || 'student'}`)}
                               className="flex items-center gap-2 w-full justify-center py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-all shadow-sm"
                             >
                               <Download className="w-4 h-4" />
                               Download Submitted File
-                            </a>
+                            </button>
                           )}
                         </div>
                       );

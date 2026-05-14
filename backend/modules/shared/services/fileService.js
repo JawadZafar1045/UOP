@@ -14,10 +14,10 @@ const uploadFile = (file, folder = 'uop_uploads') => {
     const ext = extMatch ? extMatch[1] : '';
     const safeName = (extMatch ? originalName.replace(`.${ext}`, '') : originalName).replace(/[^a-zA-Z0-9]/g, '_');
     
-    const isImageOrVideo = file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/');
+    const isImageOrVideo = file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/') || file.mimetype === 'application/pdf';
     const uniqueId = `${safeName}_${Date.now()}`;
     
-    // For raw files, Cloudinary requires the extension in the public_id to serve it correctly
+    // For raw files (not images, videos, or PDFs), Cloudinary requires the extension in the public_id
     const publicId = (!isImageOrVideo && ext) ? `${uniqueId}.${ext}` : uniqueId;
 
     const stream = cloudinary.uploader.upload_stream(
@@ -34,6 +34,7 @@ const uploadFile = (file, folder = 'uop_uploads') => {
         resolve({
           url: result.secure_url,
           publicId: result.public_id,
+          resourceType: result.resource_type,
         });
       }
     );
