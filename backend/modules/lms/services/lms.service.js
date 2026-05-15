@@ -428,8 +428,15 @@ const getMyQuizAttempts = async (tenantId, quizId, studentId) => QuizAttempt.fin
 
 // ── Performance + Certificates ────────────────────────────────────────────────
 const checkEligibility = async (tenantId, courseId, studentId) => {
-  const course = await Course.findOne({ _id: courseId, tenantId });
+  const course = await Course.findById(courseId);
   if (!course) throw err('Course not found.', 404);
+  
+  // If not student, ensure tenant matches. If student, they must be enrolled.
+  // This allows cross-tenant enrollment performance tracking.
+  const isEnrolled = course.enrolledStudents.map(String).includes(String(studentId));
+  if (course.tenantId !== tenantId && !isEnrolled) {
+    throw err('Access denied to this course performance.', 403);
+  }
   const { minAttendancePercent = 75, minAssignmentScore = 60, minQuizScore = 60 } = course.completionCriteria || {};
 
   const totalSessions = await Session.countDocuments({ tenantId, courseId });
@@ -444,6 +451,7 @@ const checkEligibility = async (tenantId, courseId, studentId) => {
       return (sub && sub.marks != null) ? (sub.marks / (a.maxMarks || 100)) * 100 : null;
     }).filter(s => s !== null);
     assignmentScore = scores.length === 0 ? 0 : Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+    if (isNaN(assignmentScore)) assignmentScore = 0;
   }
 
   const quizzes = await Quiz.find({ tenantId, courseId, status: 'published' });
@@ -451,10 +459,11 @@ const checkEligibility = async (tenantId, courseId, studentId) => {
   if (quizzes.length > 0) {
     const scores = await Promise.all(quizzes.map(async q => {
       const best = await QuizAttempt.findOne({ tenantId, quizId: q._id, studentId }).sort({ percentScore: -1 });
-      return best ? best.percentScore : null;
+      return (best && typeof best.percentScore === 'number' && !isNaN(best.percentScore)) ? best.percentScore : null;
     }));
     const valid = scores.filter(s => s !== null);
     quizScore = valid.length === 0 ? 0 : Math.round(valid.reduce((a, b) => a + b, 0) / valid.length);
+    if (isNaN(quizScore)) quizScore = 0;
   }
 
   const reasons = [];
@@ -462,8 +471,11 @@ const checkEligibility = async (tenantId, courseId, studentId) => {
   if (assignmentScore < minAssignmentScore) reasons.push(`Assignment avg ${assignmentScore}% < required ${minAssignmentScore}%`);
   if (quizScore < minQuizScore) reasons.push(`Quiz avg ${quizScore}% < required ${minQuizScore}%`);
 
+  const certificate = await Certificate.findOne({ courseId, studentId }).select('_id certificateNumber issuedAt');
+
   return {
     eligible: reasons.length === 0,
+    certificate: certificate || null,
     reason: reasons.join('; ') || null,
     attendancePercent: attendancePct,
     assignmentScore,
@@ -478,8 +490,10 @@ const checkEligibility = async (tenantId, courseId, studentId) => {
 const getMyPerformance = async (tenantId, courseId, studentId) => checkEligibility(tenantId, courseId, studentId);
 
 const getCoursePerformance = async (tenantId, courseId) => {
-  const course = await Course.findOne({ _id: courseId, tenantId }).populate('enrolledStudents', 'name email');
+  const course = await Course.findById(courseId).populate('enrolledStudents', 'name email');
   if (!course) throw err('Course not found.', 404);
+  
+  if (course.tenantId !== tenantId) throw err('Access denied to this course performance.', 403);
   const results = await Promise.all(course.enrolledStudents.map(async student => {
     const perf = await checkEligibility(tenantId, courseId, student._id);
     return { student: { _id: student._id, name: student.name, email: student.email }, ...perf };
@@ -528,11 +542,23 @@ const generateAllCertificates = async (tenantId, courseId, issuedBy) => {
   return { generated, skipped, errors };
 };
 
-const getCourseCertificates = async (tenantId, courseId) => Certificate.find({ tenantId, courseId }).populate('studentId', 'name email');
+const getCourseCertificates = async (tenantId, courseId) => {
+  const course = await Course.findById(courseId);
+  if (!course) throw err('Course not found.', 404);
+  if (course.tenantId !== tenantId) throw err('Access denied.', 403);
+  
+  return Certificate.find({ courseId }).populate('studentId', 'name email');
+};
 const getMyCertificates = async (tenantId, studentId) => Certificate.find({ tenantId, studentId }).populate('courseId', 'title instructor');
 const verifyCertificate = async (code) => {
   const cert = await Certificate.findOne({ verificationCode: code }).populate('studentId', 'name').populate('courseId', 'title instructor');
   if (!cert) throw err('Invalid certificate code.', 404);
+  return cert;
+};
+
+const getCertificateById = async (tenantId, id) => {
+  const cert = await Certificate.findOne({ _id: id, tenantId });
+  if (!cert) throw err('Certificate not found.', 404);
   return cert;
 };
 
@@ -545,5 +571,5 @@ module.exports = {
   uploadCourseDocument, getCourseDocuments, deleteCourseDocument, getLmsDocumentById, getCourseDocumentAccess,
   gradeSubmission, getAssignmentSubmissions, getMySubmission,
   createQuiz, addQuizQuestion, publishQuiz, getCourseQuizzes, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
-  getCoursePerformance, getMyPerformance, checkEligibility, generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate,
+  getCoursePerformance, getMyPerformance, checkEligibility, generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate, getCertificateById,
 };

@@ -102,7 +102,7 @@ export const downloadCourseDocument = async (docId: string, fileName: string) =>
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = fileName;
+  a.download = `${fileName}.zip`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -121,7 +121,7 @@ export const downloadFileByUrl = async (fileUrl: string, fileName: string) => {
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = fileName;
+  a.download = `${fileName}.zip`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -245,4 +245,26 @@ export const getMyCertificates = async () => {
 export const verifyCertificate = async (code: string) => {
   const res = await api.get(`/lms/certificates/verify/${code}`);
   return res.data;
+};
+
+export const downloadCertificate = async (certId: string, fileName: string) => {
+  const token = useStore.getState().accessToken;
+  const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+  
+  const response = await axios.get(`${baseURL}/lms/certificates/${certId}/access`, {
+    responseType: 'blob',
+    headers: { Authorization: `Bearer ${token}` },
+    withCredentials: true,
+  });
+
+  const blob = response.data;
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  // Always append .zip because the backend uses proxyDownload (archive) logic
+  a.download = `${fileName}.zip`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
 };

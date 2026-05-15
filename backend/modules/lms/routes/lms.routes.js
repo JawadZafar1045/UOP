@@ -12,6 +12,11 @@ router.get('/certificates/verify/:code', ctrl.verifyCertificate);
 // All routes below require a valid JWT + tenantId
 router.use(protect, tenantIsolation);
 
+// ── Certificates ───────────────────────────────────────────────────────────────
+// Move these up or prioritize correctly
+router.get('/certificates/mine',                                   authorize('student'),                      ctrl.getMyCertificates);
+router.get('/certificates/:id/access',                             authorize('admin', 'teacher', 'student'),  ctrl.getCertificateAccess);
+
 // ── Courses ────────────────────────────────────────────────────────────────────
 router.get('/courses',        authorize('admin', 'teacher', 'student', 'hr'), ctrl.getCourses);
 router.get('/courses/:id',    authorize('admin', 'teacher', 'student', 'hr'), ctrl.getCourse);
@@ -71,7 +76,6 @@ router.get('/courses/:courseId/performance/mine',  authorize('student'),        
 router.post('/courses/:courseId/certificates/generate/:studentId', authorize('admin', 'teacher'),             ctrl.generateCertificate);
 router.post('/courses/:courseId/certificates/generate-all',        authorize('admin', 'teacher'),             ctrl.generateAllCertificates);
 router.get('/courses/:courseId/certificates',                      authorize('admin', 'teacher'),             ctrl.getCourseCertificates);
-router.get('/certificates/mine',                                   authorize('student'),                      ctrl.getMyCertificates);
 
 router.post('/files/sign', authorize('admin', 'teacher', 'student'), ctrl.signFileUrl);
 

@@ -146,6 +146,18 @@ const getMyCertificates      = async (req, res, next) => { try { res.json({ succ
 const verifyCertificate      = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.verifyCertificate(req.params.code) }); } catch (e) { next(e); } };
 
 // ── File proxy for assignment materials/submissions ────────────────────────────
+const getCertificateAccess = async (req, res, next) => {
+  try {
+    console.log(`[CertAccess] Requesting cert ID: ${req.params.id}`);
+    const cert = await lmsService.getCertificateById(req.tenantId, req.params.id);
+    // Certificates are always 'image' (PDF) or 'raw'
+    // We use proxyDownload which handles the archive workaround
+    proxyDownload(cert.fileUrl, `Certificate_${cert.certificateNumber}.pdf`, res, next);
+  } catch (e) {
+    next(e);
+  }
+};
+
 const signFileUrl = async (req, res, next) => {
   try {
     const { url: fileUrl } = req.body;
@@ -186,5 +198,5 @@ module.exports = {
   gradeSubmission, getAssignmentSubmissions, getMySubmission,
   createQuiz, getCourseQuizzes, addQuizQuestion, publishQuiz, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
   getCoursePerformance, getMyPerformance,
-  generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate, signFileUrl,
+  generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate, getCertificateAccess, signFileUrl,
 };
