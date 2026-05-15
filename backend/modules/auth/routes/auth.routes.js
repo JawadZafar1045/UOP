@@ -17,6 +17,6 @@ router.post('/refresh', refresh);
 router.post('/logout', protect, logout);
 router.get('/me', protect, getMe);
 router.patch('/profile', protect, updateProfile);
-router.get('/users', protect, authorize('admin', 'hr'), getUsers);
+router.get('/users', protect, authorize('admin'), getUsers);
 
 module.exports = router;

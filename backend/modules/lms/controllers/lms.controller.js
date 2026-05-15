@@ -70,7 +70,7 @@ const proxyDownload = (fileUrl, fileName, res, next) => {
 const getCourses    = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getCourses({ tenantId: req.tenantId, userId: req.user._id, role: req.user.role, ...req.query }) }); } catch (e) { next(e); } };
 const getCourse     = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getCourseById(req.tenantId, req.params.id, req.user._id, req.user.role) }); } catch (e) { next(e); } };
 const createCourse  = async (req, res, next) => { try { const c = await lmsService.createCourse(req.tenantId, req.body, req.user._id); res.status(201).json({ success: true, data: c }); } catch (e) { next(e); } };
-const updateCourse  = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.updateCourse(req.tenantId, req.params.id, req.body, req.user._id) }); } catch (e) { next(e); } };
+const updateCourse  = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.updateCourse(req.tenantId, req.params.id, req.body, req.user._id, req.user.role) }); } catch (e) { next(e); } };
 const deleteCourse  = async (req, res, next) => { try { await lmsService.deleteCourse(req.tenantId, req.params.id, req.user._id); res.json({ success: true, message: 'Course deleted.' }); } catch (e) { next(e); } };
 
 // ── Enrollment ─────────────────────────────────────────────────────────────────
@@ -88,6 +88,7 @@ const getCourseAttendance = async (req, res, next) => { try { res.json({ success
 // ── Assignments ────────────────────────────────────────────────────────────────
 const createAssignment = async (req, res, next) => { try { const a = await lmsService.createAssignment(req.tenantId, req.body, req.files, req.user._id); res.status(201).json({ success: true, data: a }); } catch (e) { next(e); } };
 const getCourseAssignments = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getCourseAssignments(req.tenantId, req.params.courseId) }); } catch (e) { next(e); } };
+const updateAssignment = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.updateAssignment(req.tenantId, req.params.id, req.body, req.user._id, req.user.role) }); } catch (e) { next(e); } };
 const submitAssignment = async (req, res, next) => {
   try {
     const a = await lmsService.submitAssignment(req.tenantId, req.params.id, req.user._id, req.body, req.file);
@@ -98,6 +99,7 @@ const submitAssignment = async (req, res, next) => {
 // ── Sessions ───────────────────────────────────────────────────────────────────
 const createSession       = async (req, res, next) => { try { const s = await lmsService.createSession(req.tenantId, req.params.courseId, req.body, req.files, req.user._id); res.status(201).json({ success: true, data: s }); } catch (e) { next(e); } };
 const getCourseSessions   = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getCourseSessions(req.tenantId, req.params.courseId) }); } catch (e) { next(e); } };
+const updateSession       = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.updateSession(req.tenantId, req.params.id, req.body, req.user._id, req.user.role) }); } catch (e) { next(e); } };
 const toggleSession       = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.toggleSession(req.tenantId, req.params.id, req.user._id) }); } catch (e) { next(e); } };
 const getSessionAttendance = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getSessionAttendance(req.tenantId, req.params.id) }); } catch (e) { next(e); } };
 const overrideAttendance  = async (req, res, next) => { try { const { status, reason } = req.body; res.json({ success: true, data: await lmsService.overrideAttendance(req.tenantId, req.params.id, req.params.studentId, status, reason, req.user._id) }); } catch (e) { next(e); } };
@@ -128,6 +130,8 @@ const getMySubmission         = async (req, res, next) => { try { res.json({ suc
 const createQuiz        = async (req, res, next) => { try { const q = await lmsService.createQuiz(req.tenantId, req.params.courseId, req.body, req.user._id); res.status(201).json({ success: true, data: q }); } catch (e) { next(e); } };
 const getCourseQuizzes  = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getCourseQuizzes(req.tenantId, req.params.courseId, req.user.role, req.user._id) }); } catch (e) { next(e); } };
 const addQuizQuestion   = async (req, res, next) => { try { const q = await lmsService.addQuizQuestion(req.tenantId, req.params.id, req.body); res.status(201).json({ success: true, data: q }); } catch (e) { next(e); } };
+const updateQuiz         = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.updateQuiz(req.tenantId, req.params.id, req.body, req.user._id, req.user.role) }); } catch (e) { next(e); } };
+const updateQuizQuestion = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.updateQuizQuestion(req.tenantId, req.params.id, req.body, req.user._id, req.user.role) }); } catch (e) { next(e); } };
 const publishQuiz       = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.publishQuiz(req.tenantId, req.params.id, req.user._id) }); } catch (e) { next(e); } };
 const startQuizAttempt  = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.startQuizAttempt(req.tenantId, req.params.id, req.user._id) }); } catch (e) { next(e); } };
 const submitQuizAttempt = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.submitQuizAttempt(req.tenantId, req.params.id, req.user._id, req.body.answers) }); } catch (e) { next(e); } };
@@ -191,12 +195,12 @@ const signFileUrl = async (req, res, next) => {
 module.exports = {
   getCourses, getCourse, createCourse, updateCourse, deleteCourse, enrollStudent,
   markAttendance, getCourseAttendance,
-  createAssignment, submitAssignment, getCourseAssignments,
-  createSession, getCourseSessions, toggleSession, getSessionAttendance, overrideAttendance,
+  createAssignment, updateAssignment, submitAssignment, getCourseAssignments,
+  createSession, updateSession, getCourseSessions, toggleSession, getSessionAttendance, overrideAttendance,
   markSelfAttendance, getMyAttendanceSummary,
   uploadCourseDocument, getCourseDocuments, deleteCourseDocument, getCourseDocumentAccess,
   gradeSubmission, getAssignmentSubmissions, getMySubmission,
-  createQuiz, getCourseQuizzes, addQuizQuestion, publishQuiz, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
+  createQuiz, updateQuiz, getCourseQuizzes, addQuizQuestion, updateQuizQuestion, publishQuiz, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
   getCoursePerformance, getMyPerformance,
   generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate, getCertificateAccess, signFileUrl,
 };

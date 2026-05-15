@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import { useLmsStore } from '@/store/lmsStore';
 import { useStore } from '@/store/useStore';
-import { FileText, Plus, UploadCloud, XCircle, Calendar, Download, CheckCircle2, AlertCircle, ChevronLeft, ArrowRight, Clock } from 'lucide-react';
+import { FileText, Plus, UploadCloud, XCircle, Calendar, Download, CheckCircle2, AlertCircle, ChevronLeft, ArrowRight, Clock, Edit2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AssignmentsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -20,6 +20,9 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showSubmissionsModal, setShowSubmissionsModal] = useState(false);
   const [activeAssignment, setActiveAssignment] = useState<any>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editAssignmentId, setEditAssignmentId] = useState<string | null>(null);
+  const { updateAssignment } = useLmsStore();
   
   // Create Assignment State
   const [createData, setCreateData] = useState({
@@ -46,33 +49,68 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
     fetchAssignments(courseId);
   }, [courseId, fetchAssignments]);
 
-  const handleCreateAssignment = async (e: React.FormEvent) => {
+  const handleSaveAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const formData = new FormData();
-      formData.append('courseId', courseId);
-      formData.append('title', createData.title);
-      formData.append('description', createData.description);
-      formData.append('instructions', createData.instructions);
-      formData.append('maxMarks', createData.maxMarks);
-      formData.append('dueDate', createData.dueDate);
-      
-      if (materialFiles.length > 0) {
-        materialFiles.forEach(f => formData.append('materials', f));
-      }
+      if (isEditing && editAssignmentId) {
+        // Simple update without file handling for now (as createAssignment handles FormData)
+        // Instructors can update text fields.
+        await updateAssignment(editAssignmentId, {
+          title: createData.title,
+          description: createData.description,
+          instructions: createData.instructions,
+          maxMarks: Number(createData.maxMarks),
+          dueDate: createData.dueDate
+        });
+      } else {
+        const formData = new FormData();
+        formData.append('courseId', courseId);
+        formData.append('title', createData.title);
+        formData.append('description', createData.description);
+        formData.append('instructions', createData.instructions);
+        formData.append('maxMarks', createData.maxMarks);
+        formData.append('dueDate', createData.dueDate);
+        
+        if (materialFiles.length > 0) {
+          materialFiles.forEach(f => formData.append('materials', f));
+        }
 
-      await createAssignment(formData);
+        await createAssignment(formData);
+      }
       setShowCreateModal(false);
       setCreateData({ title: '', description: '', instructions: '', maxMarks: '100', dueDate: '' });
       setMaterialFiles([]);
+      setIsEditing(false);
+      setEditAssignmentId(null);
       fetchAssignments(courseId);
     } catch (err) {
       console.error(err);
-      alert('Failed to create assignment');
+      alert('Failed to save assignment');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const openEditModal = (assignment: any) => {
+    setIsEditing(true);
+    setEditAssignmentId(assignment._id);
+    setCreateData({
+      title: assignment.title,
+      description: assignment.description || '',
+      instructions: assignment.instructions || '',
+      maxMarks: String(assignment.maxMarks),
+      dueDate: assignment.dueDate ? new Date(assignment.dueDate).toISOString().slice(0, 16) : ''
+    });
+    setShowCreateModal(true);
+  };
+
+  const openCreateModal = () => {
+    setIsEditing(false);
+    setEditAssignmentId(null);
+    setCreateData({ title: '', description: '', instructions: '', maxMarks: '100', dueDate: '' });
+    setMaterialFiles([]);
+    setShowCreateModal(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -145,7 +183,7 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
           
           {isTeacherOrAdmin && (
             <button 
-              onClick={() => setShowCreateModal(true)} 
+              onClick={openCreateModal} 
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all active:scale-[0.98] shadow-blue-500/20"
             >
               <Plus className="w-4.5 h-4.5" />
@@ -188,9 +226,20 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
                   <h3 className="font-bold text-slate-900 text-xl leading-snug group-hover:text-blue-600 transition-colors">
                     {assignment.title}
                   </h3>
-                  <span className="shrink-0 inline-flex items-center px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-full border border-indigo-100 shadow-sm">
-                    {assignment.maxMarks} pts
-                  </span>
+                  <div className="flex flex-col items-end gap-2 shrink-0">
+                    <span className="inline-flex items-center px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-full border border-indigo-100 shadow-sm">
+                      {assignment.maxMarks} pts
+                    </span>
+                    {isTeacherOrAdmin && (
+                      <button 
+                        onClick={() => openEditModal(assignment)}
+                        className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                        title="Edit Assignment"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
                 
                 <p className="text-[15px] text-slate-500 line-clamp-2 leading-relaxed mb-6">
@@ -268,12 +317,12 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl w-full max-w-2xl shadow-xl my-8 overflow-y-auto max-h-[90vh]">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h2 className="text-xl font-bold text-slate-900">Create New Assignment</h2>
+              <h2 className="text-xl font-bold text-slate-900">{isEditing ? 'Edit Assignment' : 'Create New Assignment'}</h2>
               <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-slate-600">
                 <XCircle className="w-6 h-6" />
               </button>
             </div>
-            <form onSubmit={handleCreateAssignment} className="p-6 space-y-4">
+            <form onSubmit={handleSaveAssignment} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-slate-700 mb-1">Title</label>
@@ -303,7 +352,7 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
               <div className="pt-4 flex justify-end gap-3 border-t border-slate-100 mt-4">
                 <button type="button" onClick={() => setShowCreateModal(false)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800">Cancel</button>
                 <button type="submit" disabled={isSubmitting} className="px-6 py-2 bg-blue-600 text-sm font-medium text-white rounded-lg shadow-sm hover:bg-blue-700 disabled:opacity-50">
-                  {isSubmitting ? 'Creating...' : 'Create Assignment'}
+                  {isSubmitting ? (isEditing ? 'Updating...' : 'Creating...') : (isEditing ? 'Update Assignment' : 'Create Assignment')}
                 </button>
               </div>
             </form>

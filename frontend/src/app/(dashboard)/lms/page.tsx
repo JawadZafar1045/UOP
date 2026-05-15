@@ -13,6 +13,7 @@ import {
   Sparkles,
   GraduationCap,
   TrendingUp,
+  CheckCircle2,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -25,6 +26,18 @@ export default function LMSPage() {
   useEffect(() => {
     fetchCourses();
   }, [fetchCourses]);
+
+  const handlePublishCourse = async (e: React.MouseEvent, courseId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm("Publish this course? It will become visible to students.")) return;
+    try {
+      const { updateCourse } = useLmsStore.getState();
+      await updateCourse(courseId, { status: "active" });
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
@@ -549,11 +562,22 @@ export default function LMSPage() {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-1.5 text-blue-600 font-bold text-sm group/btn">
-                          <span className="hidden sm:inline">
-                            {isTeacherOrAdmin ? "Manage" : "Continue"}
-                          </span>
-                          <ArrowRight className="w-5 h-5 transform group-hover/btn:translate-x-1 transition-transform" />
+                        <div className="flex items-center gap-3">
+                          {isTeacherOrAdmin && course.status === "draft" && (
+                            <button
+                              onClick={(e) => handlePublishCourse(e, course._id)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-lg border border-emerald-100 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all active:scale-[0.95]"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              Publish
+                            </button>
+                          )}
+                          <div className="flex items-center gap-1.5 text-blue-600 font-bold text-sm group/btn">
+                            <span className="hidden sm:inline">
+                              {isTeacherOrAdmin ? "Manage" : "Continue"}
+                            </span>
+                            <ArrowRight className="w-5 h-5 transform group-hover/btn:translate-x-1 transition-transform" />
+                          </div>
                         </div>
                       </div>
                     </div>

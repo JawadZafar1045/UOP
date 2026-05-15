@@ -32,6 +32,11 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
   const [showQuestionBuilder, setShowQuestionBuilder] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditingQuiz, setIsEditingQuiz] = useState(false);
+  const [editQuizId, setEditQuizId] = useState<string | null>(null);
+  const [isEditingQuestion, setIsEditingQuestion] = useState(false);
+  const [editQuestionId, setEditQuestionId] = useState<string | null>(null);
+  const { updateQuiz } = useLmsStore();
 
   // Data states
   const [currentQuiz, setCurrentQuiz] = useState<any>(null);
@@ -98,8 +103,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
     }
   }, [quizTimeLeft]);
 
-  // Create Quiz Handler
-  const handleCreateQuiz = async (e: React.FormEvent) => {
+  const handleSaveQuiz = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -107,14 +111,23 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
       const data = {
         ...createForm,
         timeLimit: createForm.timeLimit ? parseInt(createForm.timeLimit) : null,
-        passMark: createForm.passMark,
-        maxAttempts: createForm.maxAttempts,
+        passMark: Number(createForm.passMark),
+        maxAttempts: Number(createForm.maxAttempts),
         shuffleQuestions: createForm.shuffleQuestions,
         showResultImmediately: createForm.showResultImmediately
       };
 
-      const newQuiz = await lmsService.createQuiz(courseId, data);
-      setShowCreateModal(false);
+      if (isEditingQuiz && editQuizId) {
+        await updateQuiz(editQuizId, data);
+        setShowCreateModal(false);
+      } else {
+        const newQuiz = await lmsService.createQuiz(courseId, data);
+        setShowCreateModal(false);
+        // Auto-open question builder for the new quiz
+        setCurrentQuiz(newQuiz);
+        setShowQuestionBuilder(true);
+      }
+      
       setCreateForm({
         title: '',
         instructions: '',
@@ -124,19 +137,47 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
         shuffleQuestions: false,
         showResultImmediately: true
       });
-      fetchQuizzes(courseId); // Refresh list
-      // Auto-open question builder for the new quiz
-      setCurrentQuiz(newQuiz);
-      setShowQuestionBuilder(true);
+      fetchQuizzes(courseId);
+      setIsEditingQuiz(false);
+      setEditQuizId(null);
     } catch (err: any) {
-      alert(err?.message || 'Failed to create quiz');
+      alert(err?.message || 'Failed to save quiz');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Add Question Handler
-  const handleAddQuestion = async (e: React.FormEvent) => {
+  const openEditQuizModal = (quiz: any) => {
+    setIsEditingQuiz(true);
+    setEditQuizId(quiz._id);
+    setCreateForm({
+      title: quiz.title,
+      instructions: quiz.instructions || '',
+      timeLimit: quiz.timeLimit ? String(quiz.timeLimit) : '',
+      passMark: quiz.passMark || 60,
+      maxAttempts: quiz.maxAttempts || 1,
+      shuffleQuestions: !!quiz.shuffleQuestions,
+      showResultImmediately: !!quiz.showResultImmediately
+    });
+    setShowCreateModal(true);
+  };
+
+  const openCreateQuizModal = () => {
+    setIsEditingQuiz(false);
+    setEditQuizId(null);
+    setCreateForm({
+      title: '',
+      instructions: '',
+      timeLimit: '',
+      passMark: 60,
+      maxAttempts: 1,
+      shuffleQuestions: false,
+      showResultImmediately: true
+    });
+    setShowCreateModal(true);
+  };
+
+  const handleSaveQuestion = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentQuiz) return;
 
@@ -155,7 +196,14 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
         marks: questionForm.marks
       };
 
-      await lmsService.addQuizQuestion(currentQuiz._id, data);
+      if (isEditingQuestion && editQuestionId) {
+        await lmsService.updateQuizQuestion(editQuestionId, data);
+        alert('Question updated successfully!');
+      } else {
+        await lmsService.addQuizQuestion(currentQuiz._id, data);
+        alert('Question added successfully!');
+      }
+
       setQuestionForm({
         question: '',
         optionA: '',
@@ -166,13 +214,29 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
         explanation: '',
         marks: 1
       });
-      // Refresh questions list (you might want to add a getQuizQuestions service)
-      alert('Question added successfully!');
+      setIsEditingQuestion(false);
+      setEditQuestionId(null);
+      // Refresh question list logic here if needed
     } catch (err: any) {
-      alert(err?.message || 'Failed to add question');
+      alert(err?.message || 'Failed to save question');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const openEditQuestion = (q: any) => {
+    setIsEditingQuestion(true);
+    setEditQuestionId(q._id);
+    setQuestionForm({
+      question: q.question,
+      optionA: q.options[0] || '',
+      optionB: q.options[1] || '',
+      optionC: q.options[2] || '',
+      optionD: q.options[3] || '',
+      correctIndex: q.correctIndex,
+      explanation: q.explanation || '',
+      marks: q.marks || 1
+    });
   };
 
   // Publish Quiz Handler
@@ -272,7 +336,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
           
           {isTeacherOrAdmin && (
             <button
-              onClick={() => setShowCreateModal(true)}
+              onClick={openCreateQuizModal}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all active:scale-[0.98] shadow-blue-500/20"
             >
               <Plus className="w-4.5 h-4.5" />
@@ -357,7 +421,14 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                           className="text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1.5 transition-colors"
                         >
                           <Edit className="w-4 h-4" />
-                          Add Questions
+                          Questions
+                        </button>
+                        <button
+                          onClick={() => openEditQuizModal(quiz)}
+                          className="text-sm font-bold text-slate-600 hover:text-slate-800 flex items-center gap-1.5 transition-colors"
+                        >
+                          <Settings className="w-4 h-4" />
+                          Settings
                         </button>
                         {(quiz.questionCount || 0) > 0 && (
                           <button
@@ -431,12 +502,12 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-slate-900">Create New Quiz</h2>
+              <h2 className="text-xl font-bold text-slate-900">{isEditingQuiz ? 'Edit Quiz Settings' : 'Create New Quiz'}</h2>
               <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-slate-600">
                 <XCircle className="w-6 h-6" />
               </button>
             </div>
-            <form onSubmit={handleCreateQuiz} className="p-6 space-y-4">
+            <form onSubmit={handleSaveQuiz} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Quiz Title *</label>
                 <input
@@ -539,7 +610,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                   disabled={isSubmitting}
                   className="px-4 py-2 bg-blue-600 text-sm font-medium text-white rounded-lg shadow-sm hover:bg-blue-700 disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Creating...' : 'Create Quiz'}
+                  {isSubmitting ? 'Saving...' : (isEditingQuiz ? 'Update Quiz' : 'Create Quiz')}
                 </button>
               </div>
             </form>
@@ -566,9 +637,15 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                   </div>
                 ) : (
                   quizQuestions.map((q, index) => (
-                    <div key={index} className="p-3 bg-slate-50 rounded-lg">
-                      <p className="text-sm font-medium text-slate-900">Q{index + 1}: {q.question}</p>
+                    <div key={index} className="p-3 bg-slate-50 rounded-lg group/q relative border border-slate-100 hover:border-blue-200 transition-all">
+                      <p className="text-sm font-medium text-slate-900 pr-8">Q{index + 1}: {q.question}</p>
                       <p className="text-xs text-slate-500 mt-1">{q.marks} mark{q.marks !== 1 ? 's' : ''}</p>
+                      <button 
+                        onClick={() => openEditQuestion(q)}
+                        className="absolute top-2 right-2 p-1 text-slate-400 hover:text-blue-600 opacity-0 group-hover/q:opacity-100 transition-all"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   ))
                 )}
@@ -591,13 +668,30 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
             {/* Right Side - Add Question Form */}
             <div className="flex-1 p-6 overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-semibold text-slate-900">Add Question</h3>
-                <button onClick={() => setShowQuestionBuilder(false)} className="text-slate-400 hover:text-slate-600">
-                  <XCircle className="w-6 h-6" />
-                </button>
+                <h3 className="text-lg font-semibold text-slate-900">{isEditingQuestion ? 'Edit Question' : 'Add Question'}</h3>
+                <div className="flex gap-2">
+                  {isEditingQuestion && (
+                    <button 
+                      onClick={() => {
+                        setIsEditingQuestion(false);
+                        setEditQuestionId(null);
+                        setQuestionForm({
+                          question: '', optionA: '', optionB: '', optionC: '', optionD: '',
+                          correctIndex: 0, explanation: '', marks: 1
+                        });
+                      }}
+                      className="text-xs font-bold text-slate-500 hover:text-slate-700 bg-slate-100 px-3 py-1 rounded-md"
+                    >
+                      New Question
+                    </button>
+                  )}
+                  <button onClick={() => setShowQuestionBuilder(false)} className="text-slate-400 hover:text-slate-600">
+                    <XCircle className="w-6 h-6" />
+                  </button>
+                </div>
               </div>
 
-              <form onSubmit={handleAddQuestion} className="space-y-4">
+              <form onSubmit={handleSaveQuestion} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Question *</label>
                   <textarea
@@ -710,7 +804,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                     disabled={isSubmitting}
                     className="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-blue-700 disabled:opacity-50"
                   >
-                    {isSubmitting ? 'Adding Question...' : 'Add Question'}
+                    {isSubmitting ? 'Saving...' : (isEditingQuestion ? 'Update Question' : 'Add Question')}
                   </button>
                 </div>
               </form>

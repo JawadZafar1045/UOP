@@ -136,6 +136,11 @@ interface LmsState {
   
   fetchMyPerformance: (courseId: string) => Promise<void>;
   fetchMyCertificates: () => Promise<void>;
+  
+  updateCourse: (id: string, data: any) => Promise<void>;
+  updateSession: (id: string, data: any) => Promise<void>;
+  updateAssignment: (id: string, data: any) => Promise<void>;
+  updateQuiz: (id: string, data: any) => Promise<void>;
 }
 
 export const useLmsStore = create<LmsState>((set) => ({
@@ -339,4 +344,60 @@ export const useLmsStore = create<LmsState>((set) => ({
     }
   },
 
+  updateCourse: async (id, data) => {
+    set({ isLoading: true, error: null });
+    try {
+      const updated = await lmsService.updateCourse(id, data);
+      set((state) => ({
+        courses: state.courses.map((c) => (c._id === id ? { ...c, ...updated } : c)),
+        currentCourse: state.currentCourse?._id === id ? { ...state.currentCourse, ...updated } : state.currentCourse,
+        isLoading: false,
+      }));
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to update course', isLoading: false });
+      throw error;
+    }
+  },
+
+  updateSession: async (id, data) => {
+    set({ isLoading: true, error: null });
+    try {
+      const updated = await lmsService.updateSession(id, data);
+      set((state) => ({
+        sessions: state.sessions.map((s) => (s._id === id ? { ...s, ...updated } : s)),
+        isLoading: false,
+      }));
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to update session', isLoading: false });
+      throw error;
+    }
+  },
+
+  updateAssignment: async (id, data) => {
+    set({ isLoading: true, error: null });
+    try {
+      const updated = await lmsService.updateAssignment(id, data);
+      set((state) => ({
+        assignments: state.assignments.map((a) => (a._id === id ? { ...a, ...updated } : a)),
+        isLoading: false,
+      }));
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to update assignment', isLoading: false });
+      throw error;
+    }
+  },
+
+  updateQuiz: async (id, data) => {
+    set({ isLoading: true, error: null });
+    try {
+      const updated = await lmsService.updateQuiz(id, data);
+      set((state) => ({
+        quizzes: state.quizzes.map((q) => (q._id === id ? { ...q, ...updated } : q)),
+        isLoading: false,
+      }));
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to update quiz', isLoading: false });
+      throw error;
+    }
+  },
 }));

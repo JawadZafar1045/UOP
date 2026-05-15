@@ -54,6 +54,11 @@ export const toggleSession = async (sessionId: string) => {
   return res.data;
 };
 
+export const updateSession = async (sessionId: string, data: any) => {
+  const res = await api.patch(`/lms/sessions/${sessionId}`, data);
+  return res.data;
+};
+
 export const getSessionAttendance = async (sessionId: string) => {
   const res = await api.get(`/lms/sessions/${sessionId}/attendance`);
   return res.data;
@@ -142,6 +147,11 @@ export const createAssignment = async (formData: FormData) => {
   return res.data;
 };
 
+export const updateAssignment = async (id: string, data: any) => {
+  const res = await api.patch(`/lms/assignments/${id}`, data);
+  return res.data;
+};
+
 export const submitAssignment = async (assignmentId: string, formData: FormData) => {
   const res = await api.post(`/lms/assignments/${assignmentId}/submit`, formData, {
     headers: {
@@ -185,6 +195,16 @@ export const addQuizQuestion = async (quizId: string, data: any) => {
 
 export const publishQuiz = async (quizId: string) => {
   const res = await api.patch(`/lms/quizzes/${quizId}/publish`);
+  return res.data;
+};
+
+export const updateQuiz = async (quizId: string, data: any) => {
+  const res = await api.patch(`/lms/quizzes/${quizId}`, data);
+  return res.data;
+};
+
+export const updateQuizQuestion = async (questionId: string, data: any) => {
+  const res = await api.patch(`/lms/questions/${questionId}`, data);
   return res.data;
 };
 

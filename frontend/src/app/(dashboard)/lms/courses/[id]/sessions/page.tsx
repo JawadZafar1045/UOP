@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import { useLmsStore } from '@/store/lmsStore';
 import { useStore } from '@/store/useStore';
-import { Calendar, Plus, CheckCircle2, XCircle, Clock, Users, Download, FileText, ChevronLeft, PieChart as PieIcon } from 'lucide-react';
+import { Calendar, Plus, CheckCircle2, XCircle, Clock, Users, Download, FileText, ChevronLeft, PieChart as PieIcon, Edit2 } from 'lucide-react';
 import Link from 'next/link';
 import api from '@/services/api'; // Assuming you have api exported, or I'll just use the service directly.
 import * as lmsService from '@/services/lms.service';
@@ -23,6 +23,9 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
   const [materialFiles, setMaterialFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMarking, setIsMarking] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editSessionId, setEditSessionId] = useState<string | null>(null);
+  const { updateSession } = useLmsStore();
   const [attendanceSummary, setAttendanceSummary] = useState<{ total: number, present: number, percentage: number } | null>(null);
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
   const [currentAttendanceList, setCurrentAttendanceList] = useState<any[]>([]);
@@ -60,31 +63,63 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
     }
   }, [courseId, fetchSessions, isTeacherOrAdmin]);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const submitData = new FormData();
-      submitData.append('title', formData.title);
-      submitData.append('date', formData.date);
-      if (formData.attendanceCloseAt) {
-        submitData.append('attendanceCloseAt', formData.attendanceCloseAt);
-      }
-      if (materialFiles && materialFiles.length > 0) {
-        materialFiles.forEach(file => {
-          submitData.append('materials', file);
+      if (isEditing && editSessionId) {
+        // For editing, we use a simple object as we don't handle file updates yet in this modal for simplicity
+        // or we could refactor to use FormData.
+        await updateSession(editSessionId, {
+          title: formData.title,
+          date: formData.date,
+          attendanceCloseAt: formData.attendanceCloseAt || null
         });
-      }
+      } else {
+        const submitData = new FormData();
+        submitData.append('title', formData.title);
+        submitData.append('date', formData.date);
+        if (formData.attendanceCloseAt) {
+          submitData.append('attendanceCloseAt', formData.attendanceCloseAt);
+        }
+        if (materialFiles && materialFiles.length > 0) {
+          materialFiles.forEach(file => {
+            submitData.append('materials', file);
+          });
+        }
 
-      await createSession(courseId, submitData);
+        await createSession(courseId, submitData);
+      }
       setShowModal(false);
       setFormData({ title: '', date: '', attendanceCloseAt: '' });
       setMaterialFiles([]);
+      setIsEditing(false);
+      setEditSessionId(null);
     } catch (err) {
       console.error(err);
+      alert('Failed to save session');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const openEditModal = (session: any) => {
+    setIsEditing(true);
+    setEditSessionId(session._id);
+    setFormData({
+      title: session.title,
+      date: new Date(session.date).toISOString().split('T')[0],
+      attendanceCloseAt: session.attendanceCloseAt ? new Date(session.attendanceCloseAt).toISOString().slice(0, 16) : ''
+    });
+    setShowModal(true);
+  };
+
+  const openCreateModal = () => {
+    setIsEditing(false);
+    setEditSessionId(null);
+    setFormData({ title: '', date: '', attendanceCloseAt: '' });
+    setMaterialFiles([]);
+    setShowModal(true);
   };
 
   const handleToggle = async (sessionId: string) => {
@@ -142,7 +177,7 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
           
           {isTeacherOrAdmin && (
             <button 
-              onClick={() => setShowModal(true)} 
+              onClick={openCreateModal} 
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all active:scale-[0.98] shadow-blue-500/20"
             >
               <Plus className="w-4.5 h-4.5" />
@@ -251,9 +286,14 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
                   <td className="px-6 py-4 text-right">
                     {isTeacherOrAdmin ? (
                       <div className="flex flex-col items-end gap-1">
-                        <button onClick={() => handleToggle(session._id)} className="text-blue-600 hover:text-blue-800 font-medium text-xs">
-                          {session.isOpen ? 'Close Attendance' : 'Open Attendance'}
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => openEditModal(session)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Edit Session">
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button onClick={() => handleToggle(session._id)} className="text-blue-600 hover:text-blue-800 font-medium text-xs">
+                            {session.isOpen ? 'Close Attendance' : 'Open Attendance'}
+                          </button>
+                        </div>
                         <button onClick={() => handleViewAttendance(session._id, session.title)} className="text-emerald-600 hover:text-emerald-800 font-medium text-[11px] flex items-center gap-1">
                           <Users className="w-3 h-3" /> View List
                         </button>
@@ -280,12 +320,12 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-slate-900">Create Session</h2>
+              <h2 className="text-xl font-bold text-slate-900">{isEditing ? 'Edit Session' : 'Create Session'}</h2>
               <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600">
                 <XCircle className="w-6 h-6" />
               </button>
             </div>
-            <form onSubmit={handleCreate} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Title</label>
                 <input required type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none" placeholder="e.g. Lecture 1: Intro" />
@@ -306,7 +346,7 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
               <div className="pt-4 flex justify-end gap-3">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800">Cancel</button>
                 <button type="submit" disabled={isSubmitting} className="px-4 py-2 bg-blue-600 text-sm font-medium text-white rounded-lg shadow-sm hover:bg-blue-700 disabled:opacity-50">
-                  {isSubmitting ? 'Creating...' : 'Create Session'}
+                  {isSubmitting ? (isEditing ? 'Updating...' : 'Creating...') : (isEditing ? 'Update Session' : 'Create Session')}
                 </button>
               </div>
             </form>

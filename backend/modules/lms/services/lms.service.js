@@ -85,9 +85,12 @@ const createCourse = async (tenantId, data, userId) => {
   return course;
 };
 
-const updateCourse = async (tenantId, courseId, data, userId) => {
-  const course = await Course.findOneAndUpdate({ _id: courseId, tenantId }, data, { new: true, runValidators: true });
-  if (!course) throw err('Course not found.', 404);
+const updateCourse = async (tenantId, courseId, data, userId, userRole) => {
+  const filter = { _id: courseId, tenantId };
+  if (userRole !== 'admin') filter.instructor = userId;
+
+  const course = await Course.findOneAndUpdate(filter, data, { new: true, runValidators: true });
+  if (!course) throw err('Course not found or you do not have permission to edit it.', 404);
   await logActivity({ userId, tenantId, action: 'UPDATE_COURSE', entityType: 'Course', entityId: courseId });
   return course;
 };
@@ -203,6 +206,23 @@ const createSession = async (tenantId, courseId, data, files, userId) => {
   return session;
 };
 
+const updateSession = async (tenantId, sessionId, data, userId, userRole) => {
+  const session = await Session.findOne({ _id: sessionId, tenantId });
+  if (!session) throw err('Session not found.', 404);
+
+  // Check ownership: course must be owned by the instructor
+  const course = await Course.findOne({ _id: session.courseId, tenantId });
+  if (!course) throw err('Course associated with session not found.', 404);
+  
+  if (userRole !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to update this session.', 403);
+  }
+
+  const updatedSession = await Session.findByIdAndUpdate(sessionId, data, { new: true, runValidators: true });
+  await logActivity({ userId, tenantId, action: 'UPDATE_SESSION', entityType: 'Session', entityId: sessionId });
+  return updatedSession;
+};
+
 const toggleSession = async (tenantId, sessionId, userId) => {
   const session = await Session.findOne({ _id: sessionId, tenantId });
   if (!session) throw err('Session not found.', 404);
@@ -297,6 +317,23 @@ const deleteCourseDocument = async (tenantId, documentId, userId) => {
   await logActivity({ userId, tenantId, action: 'DELETE_LMS_DOCUMENT', entityType: 'LmsDocument', entityId: documentId });
 };
 
+const updateAssignment = async (tenantId, assignmentId, data, userId, userRole) => {
+  const assignment = await Assignment.findOne({ _id: assignmentId, tenantId });
+  if (!assignment) throw err('Assignment not found.', 404);
+
+  // Check ownership: course must be owned by the instructor
+  const course = await Course.findOne({ _id: assignment.courseId, tenantId });
+  if (!course) throw err('Course associated with assignment not found.', 404);
+
+  if (userRole !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to update this assignment.', 403);
+  }
+
+  const updatedAssignment = await Assignment.findByIdAndUpdate(assignmentId, data, { new: true, runValidators: true });
+  await logActivity({ userId, tenantId, action: 'UPDATE_ASSIGNMENT', entityType: 'Assignment', entityId: assignmentId });
+  return updatedAssignment;
+};
+
 const getLmsDocumentById = async (tenantId, documentId) => {
   return LmsDocument.findOne({ _id: documentId, tenantId });
 };
@@ -376,6 +413,44 @@ const addQuizQuestion = async (tenantId, quizId, questionData) => {
   if (!quiz) throw err('Quiz not found.', 404);
   if (!Array.isArray(questionData.options) || questionData.options.length !== 4) throw err('options must be an array of exactly 4 items.', 400);
   return QuizQuestion.create({ tenantId, quizId, ...questionData });
+};
+
+const updateQuiz = async (tenantId, quizId, data, userId, userRole) => {
+  const quiz = await Quiz.findOne({ _id: quizId, tenantId });
+  if (!quiz) throw err('Quiz not found.', 404);
+
+  const course = await Course.findOne({ _id: quiz.courseId, tenantId });
+  if (!course) throw err('Course associated with quiz not found.', 404);
+
+  if (userRole !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to update this quiz.', 403);
+  }
+
+  const updatedQuiz = await Quiz.findByIdAndUpdate(quizId, data, { new: true, runValidators: true }).lean();
+  if (updatedQuiz) {
+    updatedQuiz.questionCount = await QuizQuestion.countDocuments({ quizId });
+  }
+  await logActivity({ userId, tenantId, action: 'UPDATE_QUIZ', entityType: 'Quiz', entityId: quizId });
+  return updatedQuiz;
+};
+
+const updateQuizQuestion = async (tenantId, questionId, data, userId, userRole) => {
+  const question = await QuizQuestion.findOne({ _id: questionId, tenantId });
+  if (!question) throw err('Question not found.', 404);
+
+  const quiz = await Quiz.findOne({ _id: question.quizId, tenantId });
+  if (!quiz) throw err('Quiz associated with question not found.', 404);
+
+  const course = await Course.findOne({ _id: quiz.courseId, tenantId });
+  if (!course) throw err('Course associated with quiz not found.', 404);
+
+  if (userRole !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to update this question.', 403);
+  }
+
+  const updatedQuestion = await QuizQuestion.findByIdAndUpdate(questionId, data, { new: true, runValidators: true });
+  await logActivity({ userId, tenantId, action: 'UPDATE_QUIZ_QUESTION', entityType: 'QuizQuestion', entityId: questionId });
+  return updatedQuestion;
 };
 
 const publishQuiz = async (tenantId, quizId, userId) => {
@@ -565,11 +640,11 @@ const getCertificateById = async (tenantId, id) => {
 module.exports = {
   getCourses, getCourseById, createCourse, updateCourse, deleteCourse, enrollStudent,
   markAttendance, getCourseAttendance,
-  createAssignment, submitAssignment, getCourseAssignments,
-  createSession, toggleSession, getCourseSessions, getSessionAttendance, overrideAttendance,
+  createAssignment, updateAssignment, submitAssignment, getCourseAssignments,
+  createSession, updateSession, toggleSession, getCourseSessions, getSessionAttendance, overrideAttendance,
   markSelfAttendance, getMyAttendanceSummary,
   uploadCourseDocument, getCourseDocuments, deleteCourseDocument, getLmsDocumentById, getCourseDocumentAccess,
   gradeSubmission, getAssignmentSubmissions, getMySubmission,
-  createQuiz, addQuizQuestion, publishQuiz, getCourseQuizzes, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
+  createQuiz, updateQuiz, addQuizQuestion, updateQuizQuestion, publishQuiz, getCourseQuizzes, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
   getCoursePerformance, getMyPerformance, checkEligibility, generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate, getCertificateById,
 };

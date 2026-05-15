@@ -2,7 +2,7 @@
  * Role-Based Access Control (RBAC) middleware factory.
  * Usage: authorize('admin', 'hr')
  *
- * Roles: admin | hr | teacher | sales | student
+ * Roles: admin | teacher | student
  */
 const authorize = (...roles) => {
   return (req, res, next) => {
