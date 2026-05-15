@@ -288,3 +288,45 @@ export const downloadCertificate = async (certId: string, fileName: string) => {
   document.body.removeChild(a);
   window.URL.revokeObjectURL(url);
 };
+
+// ── Admin API Functions ────────────────────────────────────────────────────────
+
+export const getAdminStats = async () => {
+  const res = await api.get('/lms/admin/stats');
+  return res.data;
+};
+
+export const getAdminUsers = async () => {
+  const res = await api.get('/lms/admin/users');
+  return res.data;
+};
+
+export const updateUserRole = async (id: string, role: string) => {
+  const res = await api.patch(`/lms/admin/users/${id}/role`, { role });
+  return res.data;
+};
+
+export const deactivateUser = async (id: string) => {
+  const res = await api.delete(`/lms/admin/users/${id}`);
+  return res.data;
+};
+
+export const getAdminCourses = async () => {
+  const res = await api.get('/lms/admin/courses');
+  return res.data;
+};
+
+export const deleteAdminCourse = async (id: string) => {
+  const res = await api.delete(`/lms/admin/courses/${id}`);
+  return res.data;
+};
+
+export const getAdminCertificates = async () => {
+  const res = await api.get('/lms/admin/certificates');
+  return res.data;
+};
+
+export const revokeCertificate = async (id: string) => {
+  const res = await api.patch(`/lms/admin/certificates/${id}/revoke`);
+  return res.data;
+};

@@ -192,6 +192,63 @@ const signFileUrl = async (req, res, next) => {
   }
 };
 
+// ── Admin Controllers ──────────────────────────────────────────────────────────
+const getAdminStats = async (req, res, next) => {
+  try {
+    const data = await lmsService.getAdminStats(req.tenantId);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const getAdminUsers = async (req, res, next) => {
+  try {
+    const data = await lmsService.getAdminUsers(req.tenantId);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const updateUserRole = async (req, res, next) => {
+  try {
+    const data = await lmsService.updateUserRole(req.tenantId, req.params.id, req.body.role, req.user._id.toString());
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const deactivateUser = async (req, res, next) => {
+  try {
+    const data = await lmsService.deactivateUser(req.tenantId, req.params.id, req.user._id.toString());
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const getAdminCourses = async (req, res, next) => {
+  try {
+    const data = await lmsService.getAdminCourses(req.tenantId);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const deleteAdminCourse = async (req, res, next) => {
+  try {
+    const data = await lmsService.deleteAdminCourse(req.tenantId, req.params.id);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const getAdminCertificates = async (req, res, next) => {
+  try {
+    const data = await lmsService.getAdminCertificates(req.tenantId);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const revokeCertificate = async (req, res, next) => {
+  try {
+    const data = await lmsService.revokeCertificate(req.tenantId, req.params.id);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
 module.exports = {
   getCourses, getCourse, createCourse, updateCourse, deleteCourse, enrollStudent,
   markAttendance, getCourseAttendance,
@@ -203,4 +260,5 @@ module.exports = {
   createQuiz, updateQuiz, getCourseQuizzes, addQuizQuestion, updateQuizQuestion, publishQuiz, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
   getCoursePerformance, getMyPerformance,
   generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate, getCertificateAccess, signFileUrl,
+  getAdminStats, getAdminUsers, updateUserRole, deactivateUser, getAdminCourses, deleteAdminCourse, getAdminCertificates, revokeCertificate,
 };

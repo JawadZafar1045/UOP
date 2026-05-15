@@ -83,4 +83,14 @@ router.get('/courses/:courseId/certificates',                      authorize('ad
 
 router.post('/files/sign', authorize('admin', 'teacher', 'student'), ctrl.signFileUrl);
 
+// ── Admin Routes ───────────────────────────────────────────────────────────────
+router.get('/admin/stats',                          authorize('admin'), ctrl.getAdminStats);
+router.get('/admin/users',                          authorize('admin'), ctrl.getAdminUsers);
+router.patch('/admin/users/:id/role',               authorize('admin'), ctrl.updateUserRole);
+router.delete('/admin/users/:id',                   authorize('admin'), ctrl.deactivateUser);
+router.get('/admin/courses',                        authorize('admin'), ctrl.getAdminCourses);
+router.delete('/admin/courses/:id',                 authorize('admin'), ctrl.deleteAdminCourse);
+router.get('/admin/certificates',                   authorize('admin'), ctrl.getAdminCertificates);
+router.patch('/admin/certificates/:id/revoke',      authorize('admin'), ctrl.revokeCertificate);
+
 module.exports = router;

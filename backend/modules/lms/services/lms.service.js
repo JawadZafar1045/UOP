@@ -637,6 +637,108 @@ const getCertificateById = async (tenantId, id) => {
   return cert;
 };
 
+// ── Admin Services ─────────────────────────────────────────────────────────────
+
+const getAdminStats = async (tenantId) => {
+  const User = require('../../auth/models/user.model');
+  const Session = require('../models/session.model');
+  const [totalCourses, activeCourses, totalStudents, totalTeachers, totalCertificates, totalSessions] = await Promise.all([
+    Course.countDocuments({ tenantId }),
+    Course.countDocuments({ tenantId, status: 'active' }),
+    User.countDocuments({ tenantId, role: 'student', isActive: true }),
+    User.countDocuments({ tenantId, role: 'teacher', isActive: true }),
+    Certificate.countDocuments({ tenantId }),
+    Session.countDocuments({ tenantId }),
+  ]);
+  return { totalCourses, activeCourses, totalStudents, totalTeachers, totalCertificates, totalSessions };
+};
+
+const getAdminUsers = async (tenantId) => {
+  const User = require('../../auth/models/user.model');
+  return User.find({ tenantId, role: { $ne: 'admin' } })
+    .select('name email role createdAt isActive')
+    .sort({ createdAt: -1 });
+};
+
+const updateUserRole = async (tenantId, targetUserId, newRole, requesterId) => {
+  if (targetUserId === requesterId) throw err('Cannot change your own role', 400);
+  if (!['student', 'teacher'].includes(newRole)) throw err('Invalid role', 400);
+  const User = require('../../auth/models/user.model');
+  const user = await User.findOneAndUpdate(
+    { _id: targetUserId, tenantId },
+    { role: newRole },
+    { new: true }
+  ).select('name email role isActive createdAt');
+  if (!user) throw err('User not found.', 404);
+  return user;
+};
+
+const deactivateUser = async (tenantId, targetUserId, requesterId) => {
+  if (targetUserId === requesterId) throw err('Cannot deactivate your own account', 400);
+  const User = require('../../auth/models/user.model');
+  const user = await User.findOneAndUpdate(
+    { _id: targetUserId, tenantId },
+    { isActive: false },
+    { new: true }
+  ).select('name email role isActive createdAt');
+  if (!user) throw err('User not found.', 404);
+  return user;
+};
+
+const getAdminCourses = async (tenantId) => {
+  const courses = await Course.find({ tenantId })
+    .populate('instructor', 'name email')
+    .sort({ createdAt: -1 });
+  return courses.map(c => {
+    const obj = c.toObject();
+    obj.studentCount = (c.enrolledStudents || []).length;
+    return obj;
+  });
+};
+
+const deleteAdminCourse = async (tenantId, courseId) => {
+  const course = await Course.findOne({ _id: courseId, tenantId });
+  if (!course) throw err('Course not found.', 404);
+  const Quiz = require('../models/quiz.model');
+  const QuizQuestion = require('../models/quizQuestion.model');
+  const QuizAttempt = require('../models/quizAttempt.model');
+  const Session = require('../models/session.model');
+  const Attendance = require('../models/attendance.model');
+  const Assignment = require('../models/assignment.model');
+  const LmsDocument = require('../models/lmsDocument.model');
+  // Get quiz IDs first to delete questions
+  const quizIds = (await Quiz.find({ courseId, tenantId }).select('_id')).map(q => q._id);
+  await Promise.all([
+    Session.deleteMany({ courseId, tenantId }),
+    Attendance.deleteMany({ courseId, tenantId }),
+    Assignment.deleteMany({ courseId, tenantId }),
+    Quiz.deleteMany({ courseId, tenantId }),
+    QuizQuestion.deleteMany({ quizId: { $in: quizIds } }),
+    QuizAttempt.deleteMany({ courseId, tenantId }),
+    LmsDocument.deleteMany({ courseId, tenantId }),
+    Certificate.deleteMany({ courseId, tenantId }),
+  ]);
+  await Course.deleteOne({ _id: courseId, tenantId });
+  return { success: true };
+};
+
+const getAdminCertificates = async (tenantId) => {
+  return Certificate.find({ tenantId })
+    .populate('studentId', 'name email')
+    .populate('courseId', 'title')
+    .sort({ issuedAt: -1 });
+};
+
+const revokeCertificate = async (tenantId, certId) => {
+  const cert = await Certificate.findOneAndUpdate(
+    { _id: certId, tenantId },
+    { isValid: false },
+    { new: true }
+  );
+  if (!cert) throw err('Certificate not found.', 404);
+  return cert;
+};
+
 module.exports = {
   getCourses, getCourseById, createCourse, updateCourse, deleteCourse, enrollStudent,
   markAttendance, getCourseAttendance,
@@ -647,4 +749,5 @@ module.exports = {
   gradeSubmission, getAssignmentSubmissions, getMySubmission,
   createQuiz, updateQuiz, addQuizQuestion, updateQuizQuestion, publishQuiz, getCourseQuizzes, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
   getCoursePerformance, getMyPerformance, checkEligibility, generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate, getCertificateById,
+  getAdminStats, getAdminUsers, updateUserRole, deactivateUser, getAdminCourses, deleteAdminCourse, getAdminCertificates, revokeCertificate,
 };

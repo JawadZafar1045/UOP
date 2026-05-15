@@ -22,9 +22,61 @@ const generateTokens = (userId, tenantId, role) => {
 };
 
 /**
- * Register a new user.
+ * Register a new admin (with college code creation).
+ */
+const registerAdmin = async (data, secretKey) => {
+  if (secretKey !== process.env.ADMIN_REGISTER_SECRET) {
+    throw Object.assign(new Error('Invalid secret key'), { statusCode: 403 });
+  }
+
+  // Validate tenantId format: 3-20 lowercase letters/numbers
+  const tenantRegex = /^[a-z0-9]{3,20}$/;
+  if (!tenantRegex.test(data.tenantId)) {
+    throw Object.assign(new Error('College code must be 3-20 lowercase letters/numbers'), { statusCode: 400 });
+  }
+
+  // Check if tenantId already has an admin
+  const exists = await User.findOne({ tenantId: data.tenantId, role: 'admin' });
+  if (exists) {
+    throw Object.assign(new Error('A college with this code already exists'), { statusCode: 409 });
+  }
+
+  const user = await User.create({
+    name: data.name,
+    email: data.email,
+    password: data.password,
+    tenantId: data.tenantId,
+    role: 'admin',
+    isActive: true
+  });
+
+  const { accessToken, refreshToken } = generateTokens(user._id.toString(), user.tenantId, user.role);
+  
+  // Store hashed refresh token
+  const salt = await bcrypt.genSalt(10);
+  user.refreshToken = await bcrypt.hash(refreshToken, salt);
+  await user.save();
+
+  return {
+    user: { _id: user._id, name: user.name, email: user.email, role: user.role, tenantId: user.tenantId },
+    accessToken,
+    refreshToken
+  };
+};
+
+/**
+ * Register a new user (student or teacher only).
  */
 const registerUser = async ({ tenantId, name, email, password, role }) => {
+  if (!['student', 'teacher'].includes(role)) {
+    throw Object.assign(new Error('Invalid role'), { statusCode: 400 });
+  }
+
+  const tenantExists = await User.findOne({ tenantId });
+  if (!tenantExists) {
+    throw Object.assign(new Error('No college found with this code. Ask your admin for the correct college code.'), { statusCode: 404 });
+  }
+
   const existing = await User.findOne({ tenantId, email });
   if (existing) throw Object.assign(new Error('Email already registered in this tenant.'), { statusCode: 409 });
 
@@ -117,4 +169,4 @@ const updateUser = async (userId, data) => {
   return user;
 };
 
-module.exports = { registerUser, loginUser, refreshAccessToken, logoutUser, getTenantUsers, generateTokens, updateUser };
+module.exports = { registerAdmin, registerUser, loginUser, refreshAccessToken, logoutUser, getTenantUsers, generateTokens, updateUser };
