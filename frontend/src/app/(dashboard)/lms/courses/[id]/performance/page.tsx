@@ -26,7 +26,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
     if (isTeacherOrAdmin) {
       // Direct API call since it's not strongly typed in store yet
       api.get(`/lms/courses/${courseId}/performance`)
-        .then(res => setClassPerformance(res.data || []))
+        .then(res => setClassPerformance(res.data?.data || []))
         .catch(console.error);
     } else {
       fetchMyPerformance(courseId);

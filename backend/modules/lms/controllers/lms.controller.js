@@ -192,6 +192,21 @@ const signFileUrl = async (req, res, next) => {
   }
 };
 
+// ── Certificate Template ───────────────────────────────────────────────────────
+const getCertificateTemplate = async (req, res, next) => {
+  try {
+    const data = await lmsService.getCertificateTemplate(req.tenantId, req.params.courseId);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const saveCertificateTemplate = async (req, res, next) => {
+  try {
+    const data = await lmsService.saveCertificateTemplate(req.tenantId, req.params.courseId, req.body, req.file, req.user._id);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
 // ── Admin Controllers ──────────────────────────────────────────────────────────
 const getAdminStats = async (req, res, next) => {
   try {
@@ -261,4 +276,5 @@ module.exports = {
   getCoursePerformance, getMyPerformance,
   generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate, getCertificateAccess, signFileUrl,
   getAdminStats, getAdminUsers, updateUserRole, deactivateUser, getAdminCourses, deleteAdminCourse, getAdminCertificates, revokeCertificate,
+  getCertificateTemplate, saveCertificateTemplate
 };

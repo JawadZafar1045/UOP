@@ -158,8 +158,9 @@ export const useLmsStore = create<LmsState>((set) => ({
   fetchCourses: async () => {
     set({ isLoading: true, error: null });
     try {
-      const data = await lmsService.getCourses();
-      set({ courses: data.courses || data, isLoading: false });
+      const res = await lmsService.getCourses();
+      const courses = res.success ? res.data : (res.courses || res);
+      set({ courses: Array.isArray(courses) ? courses : [], isLoading: false });
     } catch (error: any) {
       set({ error: error?.message || 'Failed to fetch courses', isLoading: false });
     }
@@ -168,8 +169,8 @@ export const useLmsStore = create<LmsState>((set) => ({
   fetchCourse: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await lmsService.getCourse(id);
-      set({ currentCourse: data, isLoading: false });
+      const res = await lmsService.getCourse(id);
+      set({ currentCourse: res.success ? res.data : res, isLoading: false });
     } catch (error: any) {
       set({ error: error?.message || 'Failed to fetch course', isLoading: false });
     }
@@ -188,8 +189,8 @@ export const useLmsStore = create<LmsState>((set) => ({
   fetchSessions: async (courseId) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await lmsService.getCourseSessions(courseId);
-      set({ sessions: data, isLoading: false });
+      const res = await lmsService.getCourseSessions(courseId);
+      set({ sessions: res.success ? res.data : res, isLoading: false });
     } catch (error: any) {
       set({ error: error?.message || 'Failed to fetch sessions', isLoading: false });
     }
@@ -232,8 +233,8 @@ export const useLmsStore = create<LmsState>((set) => ({
   fetchDocuments: async (courseId) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await lmsService.getCourseDocuments(courseId);
-      set({ documents: data, isLoading: false });
+      const res = await lmsService.getCourseDocuments(courseId);
+      set({ documents: res.success ? res.data : res, isLoading: false });
     } catch (error: any) {
       set({ error: error?.message || 'Failed to fetch documents', isLoading: false });
     }
@@ -253,8 +254,8 @@ export const useLmsStore = create<LmsState>((set) => ({
   fetchAssignments: async (courseId) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await lmsService.getCourseAssignments(courseId);
-      set({ assignments: data, isLoading: false });
+      const res = await lmsService.getCourseAssignments(courseId);
+      set({ assignments: res.success ? res.data : res, isLoading: false });
     } catch (error: any) {
       set({ error: error?.message || 'Failed to fetch assignments', isLoading: false });
     }
@@ -306,8 +307,8 @@ export const useLmsStore = create<LmsState>((set) => ({
   fetchQuizzes: async (courseId) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await lmsService.getCourseQuizzes(courseId);
-      set({ quizzes: data, isLoading: false });
+      const res = await lmsService.getCourseQuizzes(courseId);
+      set({ quizzes: res.success ? res.data : res, isLoading: false });
     } catch (error: any) {
       set({ error: error?.message || 'Failed to fetch quizzes', isLoading: false });
     }
@@ -327,8 +328,8 @@ export const useLmsStore = create<LmsState>((set) => ({
   fetchMyPerformance: async (courseId) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await lmsService.getMyPerformance(courseId);
-      set({ myPerformance: data, isLoading: false });
+      const res = await lmsService.getMyPerformance(courseId);
+      set({ myPerformance: res.success ? res.data : res, isLoading: false });
     } catch (error: any) {
       set({ error: error?.message || 'Failed to fetch performance', isLoading: false });
     }

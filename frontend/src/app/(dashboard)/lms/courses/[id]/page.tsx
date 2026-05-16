@@ -239,6 +239,15 @@ export default function CourseOverviewPage({
     },
   ];
 
+  if (isTeacherOrAdmin) {
+    navigationTabs.push({
+      name: "Certificate Designer",
+      icon: Edit2,
+      href: `/lms/courses/${courseId}/certificate-template`,
+      color: "from-indigo-600 to-violet-600",
+    });
+  }
+
   return (
     <div className="space-y-8">
       {/* Abstract Hero Section */}

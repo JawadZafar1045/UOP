@@ -14,6 +14,7 @@ const authRoutes = require('./modules/auth/routes/auth.routes');
 const lmsRoutes = require('./modules/lms/routes/lms.routes');
 const documentRoutes = require('./modules/documents/routes/document.routes');
 const dashboardRoutes = require('./modules/shared/routes/dashboard.routes');
+const notificationRoutes = require('./modules/notification/routes/notification.routes');
 
 const app = express();
 const server = http.createServer(app);
@@ -61,6 +62,7 @@ apiRouter.use('/auth', authRoutes);
 apiRouter.use('/lms', lmsRoutes);
 apiRouter.use('/documents', documentRoutes);
 apiRouter.use('/dashboard', dashboardRoutes);
+apiRouter.use('/notifications', notificationRoutes);
 
 // Mount API Router
 app.use('/api', apiRouter);

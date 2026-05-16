@@ -81,6 +81,10 @@ router.post('/courses/:courseId/certificates/generate/:studentId', authorize('ad
 router.post('/courses/:courseId/certificates/generate-all',        authorize('admin', 'teacher'),             ctrl.generateAllCertificates);
 router.get('/courses/:courseId/certificates',                      authorize('admin', 'teacher'),             ctrl.getCourseCertificates);
 
+// ── Certificate Template ───────────────────────────────────────────────────────
+router.get('/courses/:courseId/certificate-template',  authorize('admin', 'teacher', 'student'), ctrl.getCertificateTemplate);
+router.post('/courses/:courseId/certificate-template', authorize('admin', 'teacher'), upload.single('logo'), ctrl.saveCertificateTemplate);
+
 router.post('/files/sign', authorize('admin', 'teacher', 'student'), ctrl.signFileUrl);
 
 // ── Admin Routes ───────────────────────────────────────────────────────────────

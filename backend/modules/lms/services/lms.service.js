@@ -8,6 +8,7 @@ const Quiz = require('../models/quiz.model');
 const QuizQuestion = require('../models/quizQuestion.model');
 const QuizAttempt = require('../models/quizAttempt.model');
 const Certificate = require('../models/certificate.model');
+const CertificateTemplate = require('../models/certificateTemplate.model');
 const certificateGenerator = require('../utils/certificateGenerator');
 const { uploadFile, deleteFile } = require('../../shared/services/fileService');
 const { sendNotification } = require('../../shared/services/notification.service');
@@ -576,6 +577,65 @@ const getCoursePerformance = async (tenantId, courseId) => {
   return results.sort((a, b) => a.student.name.localeCompare(b.student.name));
 };
 
+// ── Certificate Template ───────────────────────────────────────────────────────
+
+const getCertificateTemplate = async (tenantId, courseId) => {
+  let template = await CertificateTemplate.findOne({ tenantId, courseId });
+  if (!template) {
+    // Return default design if no template exists
+    template = {
+      design: {
+        backgroundColor: '#FAFAF7',
+        accentColor: '#2563EB',
+        textColor: '#1B3A5C',
+        fontStyle: 'serif',
+        borderStyle: 'double',
+      }
+    };
+  }
+  return template;
+};
+
+const saveCertificateTemplate = async (tenantId, courseId, data, file, userId) => {
+  let template = await CertificateTemplate.findOne({ tenantId, courseId });
+  let design = template ? { ...template.design.toObject() } : {};
+  
+  // Update fields from data
+  ['backgroundColor', 'accentColor', 'textColor', 'fontStyle', 'signatoryName', 'signatoryTitle', 'instituteName', 'borderStyle'].forEach(field => {
+    if (data[field]) design[field] = data[field];
+  });
+
+  if (file) {
+    const cloudinary = require('cloudinary').v2;
+    const uploadResult = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { folder: 'certificate_logos' },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      uploadStream.end(file.buffer);
+    });
+    design.logoUrl = uploadResult.secure_url;
+    design.logoPublicId = uploadResult.public_id;
+  }
+
+  if (template) {
+    template.design = design;
+    template.updatedAt = new Date();
+    await template.save();
+  } else {
+    template = await CertificateTemplate.create({
+      tenantId,
+      courseId,
+      createdBy: userId,
+      design
+    });
+  }
+  return template;
+};
+
 const generateCertificate = async (tenantId, courseId, studentId, issuedBy) => {
   const eligibility = await checkEligibility(tenantId, courseId, studentId);
   if (!eligibility.eligible) throw err(`Student is not eligible: ${eligibility.reason}`, 400);
@@ -587,13 +647,19 @@ const generateCertificate = async (tenantId, courseId, studentId, issuedBy) => {
   const verCode = uuidv4();
   const course = await Course.findOne({ _id: courseId, tenantId });
   const User = require('../../auth/models/user.model');
-  const instructor = await User.findById(course.instructor);
   const student = await User.findById(studentId);
+  
+  const template = await getCertificateTemplate(tenantId, courseId);
+  
   const { fileUrl, publicId } = await certificateGenerator.generate({
-    studentName: student.name, courseName: course.title, teacherName: instructor ? instructor.name : 'Instructor',
+    studentName: student.name, 
+    courseName: course.title, 
     issuedDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }),
-    certificateNumber: certNum, verificationCode: verCode, attendancePercent: eligibility.attendancePercent,
-    averageScore: Math.round((eligibility.assignmentScore + eligibility.quizScore) / 2)
+    certificateNumber: certNum, 
+    verificationCode: verCode, 
+    attendancePercent: eligibility.attendancePercent,
+    averageScore: Math.round((eligibility.assignmentScore + eligibility.quizScore) / 2),
+    template
   });
   const certificate = await Certificate.create({ tenantId, courseId, studentId, certificateNumber: certNum, verificationCode: verCode, attendancePercent: eligibility.attendancePercent, averageAssignmentScore: eligibility.assignmentScore, averageQuizScore: eligibility.quizScore, fileUrl, publicId, issuedAt: new Date() });
   await sendNotification({ userId: studentId, tenantId, title: 'Certificate Issued!', message: `Congratulations! Your certificate for "${course.title}" has been issued.`, type: 'success' });
@@ -749,5 +815,6 @@ module.exports = {
   gradeSubmission, getAssignmentSubmissions, getMySubmission,
   createQuiz, updateQuiz, addQuizQuestion, updateQuizQuestion, publishQuiz, getCourseQuizzes, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
   getCoursePerformance, getMyPerformance, checkEligibility, generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate, getCertificateById,
+  getCertificateTemplate, saveCertificateTemplate,
   getAdminStats, getAdminUsers, updateUserRole, deactivateUser, getAdminCourses, deleteAdminCourse, getAdminCertificates, revokeCertificate,
 };
