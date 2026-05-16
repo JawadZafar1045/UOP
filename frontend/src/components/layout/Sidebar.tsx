@@ -6,11 +6,8 @@ import { useStore } from "../../store/useStore";
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: "📊" },
-  { name: "CRM", href: "/crm", icon: "🤝" },
   { name: "LMS", href: "/lms", icon: "🎓" },
-  { name: "Employees", href: "/employees", icon: "👥" },
   { name: "Documents", href: "/documents", icon: "📁" },
-  { name: "Communication", href: "/communication", icon: "💬" },
 ];
 
 export default function Sidebar() {
@@ -29,15 +26,7 @@ export default function Sidebar() {
       <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
         <p className="px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-3">Modules</p>
         
-        {navItems.filter(item => {
-          if (user?.role === 'student' || user?.role === 'teacher') {
-            if (item.name === 'CRM' || item.name === 'Employees') return false;
-          }
-          if (user?.role === 'hr') {
-            if (item.name === 'CRM') return false;
-          }
-          return true;
-        }).map((item) => {
+        {navItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
           const isLmsExpanded = item.name === 'LMS' && isActive;
           
@@ -74,8 +63,25 @@ export default function Sidebar() {
             </div>
           );
         })}
-      </nav>
-      
+        </nav>
+
+      {/* Admin Panel link — admin only */}
+      {user?.role === 'admin' && (
+        <div className="px-3 pb-2">
+          <Link
+            href="/lms/admin"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              pathname.startsWith('/lms/admin')
+                ? 'bg-indigo-50 text-indigo-700'
+                : 'text-slate-600 hover:bg-indigo-50/50 hover:text-indigo-700'
+            }`}
+          >
+            <span className="text-base">🛡️</span>
+            Admin Panel
+          </Link>
+        </div>
+      )}
+
       <Link href="/profile" className="p-4 border-t border-slate-100 bg-slate-50/50 hover:bg-slate-100 transition-colors group">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center text-slate-600 font-semibold text-sm group-hover:border-blue-300 group-hover:bg-blue-50 transition-colors">

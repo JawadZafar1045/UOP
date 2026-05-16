@@ -136,6 +136,11 @@ interface LmsState {
   
   fetchMyPerformance: (courseId: string) => Promise<void>;
   fetchMyCertificates: () => Promise<void>;
+  
+  updateCourse: (id: string, data: any) => Promise<void>;
+  updateSession: (id: string, data: any) => Promise<void>;
+  updateAssignment: (id: string, data: any) => Promise<void>;
+  updateQuiz: (id: string, data: any) => Promise<void>;
 }
 
 export const useLmsStore = create<LmsState>((set) => ({
@@ -153,8 +158,9 @@ export const useLmsStore = create<LmsState>((set) => ({
   fetchCourses: async () => {
     set({ isLoading: true, error: null });
     try {
-      const data = await lmsService.getCourses();
-      set({ courses: data.courses || data, isLoading: false });
+      const res = await lmsService.getCourses();
+      const courses = res.success ? res.data : (res.courses || res);
+      set({ courses: Array.isArray(courses) ? courses : [], isLoading: false });
     } catch (error: any) {
       set({ error: error?.message || 'Failed to fetch courses', isLoading: false });
     }
@@ -163,8 +169,8 @@ export const useLmsStore = create<LmsState>((set) => ({
   fetchCourse: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await lmsService.getCourse(id);
-      set({ currentCourse: data, isLoading: false });
+      const res = await lmsService.getCourse(id);
+      set({ currentCourse: res.success ? res.data : res, isLoading: false });
     } catch (error: any) {
       set({ error: error?.message || 'Failed to fetch course', isLoading: false });
     }
@@ -183,8 +189,8 @@ export const useLmsStore = create<LmsState>((set) => ({
   fetchSessions: async (courseId) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await lmsService.getCourseSessions(courseId);
-      set({ sessions: data, isLoading: false });
+      const res = await lmsService.getCourseSessions(courseId);
+      set({ sessions: res.success ? res.data : res, isLoading: false });
     } catch (error: any) {
       set({ error: error?.message || 'Failed to fetch sessions', isLoading: false });
     }
@@ -227,8 +233,8 @@ export const useLmsStore = create<LmsState>((set) => ({
   fetchDocuments: async (courseId) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await lmsService.getCourseDocuments(courseId);
-      set({ documents: data, isLoading: false });
+      const res = await lmsService.getCourseDocuments(courseId);
+      set({ documents: res.success ? res.data : res, isLoading: false });
     } catch (error: any) {
       set({ error: error?.message || 'Failed to fetch documents', isLoading: false });
     }
@@ -248,8 +254,8 @@ export const useLmsStore = create<LmsState>((set) => ({
   fetchAssignments: async (courseId) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await lmsService.getCourseAssignments(courseId);
-      set({ assignments: data, isLoading: false });
+      const res = await lmsService.getCourseAssignments(courseId);
+      set({ assignments: res.success ? res.data : res, isLoading: false });
     } catch (error: any) {
       set({ error: error?.message || 'Failed to fetch assignments', isLoading: false });
     }
@@ -301,8 +307,8 @@ export const useLmsStore = create<LmsState>((set) => ({
   fetchQuizzes: async (courseId) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await lmsService.getCourseQuizzes(courseId);
-      set({ quizzes: data, isLoading: false });
+      const res = await lmsService.getCourseQuizzes(courseId);
+      set({ quizzes: res.success ? res.data : res, isLoading: false });
     } catch (error: any) {
       set({ error: error?.message || 'Failed to fetch quizzes', isLoading: false });
     }
@@ -322,8 +328,8 @@ export const useLmsStore = create<LmsState>((set) => ({
   fetchMyPerformance: async (courseId) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await lmsService.getMyPerformance(courseId);
-      set({ myPerformance: data, isLoading: false });
+      const res = await lmsService.getMyPerformance(courseId);
+      set({ myPerformance: res.success ? res.data : res, isLoading: false });
     } catch (error: any) {
       set({ error: error?.message || 'Failed to fetch performance', isLoading: false });
     }
@@ -339,4 +345,60 @@ export const useLmsStore = create<LmsState>((set) => ({
     }
   },
 
+  updateCourse: async (id, data) => {
+    set({ isLoading: true, error: null });
+    try {
+      const updated = await lmsService.updateCourse(id, data);
+      set((state) => ({
+        courses: state.courses.map((c) => (c._id === id ? { ...c, ...updated } : c)),
+        currentCourse: state.currentCourse?._id === id ? { ...state.currentCourse, ...updated } : state.currentCourse,
+        isLoading: false,
+      }));
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to update course', isLoading: false });
+      throw error;
+    }
+  },
+
+  updateSession: async (id, data) => {
+    set({ isLoading: true, error: null });
+    try {
+      const updated = await lmsService.updateSession(id, data);
+      set((state) => ({
+        sessions: state.sessions.map((s) => (s._id === id ? { ...s, ...updated } : s)),
+        isLoading: false,
+      }));
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to update session', isLoading: false });
+      throw error;
+    }
+  },
+
+  updateAssignment: async (id, data) => {
+    set({ isLoading: true, error: null });
+    try {
+      const updated = await lmsService.updateAssignment(id, data);
+      set((state) => ({
+        assignments: state.assignments.map((a) => (a._id === id ? { ...a, ...updated } : a)),
+        isLoading: false,
+      }));
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to update assignment', isLoading: false });
+      throw error;
+    }
+  },
+
+  updateQuiz: async (id, data) => {
+    set({ isLoading: true, error: null });
+    try {
+      const updated = await lmsService.updateQuiz(id, data);
+      set((state) => ({
+        quizzes: state.quizzes.map((q) => (q._id === id ? { ...q, ...updated } : q)),
+        isLoading: false,
+      }));
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to update quiz', isLoading: false });
+      throw error;
+    }
+  },
 }));

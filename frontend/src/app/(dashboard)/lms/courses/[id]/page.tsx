@@ -44,6 +44,7 @@ import {
 import Link from "next/link";
 import * as lmsService from "@/services/lms.service";
 import { useRef } from "react";
+import { Edit2, Settings } from "lucide-react";
 
 export default function CourseOverviewPage({
   params,
@@ -58,6 +59,20 @@ export default function CourseOverviewPage({
   const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [studentEmail, setStudentEmail] = useState("");
   const [isEnrolling, setIsEnrolling] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    title: "",
+    description: "",
+    duration: "",
+    status: "draft" as "draft" | "active" | "completed",
+    completionCriteria: {
+      minAttendancePercent: 75,
+      minAssignmentScore: 60,
+      minQuizScore: 60,
+    },
+  });
+  const { updateCourse } = useLmsStore();
   const doughnutChartRef = useRef<HTMLCanvasElement>(null);
   const doughnutChartInstanceRef = useRef<ChartJS | null>(null);
 
@@ -79,6 +94,35 @@ export default function CourseOverviewPage({
     } finally {
       setIsEnrolling(false);
     }
+  };
+
+  const handleUpdateCourse = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsUpdating(true);
+    try {
+      await updateCourse(courseId, editFormData);
+      setShowEditModal(false);
+    } catch (err: any) {
+      alert(err?.message || "Failed to update course");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const openEditModal = () => {
+    if (!currentCourse) return;
+    setEditFormData({
+      title: currentCourse.title,
+      description: currentCourse.description || "",
+      duration: currentCourse.duration || "",
+      status: currentCourse.status || "draft",
+      completionCriteria: {
+        minAttendancePercent: currentCourse.completionCriteria?.minAttendancePercent || 75,
+        minAssignmentScore: currentCourse.completionCriteria?.minAssignmentScore || 60,
+        minQuizScore: currentCourse.completionCriteria?.minQuizScore || 60,
+      },
+    });
+    setShowEditModal(true);
   };
 
   useEffect(() => {
@@ -195,6 +239,15 @@ export default function CourseOverviewPage({
     },
   ];
 
+  if (isTeacherOrAdmin) {
+    navigationTabs.push({
+      name: "Certificate Designer",
+      icon: Edit2,
+      href: `/lms/courses/${courseId}/certificate-template`,
+      color: "from-indigo-600 to-violet-600",
+    });
+  }
+
   return (
     <div className="space-y-8">
       {/* Abstract Hero Section */}
@@ -304,13 +357,22 @@ export default function CourseOverviewPage({
             </div>
 
             {isTeacherOrAdmin && (
-              <button
-                onClick={() => setShowEnrollModal(true)}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
-              >
-                <UserPlus className="w-5 h-5" />
-                Enroll Student
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={openEditModal}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+                >
+                  <Settings className="w-5 h-5" />
+                  Edit Course
+                </button>
+                <button
+                  onClick={() => setShowEnrollModal(true)}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
+                >
+                  <UserPlus className="w-5 h-5" />
+                  Enroll Student
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -520,6 +582,142 @@ export default function CourseOverviewPage({
           </div>
         </div>
       </div>
+
+      {/* Edit Course Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-4 flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <Settings className="w-5 h-5 text-blue-400" />
+                <h2 className="text-xl font-bold text-white">Edit Course Settings</h2>
+              </div>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="text-white/80 hover:text-white"
+              >
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+            <form onSubmit={handleUpdateCourse} className="p-6 space-y-6 overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4 md:col-span-2">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-900 mb-2">Course Title *</label>
+                    <input
+                      required
+                      type="text"
+                      value={editFormData.title}
+                      onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+                      className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-900 mb-2">Description</label>
+                    <textarea
+                      rows={4}
+                      value={editFormData.description}
+                      onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                      className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-900 mb-2">Duration (e.g. 8 Weeks)</label>
+                  <input
+                    type="text"
+                    value={editFormData.duration}
+                    onChange={(e) => setEditFormData({ ...editFormData, duration: e.target.value })}
+                    className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-900 mb-2">Course Status</label>
+                  <select
+                    value={editFormData.status}
+                    onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value as any })}
+                    className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all bg-white"
+                  >
+                    <option value="draft">Draft</option>
+                    <option value="active">Active</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+
+                <div className="md:col-span-2 pt-4 border-t border-slate-100">
+                  <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-emerald-500" />
+                    Completion Criteria
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase">Min Attendance %</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={editFormData.completionCriteria.minAttendancePercent}
+                        onChange={(e) => setEditFormData({
+                          ...editFormData,
+                          completionCriteria: { ...editFormData.completionCriteria, minAttendancePercent: parseInt(e.target.value) }
+                        })}
+                        className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase">Min Assignment Score %</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={editFormData.completionCriteria.minAssignmentScore}
+                        onChange={(e) => setEditFormData({
+                          ...editFormData,
+                          completionCriteria: { ...editFormData.completionCriteria, minAssignmentScore: parseInt(e.target.value) }
+                        })}
+                        className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase">Min Quiz Score %</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={editFormData.completionCriteria.minQuizScore}
+                        onChange={(e) => setEditFormData({
+                          ...editFormData,
+                          completionCriteria: { ...editFormData.completionCriteria, minQuizScore: parseInt(e.target.value) }
+                        })}
+                        className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-slate-100 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-6 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdating}
+                  className="px-6 py-2.5 bg-blue-600 text-sm font-semibold text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-md"
+                >
+                  {isUpdating ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Enroll Modal */}
       {showEnrollModal && (

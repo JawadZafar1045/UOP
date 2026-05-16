@@ -194,7 +194,14 @@ export default function CourseDocumentsPage({ params }: { params: Promise<{ id: 
           <ul className="divide-y divide-slate-100">
             {displayDocs.map((doc) => (
               <li key={doc._id} className="p-4 hover:bg-slate-50 transition-colors flex items-center justify-between group">
-                <div className="flex items-center gap-4 cursor-pointer flex-1" onClick={() => window.open(doc.fileUrl, '_blank')}>
+                <div className="flex items-center gap-4 cursor-pointer flex-1" onClick={async () => {
+                  try {
+                    const { downloadCourseDocument } = await import('@/services/lms.service');
+                    await downloadCourseDocument(doc._id, doc.title || 'document');
+                  } catch (e) {
+                    alert('Failed to download document.');
+                  }
+                }}>
                   <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
                     {getFileIcon(doc.fileType || '')}
                   </div>

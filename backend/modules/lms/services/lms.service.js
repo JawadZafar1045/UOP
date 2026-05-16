@@ -8,6 +8,7 @@ const Quiz = require('../models/quiz.model');
 const QuizQuestion = require('../models/quizQuestion.model');
 const QuizAttempt = require('../models/quizAttempt.model');
 const Certificate = require('../models/certificate.model');
+const CertificateTemplate = require('../models/certificateTemplate.model');
 const certificateGenerator = require('../utils/certificateGenerator');
 const { uploadFile, deleteFile } = require('../../shared/services/fileService');
 const { sendNotification } = require('../../shared/services/notification.service');
@@ -31,6 +32,9 @@ const getCourses = async ({ tenantId, userId, role, page = 1, limit = 20 }) => {
       { tenantId: tenantId, status: 'active' }
     ];
     delete filter.tenantId;
+  } else if (role === 'teacher') {
+    // Teachers only see courses they are assigned to as instructor
+    filter.instructor = userId;
   }
 
   const [courses, total] = await Promise.all([
@@ -82,9 +86,12 @@ const createCourse = async (tenantId, data, userId) => {
   return course;
 };
 
-const updateCourse = async (tenantId, courseId, data, userId) => {
-  const course = await Course.findOneAndUpdate({ _id: courseId, tenantId }, data, { new: true, runValidators: true });
-  if (!course) throw err('Course not found.', 404);
+const updateCourse = async (tenantId, courseId, data, userId, userRole) => {
+  const filter = { _id: courseId, tenantId };
+  if (userRole !== 'admin') filter.instructor = userId;
+
+  const course = await Course.findOneAndUpdate(filter, data, { new: true, runValidators: true });
+  if (!course) throw err('Course not found or you do not have permission to edit it.', 404);
   await logActivity({ userId, tenantId, action: 'UPDATE_COURSE', entityType: 'Course', entityId: courseId });
   return course;
 };
@@ -200,6 +207,23 @@ const createSession = async (tenantId, courseId, data, files, userId) => {
   return session;
 };
 
+const updateSession = async (tenantId, sessionId, data, userId, userRole) => {
+  const session = await Session.findOne({ _id: sessionId, tenantId });
+  if (!session) throw err('Session not found.', 404);
+
+  // Check ownership: course must be owned by the instructor
+  const course = await Course.findOne({ _id: session.courseId, tenantId });
+  if (!course) throw err('Course associated with session not found.', 404);
+  
+  if (userRole !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to update this session.', 403);
+  }
+
+  const updatedSession = await Session.findByIdAndUpdate(sessionId, data, { new: true, runValidators: true });
+  await logActivity({ userId, tenantId, action: 'UPDATE_SESSION', entityType: 'Session', entityId: sessionId });
+  return updatedSession;
+};
+
 const toggleSession = async (tenantId, sessionId, userId) => {
   const session = await Session.findOne({ _id: sessionId, tenantId });
   if (!session) throw err('Session not found.', 404);
@@ -271,10 +295,10 @@ const overrideAttendance = async (tenantId, sessionId, studentId, status, reason
 
 // ── LMS Documents ──────────────────────────────────────────────────────────────
 const uploadCourseDocument = async (tenantId, courseId, file, data, userId) => {
-  const { url, publicId } = await uploadFile(file, 'lms_documents');
+  const { url, publicId, resourceType } = await uploadFile(file, 'lms_documents');
   return LmsDocument.create({
     tenantId, courseId, uploadedBy: userId,
-    fileUrl: url, publicId,
+    fileUrl: url, publicId, resourceType,
     fileSize: file.size,
     ...data,
   });
@@ -292,6 +316,47 @@ const deleteCourseDocument = async (tenantId, documentId, userId) => {
   await deleteFile(doc.publicId);
   await doc.deleteOne();
   await logActivity({ userId, tenantId, action: 'DELETE_LMS_DOCUMENT', entityType: 'LmsDocument', entityId: documentId });
+};
+
+const updateAssignment = async (tenantId, assignmentId, data, userId, userRole) => {
+  const assignment = await Assignment.findOne({ _id: assignmentId, tenantId });
+  if (!assignment) throw err('Assignment not found.', 404);
+
+  // Check ownership: course must be owned by the instructor
+  const course = await Course.findOne({ _id: assignment.courseId, tenantId });
+  if (!course) throw err('Course associated with assignment not found.', 404);
+
+  if (userRole !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to update this assignment.', 403);
+  }
+
+  const updatedAssignment = await Assignment.findByIdAndUpdate(assignmentId, data, { new: true, runValidators: true });
+  await logActivity({ userId, tenantId, action: 'UPDATE_ASSIGNMENT', entityType: 'Assignment', entityId: assignmentId });
+  return updatedAssignment;
+};
+
+const getLmsDocumentById = async (tenantId, documentId) => {
+  return LmsDocument.findOne({ _id: documentId, tenantId });
+};
+
+const getCourseDocumentAccess = async (tenantId, documentId) => {
+  const doc = await getLmsDocumentById(tenantId, documentId);
+  if (!doc) throw err('Document not found.', 404);
+  
+  const cloudinary = require('../../../config/cloudinary');
+  const isRaw = doc.fileUrl.includes('/raw/');
+
+  if (!isRaw) {
+    return { url: doc.fileUrl };
+  }
+
+  const url = cloudinary.utils.url(doc.publicId, {
+    resource_type: 'raw',
+    sign_url: true,
+    secure: true
+  });
+
+  return { url, fileName: doc.fileName || doc.title || 'document' };
 };
 
 // ── Assignment Grading ─────────────────────────────────────────────────────────
@@ -351,6 +416,44 @@ const addQuizQuestion = async (tenantId, quizId, questionData) => {
   return QuizQuestion.create({ tenantId, quizId, ...questionData });
 };
 
+const updateQuiz = async (tenantId, quizId, data, userId, userRole) => {
+  const quiz = await Quiz.findOne({ _id: quizId, tenantId });
+  if (!quiz) throw err('Quiz not found.', 404);
+
+  const course = await Course.findOne({ _id: quiz.courseId, tenantId });
+  if (!course) throw err('Course associated with quiz not found.', 404);
+
+  if (userRole !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to update this quiz.', 403);
+  }
+
+  const updatedQuiz = await Quiz.findByIdAndUpdate(quizId, data, { new: true, runValidators: true }).lean();
+  if (updatedQuiz) {
+    updatedQuiz.questionCount = await QuizQuestion.countDocuments({ quizId });
+  }
+  await logActivity({ userId, tenantId, action: 'UPDATE_QUIZ', entityType: 'Quiz', entityId: quizId });
+  return updatedQuiz;
+};
+
+const updateQuizQuestion = async (tenantId, questionId, data, userId, userRole) => {
+  const question = await QuizQuestion.findOne({ _id: questionId, tenantId });
+  if (!question) throw err('Question not found.', 404);
+
+  const quiz = await Quiz.findOne({ _id: question.quizId, tenantId });
+  if (!quiz) throw err('Quiz associated with question not found.', 404);
+
+  const course = await Course.findOne({ _id: quiz.courseId, tenantId });
+  if (!course) throw err('Course associated with quiz not found.', 404);
+
+  if (userRole !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to update this question.', 403);
+  }
+
+  const updatedQuestion = await QuizQuestion.findByIdAndUpdate(questionId, data, { new: true, runValidators: true });
+  await logActivity({ userId, tenantId, action: 'UPDATE_QUIZ_QUESTION', entityType: 'QuizQuestion', entityId: questionId });
+  return updatedQuestion;
+};
+
 const publishQuiz = async (tenantId, quizId, userId) => {
   const quiz = await Quiz.findOneAndUpdate({ _id: quizId, tenantId }, { status: 'published' }, { new: true });
   if (!quiz) throw err('Quiz not found.', 404);
@@ -401,8 +504,15 @@ const getMyQuizAttempts = async (tenantId, quizId, studentId) => QuizAttempt.fin
 
 // ── Performance + Certificates ────────────────────────────────────────────────
 const checkEligibility = async (tenantId, courseId, studentId) => {
-  const course = await Course.findOne({ _id: courseId, tenantId });
+  const course = await Course.findById(courseId);
   if (!course) throw err('Course not found.', 404);
+  
+  // If not student, ensure tenant matches. If student, they must be enrolled.
+  // This allows cross-tenant enrollment performance tracking.
+  const isEnrolled = course.enrolledStudents.map(String).includes(String(studentId));
+  if (course.tenantId !== tenantId && !isEnrolled) {
+    throw err('Access denied to this course performance.', 403);
+  }
   const { minAttendancePercent = 75, minAssignmentScore = 60, minQuizScore = 60 } = course.completionCriteria || {};
 
   const totalSessions = await Session.countDocuments({ tenantId, courseId });
@@ -417,6 +527,7 @@ const checkEligibility = async (tenantId, courseId, studentId) => {
       return (sub && sub.marks != null) ? (sub.marks / (a.maxMarks || 100)) * 100 : null;
     }).filter(s => s !== null);
     assignmentScore = scores.length === 0 ? 0 : Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+    if (isNaN(assignmentScore)) assignmentScore = 0;
   }
 
   const quizzes = await Quiz.find({ tenantId, courseId, status: 'published' });
@@ -424,10 +535,11 @@ const checkEligibility = async (tenantId, courseId, studentId) => {
   if (quizzes.length > 0) {
     const scores = await Promise.all(quizzes.map(async q => {
       const best = await QuizAttempt.findOne({ tenantId, quizId: q._id, studentId }).sort({ percentScore: -1 });
-      return best ? best.percentScore : null;
+      return (best && typeof best.percentScore === 'number' && !isNaN(best.percentScore)) ? best.percentScore : null;
     }));
     const valid = scores.filter(s => s !== null);
     quizScore = valid.length === 0 ? 0 : Math.round(valid.reduce((a, b) => a + b, 0) / valid.length);
+    if (isNaN(quizScore)) quizScore = 0;
   }
 
   const reasons = [];
@@ -435,8 +547,11 @@ const checkEligibility = async (tenantId, courseId, studentId) => {
   if (assignmentScore < minAssignmentScore) reasons.push(`Assignment avg ${assignmentScore}% < required ${minAssignmentScore}%`);
   if (quizScore < minQuizScore) reasons.push(`Quiz avg ${quizScore}% < required ${minQuizScore}%`);
 
+  const certificate = await Certificate.findOne({ courseId, studentId }).select('_id certificateNumber issuedAt');
+
   return {
     eligible: reasons.length === 0,
+    certificate: certificate || null,
     reason: reasons.join('; ') || null,
     attendancePercent: attendancePct,
     assignmentScore,
@@ -451,13 +566,74 @@ const checkEligibility = async (tenantId, courseId, studentId) => {
 const getMyPerformance = async (tenantId, courseId, studentId) => checkEligibility(tenantId, courseId, studentId);
 
 const getCoursePerformance = async (tenantId, courseId) => {
-  const course = await Course.findOne({ _id: courseId, tenantId }).populate('enrolledStudents', 'name email');
+  const course = await Course.findById(courseId).populate('enrolledStudents', 'name email');
   if (!course) throw err('Course not found.', 404);
+  
+  if (course.tenantId !== tenantId) throw err('Access denied to this course performance.', 403);
   const results = await Promise.all(course.enrolledStudents.map(async student => {
     const perf = await checkEligibility(tenantId, courseId, student._id);
     return { student: { _id: student._id, name: student.name, email: student.email }, ...perf };
   }));
   return results.sort((a, b) => a.student.name.localeCompare(b.student.name));
+};
+
+// ── Certificate Template ───────────────────────────────────────────────────────
+
+const getCertificateTemplate = async (tenantId, courseId) => {
+  let template = await CertificateTemplate.findOne({ tenantId, courseId });
+  if (!template) {
+    // Return default design if no template exists
+    template = {
+      design: {
+        backgroundColor: '#FAFAF7',
+        accentColor: '#2563EB',
+        textColor: '#1B3A5C',
+        fontStyle: 'serif',
+        borderStyle: 'double',
+      }
+    };
+  }
+  return template;
+};
+
+const saveCertificateTemplate = async (tenantId, courseId, data, file, userId) => {
+  let template = await CertificateTemplate.findOne({ tenantId, courseId });
+  let design = template ? { ...template.design.toObject() } : {};
+  
+  // Update fields from data
+  ['backgroundColor', 'accentColor', 'textColor', 'fontStyle', 'signatoryName', 'signatoryTitle', 'instituteName', 'borderStyle'].forEach(field => {
+    if (data[field]) design[field] = data[field];
+  });
+
+  if (file) {
+    const cloudinary = require('cloudinary').v2;
+    const uploadResult = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { folder: 'certificate_logos' },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      uploadStream.end(file.buffer);
+    });
+    design.logoUrl = uploadResult.secure_url;
+    design.logoPublicId = uploadResult.public_id;
+  }
+
+  if (template) {
+    template.design = design;
+    template.updatedAt = new Date();
+    await template.save();
+  } else {
+    template = await CertificateTemplate.create({
+      tenantId,
+      courseId,
+      createdBy: userId,
+      design
+    });
+  }
+  return template;
 };
 
 const generateCertificate = async (tenantId, courseId, studentId, issuedBy) => {
@@ -471,13 +647,19 @@ const generateCertificate = async (tenantId, courseId, studentId, issuedBy) => {
   const verCode = uuidv4();
   const course = await Course.findOne({ _id: courseId, tenantId });
   const User = require('../../auth/models/user.model');
-  const instructor = await User.findById(course.instructor);
   const student = await User.findById(studentId);
+  
+  const template = await getCertificateTemplate(tenantId, courseId);
+  
   const { fileUrl, publicId } = await certificateGenerator.generate({
-    studentName: student.name, courseName: course.title, teacherName: instructor ? instructor.name : 'Instructor',
+    studentName: student.name, 
+    courseName: course.title, 
     issuedDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }),
-    certificateNumber: certNum, verificationCode: verCode, attendancePercent: eligibility.attendancePercent,
-    averageScore: Math.round((eligibility.assignmentScore + eligibility.quizScore) / 2)
+    certificateNumber: certNum, 
+    verificationCode: verCode, 
+    attendancePercent: eligibility.attendancePercent,
+    averageScore: Math.round((eligibility.assignmentScore + eligibility.quizScore) / 2),
+    template
   });
   const certificate = await Certificate.create({ tenantId, courseId, studentId, certificateNumber: certNum, verificationCode: verCode, attendancePercent: eligibility.attendancePercent, averageAssignmentScore: eligibility.assignmentScore, averageQuizScore: eligibility.quizScore, fileUrl, publicId, issuedAt: new Date() });
   await sendNotification({ userId: studentId, tenantId, title: 'Certificate Issued!', message: `Congratulations! Your certificate for "${course.title}" has been issued.`, type: 'success' });
@@ -501,7 +683,13 @@ const generateAllCertificates = async (tenantId, courseId, issuedBy) => {
   return { generated, skipped, errors };
 };
 
-const getCourseCertificates = async (tenantId, courseId) => Certificate.find({ tenantId, courseId }).populate('studentId', 'name email');
+const getCourseCertificates = async (tenantId, courseId) => {
+  const course = await Course.findById(courseId);
+  if (!course) throw err('Course not found.', 404);
+  if (course.tenantId !== tenantId) throw err('Access denied.', 403);
+  
+  return Certificate.find({ courseId }).populate('studentId', 'name email');
+};
 const getMyCertificates = async (tenantId, studentId) => Certificate.find({ tenantId, studentId }).populate('courseId', 'title instructor');
 const verifyCertificate = async (code) => {
   const cert = await Certificate.findOne({ verificationCode: code }).populate('studentId', 'name').populate('courseId', 'title instructor');
@@ -509,14 +697,124 @@ const verifyCertificate = async (code) => {
   return cert;
 };
 
+const getCertificateById = async (tenantId, id) => {
+  const cert = await Certificate.findOne({ _id: id, tenantId });
+  if (!cert) throw err('Certificate not found.', 404);
+  return cert;
+};
+
+// ── Admin Services ─────────────────────────────────────────────────────────────
+
+const getAdminStats = async (tenantId) => {
+  const User = require('../../auth/models/user.model');
+  const Session = require('../models/session.model');
+  const [totalCourses, activeCourses, totalStudents, totalTeachers, totalCertificates, totalSessions] = await Promise.all([
+    Course.countDocuments({ tenantId }),
+    Course.countDocuments({ tenantId, status: 'active' }),
+    User.countDocuments({ tenantId, role: 'student', isActive: true }),
+    User.countDocuments({ tenantId, role: 'teacher', isActive: true }),
+    Certificate.countDocuments({ tenantId }),
+    Session.countDocuments({ tenantId }),
+  ]);
+  return { totalCourses, activeCourses, totalStudents, totalTeachers, totalCertificates, totalSessions };
+};
+
+const getAdminUsers = async (tenantId) => {
+  const User = require('../../auth/models/user.model');
+  return User.find({ tenantId, role: { $ne: 'admin' } })
+    .select('name email role createdAt isActive')
+    .sort({ createdAt: -1 });
+};
+
+const updateUserRole = async (tenantId, targetUserId, newRole, requesterId) => {
+  if (targetUserId === requesterId) throw err('Cannot change your own role', 400);
+  if (!['student', 'teacher'].includes(newRole)) throw err('Invalid role', 400);
+  const User = require('../../auth/models/user.model');
+  const user = await User.findOneAndUpdate(
+    { _id: targetUserId, tenantId },
+    { role: newRole },
+    { new: true }
+  ).select('name email role isActive createdAt');
+  if (!user) throw err('User not found.', 404);
+  return user;
+};
+
+const deactivateUser = async (tenantId, targetUserId, requesterId) => {
+  if (targetUserId === requesterId) throw err('Cannot deactivate your own account', 400);
+  const User = require('../../auth/models/user.model');
+  const user = await User.findOneAndUpdate(
+    { _id: targetUserId, tenantId },
+    { isActive: false },
+    { new: true }
+  ).select('name email role isActive createdAt');
+  if (!user) throw err('User not found.', 404);
+  return user;
+};
+
+const getAdminCourses = async (tenantId) => {
+  const courses = await Course.find({ tenantId })
+    .populate('instructor', 'name email')
+    .sort({ createdAt: -1 });
+  return courses.map(c => {
+    const obj = c.toObject();
+    obj.studentCount = (c.enrolledStudents || []).length;
+    return obj;
+  });
+};
+
+const deleteAdminCourse = async (tenantId, courseId) => {
+  const course = await Course.findOne({ _id: courseId, tenantId });
+  if (!course) throw err('Course not found.', 404);
+  const Quiz = require('../models/quiz.model');
+  const QuizQuestion = require('../models/quizQuestion.model');
+  const QuizAttempt = require('../models/quizAttempt.model');
+  const Session = require('../models/session.model');
+  const Attendance = require('../models/attendance.model');
+  const Assignment = require('../models/assignment.model');
+  const LmsDocument = require('../models/lmsDocument.model');
+  // Get quiz IDs first to delete questions
+  const quizIds = (await Quiz.find({ courseId, tenantId }).select('_id')).map(q => q._id);
+  await Promise.all([
+    Session.deleteMany({ courseId, tenantId }),
+    Attendance.deleteMany({ courseId, tenantId }),
+    Assignment.deleteMany({ courseId, tenantId }),
+    Quiz.deleteMany({ courseId, tenantId }),
+    QuizQuestion.deleteMany({ quizId: { $in: quizIds } }),
+    QuizAttempt.deleteMany({ courseId, tenantId }),
+    LmsDocument.deleteMany({ courseId, tenantId }),
+    Certificate.deleteMany({ courseId, tenantId }),
+  ]);
+  await Course.deleteOne({ _id: courseId, tenantId });
+  return { success: true };
+};
+
+const getAdminCertificates = async (tenantId) => {
+  return Certificate.find({ tenantId })
+    .populate('studentId', 'name email')
+    .populate('courseId', 'title')
+    .sort({ issuedAt: -1 });
+};
+
+const revokeCertificate = async (tenantId, certId) => {
+  const cert = await Certificate.findOneAndUpdate(
+    { _id: certId, tenantId },
+    { isValid: false },
+    { new: true }
+  );
+  if (!cert) throw err('Certificate not found.', 404);
+  return cert;
+};
+
 module.exports = {
   getCourses, getCourseById, createCourse, updateCourse, deleteCourse, enrollStudent,
   markAttendance, getCourseAttendance,
-  createAssignment, submitAssignment, getCourseAssignments,
-  createSession, toggleSession, getCourseSessions, getSessionAttendance, overrideAttendance,
+  createAssignment, updateAssignment, submitAssignment, getCourseAssignments,
+  createSession, updateSession, toggleSession, getCourseSessions, getSessionAttendance, overrideAttendance,
   markSelfAttendance, getMyAttendanceSummary,
-  uploadCourseDocument, getCourseDocuments, deleteCourseDocument,
+  uploadCourseDocument, getCourseDocuments, deleteCourseDocument, getLmsDocumentById, getCourseDocumentAccess,
   gradeSubmission, getAssignmentSubmissions, getMySubmission,
-  createQuiz, addQuizQuestion, publishQuiz, getCourseQuizzes, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
-  getCoursePerformance, getMyPerformance, checkEligibility, generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate,
+  createQuiz, updateQuiz, addQuizQuestion, updateQuizQuestion, publishQuiz, getCourseQuizzes, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
+  getCoursePerformance, getMyPerformance, checkEligibility, generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate, getCertificateById,
+  getCertificateTemplate, saveCertificateTemplate,
+  getAdminStats, getAdminUsers, updateUserRole, deactivateUser, getAdminCourses, deleteAdminCourse, getAdminCertificates, revokeCertificate,
 };

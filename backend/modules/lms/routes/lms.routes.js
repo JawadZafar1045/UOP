@@ -12,15 +12,20 @@ router.get('/certificates/verify/:code', ctrl.verifyCertificate);
 // All routes below require a valid JWT + tenantId
 router.use(protect, tenantIsolation);
 
+// ── Certificates ───────────────────────────────────────────────────────────────
+// Move these up or prioritize correctly
+router.get('/certificates/mine',                                   authorize('student'),                      ctrl.getMyCertificates);
+router.get('/certificates/:id/access',                             authorize('admin', 'teacher', 'student'),  ctrl.getCertificateAccess);
+
 // ── Courses ────────────────────────────────────────────────────────────────────
-router.get('/courses',        authorize('admin', 'teacher', 'student', 'hr'), ctrl.getCourses);
-router.get('/courses/:id',    authorize('admin', 'teacher', 'student', 'hr'), ctrl.getCourse);
+router.get('/courses',        authorize('admin', 'teacher', 'student'), ctrl.getCourses);
+router.get('/courses/:id',    authorize('admin', 'teacher', 'student'), ctrl.getCourse);
 router.post('/courses',       authorize('admin', 'teacher'),                  ctrl.createCourse);
-router.put('/courses/:id',    authorize('admin', 'teacher'),                  ctrl.updateCourse);
+router.patch('/courses/:id',    authorize('admin', 'teacher'),                  ctrl.updateCourse);
 router.delete('/courses/:id', authorize('admin'),                             ctrl.deleteCourse);
 
 // ── Enrollment ─────────────────────────────────────────────────────────────────
-router.post('/courses/:id/enroll', authorize('admin', 'teacher', 'hr'), ctrl.enrollStudent);
+router.post('/courses/:id/enroll', authorize('admin', 'teacher'), ctrl.enrollStudent);
 
 // ── Legacy Attendance ──────────────────────────────────────────────────────────
 router.post('/attendance',              authorize('admin', 'teacher'),                  ctrl.markAttendance);
@@ -29,11 +34,13 @@ router.get('/courses/:id/attendance',   authorize('admin', 'teacher'),          
 // ── Assignments ────────────────────────────────────────────────────────────────
 router.post('/assignments',             authorize('admin', 'teacher'), upload.array('materials', 5), ctrl.createAssignment);
 router.get('/courses/:courseId/assignments', authorize('admin', 'teacher', 'student'), ctrl.getCourseAssignments);
+router.patch('/assignments/:id',         authorize('admin', 'teacher'), ctrl.updateAssignment);
 router.post('/assignments/:id/submit',  authorize('student'), upload.single('file'), ctrl.submitAssignment);
 
 // ── Sessions ───────────────────────────────────────────────────────────────────
 router.post('/courses/:courseId/sessions',                  authorize('admin', 'teacher'), upload.array('materials', 5),  ctrl.createSession);
 router.get('/courses/:courseId/sessions',                   authorize('admin', 'teacher', 'student'),          ctrl.getCourseSessions);
+router.patch('/sessions/:id',                               authorize('admin', 'teacher'),                     ctrl.updateSession);
 router.patch('/sessions/:id/toggle',                        authorize('admin', 'teacher'),                     ctrl.toggleSession);
 router.get('/sessions/:id/attendance',                      authorize('admin', 'teacher'),                     ctrl.getSessionAttendance);
 router.patch('/sessions/:id/attendance/:studentId',         authorize('admin', 'teacher'),                     ctrl.overrideAttendance);
@@ -46,6 +53,7 @@ router.get('/courses/:courseId/attendance/mine',            authorize('student')
 router.post('/courses/:courseId/documents',   authorize('admin', 'teacher'), upload.single('file'),           ctrl.uploadCourseDocument);
 router.get('/courses/:courseId/documents',    authorize('admin', 'teacher', 'student'),                       ctrl.getCourseDocuments);
 router.delete('/documents/:id',               authorize('admin', 'teacher'),                                  ctrl.deleteCourseDocument);
+router.get('/documents/:id/access',           authorize('admin', 'teacher', 'student'),                       ctrl.getCourseDocumentAccess);
 
 // ── Assignment Grading ─────────────────────────────────────────────────────────
 router.patch('/submissions/:assignmentId/grade/:studentId', authorize('admin', 'teacher'),                    ctrl.gradeSubmission);
@@ -55,7 +63,9 @@ router.get('/assignments/:id/submissions/mine',             authorize('student')
 // ── Quizzes ────────────────────────────────────────────────────────────────────
 router.post('/courses/:courseId/quizzes',     authorize('admin', 'teacher'),                                  ctrl.createQuiz);
 router.get('/courses/:courseId/quizzes',      authorize('admin', 'teacher', 'student'),                       ctrl.getCourseQuizzes);
+router.patch('/quizzes/:id',                  authorize('admin', 'teacher'),                                  ctrl.updateQuiz);
 router.post('/quizzes/:id/questions',         authorize('admin', 'teacher'),                                  ctrl.addQuizQuestion);
+router.patch('/questions/:id',                authorize('admin', 'teacher'),                                  ctrl.updateQuizQuestion);
 router.patch('/quizzes/:id/publish',          authorize('admin', 'teacher'),                                  ctrl.publishQuiz);
 router.post('/quizzes/:id/start',             authorize('student'),                                           ctrl.startQuizAttempt);
 router.post('/quizzes/:id/submit',            authorize('student'),                                           ctrl.submitQuizAttempt);
@@ -70,6 +80,21 @@ router.get('/courses/:courseId/performance/mine',  authorize('student'),        
 router.post('/courses/:courseId/certificates/generate/:studentId', authorize('admin', 'teacher'),             ctrl.generateCertificate);
 router.post('/courses/:courseId/certificates/generate-all',        authorize('admin', 'teacher'),             ctrl.generateAllCertificates);
 router.get('/courses/:courseId/certificates',                      authorize('admin', 'teacher'),             ctrl.getCourseCertificates);
-router.get('/certificates/mine',                                   authorize('student'),                      ctrl.getMyCertificates);
+
+// ── Certificate Template ───────────────────────────────────────────────────────
+router.get('/courses/:courseId/certificate-template',  authorize('admin', 'teacher', 'student'), ctrl.getCertificateTemplate);
+router.post('/courses/:courseId/certificate-template', authorize('admin', 'teacher'), upload.single('logo'), ctrl.saveCertificateTemplate);
+
+router.post('/files/sign', authorize('admin', 'teacher', 'student'), ctrl.signFileUrl);
+
+// ── Admin Routes ───────────────────────────────────────────────────────────────
+router.get('/admin/stats',                          authorize('admin'), ctrl.getAdminStats);
+router.get('/admin/users',                          authorize('admin'), ctrl.getAdminUsers);
+router.patch('/admin/users/:id/role',               authorize('admin'), ctrl.updateUserRole);
+router.delete('/admin/users/:id',                   authorize('admin'), ctrl.deactivateUser);
+router.get('/admin/courses',                        authorize('admin'), ctrl.getAdminCourses);
+router.delete('/admin/courses/:id',                 authorize('admin'), ctrl.deleteAdminCourse);
+router.get('/admin/certificates',                   authorize('admin'), ctrl.getAdminCertificates);
+router.patch('/admin/certificates/:id/revoke',      authorize('admin'), ctrl.revokeCertificate);
 
 module.exports = router;

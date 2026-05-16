@@ -7,7 +7,7 @@ const documentSchema = new mongoose.Schema(
     tenantId:    { type: String, required: true, index: true },
     title:       { type: String, required: [true, 'Document title is required'], trim: true },
     description: { type: String },
-    category:    { type: String, enum: ['contract', 'policy', 'invoice', 'report', 'other'], default: 'other' },
+    category:    { type: String, enum: ['contract', 'policy', 'invoice', 'report', 'material', 'assignment', 'other'], default: 'other' },
 
     // ── File Info ────────────────────────────────────────────────────────────────
     fileUrl:    { type: String, required: true },
@@ -15,15 +15,19 @@ const documentSchema = new mongoose.Schema(
     fileSize:   { type: Number },                  // bytes
     mimeType:   { type: String },
     fileName:   { type: String },
+    resourceType: { type: String, enum: ['image', 'raw', 'video', 'auto'], default: 'raw' },
 
     // ── Ownership ────────────────────────────────────────────────────────────────
     uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 
-    // ── Linked Entity (optional) ─────────────────────────────────────────────────
-    relatedEntity: {
-      entityType: { type: String }, // 'Lead', 'Student', 'Employee'
-      entityId:   { type: mongoose.Schema.Types.ObjectId },
+    // ── LMS Scopes ──────────────────────────────────────────────────────────────
+    scope: { 
+      type: String, 
+      enum: ['institute', 'course', 'student_submission'], 
+      default: 'institute' 
     },
+    courseId:  { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
+    studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 
     // ── Lifecycle ────────────────────────────────────────────────────────────────
     lifecycle: {

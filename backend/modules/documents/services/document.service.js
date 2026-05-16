@@ -2,12 +2,40 @@ const Document = require('../models/document.model');
 const { uploadFile, deleteFile } = require('../../shared/services/fileService');
 const { logActivity } = require('../../shared/services/activityLogger.service');
 
-const getDocuments = async ({ tenantId, category, page = 1, limit = 20 }) => {
+const Course = require('../../lms/models/course.model');
+
+const getDocuments = async ({ tenantId, role, userId, category, scope, courseId, studentId, page = 1, limit = 20 }) => {
   const query = { tenantId };
   if (category) query.category = category;
+  
+  if (role === 'student') {
+    const courses = await Course.find({ tenantId, enrolledStudents: userId }).select('_id');
+    const courseIds = courses.map(c => c._id);
+    
+    query.$or = [
+      { scope: 'institute' },
+      { scope: 'course', courseId: { $in: courseIds } },
+      { scope: 'student_submission', studentId: userId }
+    ];
+  } else if (role === 'teacher') {
+    const courses = await Course.find({ tenantId, instructor: userId }).select('_id');
+    const courseIds = courses.map(c => c._id);
+    
+    query.$or = [
+      { scope: 'institute' },
+      { scope: 'course', courseId: { $in: courseIds } },
+      { uploadedBy: userId }
+    ];
+    if (scope) query.scope = scope; // If specific scope requested, further filter it
+  } else {
+    if (scope) query.scope = scope;
+    if (courseId) query.courseId = courseId;
+    if (studentId) query.studentId = studentId;
+  }
+  
   const skip = (page - 1) * limit;
   const [documents, total] = await Promise.all([
-    Document.find(query).populate('uploadedBy', 'name email').sort({ createdAt: -1 }).skip(skip).limit(limit),
+    Document.find(query).populate('uploadedBy', 'name email').populate('courseId', 'title').populate('studentId', 'name email').sort({ createdAt: -1 }).skip(skip).limit(limit),
     Document.countDocuments(query),
   ]);
   return { documents, total, page, pages: Math.ceil(total / limit) };
@@ -21,7 +49,7 @@ const getDocumentById = async (tenantId, docId) => {
 
 const uploadDocument = async (tenantId, file, metadata, userId) => {
   // Upload to Cloudinary
-  const { url, publicId } = await uploadFile(file, `documents/${tenantId}`);
+  const { url, publicId, resourceType } = await uploadFile(file, `documents/${tenantId}`);
 
   const doc = await Document.create({
     tenantId,
@@ -30,31 +58,19 @@ const uploadDocument = async (tenantId, file, metadata, userId) => {
     category: metadata.category || 'other',
     fileUrl: url,
     publicId: publicId,
+    resourceType: resourceType,
     fileSize: file.size,
     mimeType: file.mimetype,
     fileName: file.originalname,
     uploadedBy: userId,
-    relatedEntity: metadata.relatedEntity,
+    scope: metadata.scope || 'institute',
+    courseId: metadata.courseId || null,
+    studentId: metadata.studentId || null,
     lifecycle: 'Created',
     activities: [{ event: 'Created', performedBy: userId }],
   });
 
   await logActivity({ userId, tenantId, action: 'UPLOAD_DOCUMENT', entityType: 'Document', entityId: doc._id });
-
-  // Example Use Case: Send email when Document is uploaded
-  // Since we don't know the exact recipient, we can mock sending it to the uploader 
-  // or a system admin to notify that a document was added.
-  const User = require('../../auth/models/user.model');
-  const uploader = await User.findById(userId);
-  if (uploader && uploader.email) {
-    const { sendEmail } = require('../../communication/services/communication.service');
-    sendEmail(tenantId, {
-      to: uploader.email,
-      subject: `Document Uploaded: ${doc.title}`,
-      text: `Your document '${doc.title}' has been successfully uploaded to Cloudinary.\nCategory: ${doc.category}\nLink: ${doc.fileUrl}`,
-      relatedEntity: { entityType: 'Document', entityId: doc._id }
-    }, userId).catch(err => console.error('[Docs] Failed sending doc upload email:', err));
-  }
 
   return doc;
 };
@@ -72,10 +88,24 @@ const updateLifecycle = async (tenantId, docId, event, userId, note) => {
 
 const getDocumentPresignedUrl = async (tenantId, docId, userId) => {
   const doc = await getDocumentById(tenantId, docId);
-  // Cloudinary URLs are generally public or signed at generation. We just return the saved URL.
   // Track "Viewed" lifecycle event
   await updateLifecycle(tenantId, docId, 'Viewed', userId, 'Document accessed');
-  return { url: doc.fileUrl };
+
+  const cloudinary = require('../../../config/cloudinary');
+  const isRaw = doc.fileUrl.includes('/raw/');
+
+  if (!isRaw) {
+    return { url: doc.fileUrl };
+  }
+
+  // Generate a signed URL to allow access to raw files blocked by default strict delivery settings
+  const url = cloudinary.utils.url(doc.publicId, {
+    resource_type: 'raw',
+    sign_url: true,
+    secure: true
+  });
+
+  return { url, fileName: doc.fileName || doc.name || 'document' };
 };
 
 const deleteDocument = async (tenantId, docId, userId) => {

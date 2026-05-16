@@ -27,6 +27,22 @@ const validate = (req, res) => {
 
 // ── Controllers ────────────────────────────────────────────────────────────────
 
+/** POST /api/auth/register/admin */
+const registerAdmin = async (req, res, next) => {
+  try {
+    const { name, email, password, tenantId, secretKey } = req.body;
+    const result = await authService.registerAdmin({ name, email, password, tenantId }, secretKey);
+    
+    res.status(201).json({ 
+      success: true, 
+      message: 'Admin registered successfully.', 
+      data: result 
+    });
+  } catch (err) { 
+    next(err); 
+  }
+};
+
 /** POST /api/auth/register */
 const register = async (req, res, next) => {
   try {
@@ -116,4 +132,4 @@ const updateProfile = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { register, registerValidation, login, loginValidation, refresh, logout, getMe, getUsers, updateProfile };
+module.exports = { registerAdmin, register, registerValidation, login, loginValidation, refresh, logout, getMe, getUsers, updateProfile };

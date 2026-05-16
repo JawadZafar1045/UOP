@@ -10,14 +10,11 @@ const connectDB = require('./config/database');
 const { initializeSocket } = require('./config/socket');
 const errorHandler = require('./modules/shared/middlewares/errorHandler');
 
-// ── Route Imports ──────────────────────────────────────────────────────────────
 const authRoutes = require('./modules/auth/routes/auth.routes');
-const crmRoutes = require('./modules/crm/routes/crm.routes');
 const lmsRoutes = require('./modules/lms/routes/lms.routes');
-const employeeRoutes = require('./modules/employee/routes/employee.routes');
 const documentRoutes = require('./modules/documents/routes/document.routes');
-const communicationRoutes = require('./modules/communication/routes/communication.routes');
 const dashboardRoutes = require('./modules/shared/routes/dashboard.routes');
+const notificationRoutes = require('./modules/notification/routes/notification.routes');
 
 const app = express();
 const server = http.createServer(app);
@@ -62,12 +59,10 @@ apiRouter.get('/health', (req, res) => {
 
 // Module Routes
 apiRouter.use('/auth', authRoutes);
-apiRouter.use('/crm', crmRoutes);
 apiRouter.use('/lms', lmsRoutes);
-apiRouter.use('/employees', employeeRoutes);
 apiRouter.use('/documents', documentRoutes);
-apiRouter.use('/communication', communicationRoutes);
 apiRouter.use('/dashboard', dashboardRoutes);
+apiRouter.use('/notifications', notificationRoutes);
 
 // Mount API Router
 app.use('/api', apiRouter);

@@ -3,9 +3,10 @@
 import { useEffect, useState, use } from 'react';
 import { useLmsStore } from '@/store/lmsStore';
 import { useStore } from '@/store/useStore';
-import { Award, CheckCircle2, XCircle, FileBadge, Clock, ChevronLeft } from 'lucide-react';
+import { Award, CheckCircle2, XCircle, FileBadge, Clock, ChevronLeft, Download } from 'lucide-react';
 import Link from 'next/link';
 import api from '@/services/api';
+import { downloadCertificate } from '@/services/lms.service';
 
 export default function PerformancePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -25,7 +26,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
     if (isTeacherOrAdmin) {
       // Direct API call since it's not strongly typed in store yet
       api.get(`/lms/courses/${courseId}/performance`)
-        .then(res => setClassPerformance(res.data || []))
+        .then(res => setClassPerformance(res.data?.data || []))
         .catch(console.error);
     } else {
       fetchMyPerformance(courseId);
@@ -115,7 +116,11 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                   <td className="px-6 py-4 text-slate-600">{perf.assignmentScore}%</td>
                   <td className="px-6 py-4 text-slate-600">{perf.quizScore}%</td>
                   <td className="px-6 py-4">
-                    {perf.eligible ? (
+                    {perf.certificate ? (
+                      <span className="inline-flex items-center gap-1 text-indigo-600 bg-indigo-50 px-2 py-1 rounded text-xs font-medium border border-indigo-100">
+                        <Award className="w-3.5 h-3.5" /> Issued
+                      </span>
+                    ) : perf.eligible ? (
                       <span className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-50 px-2 py-1 rounded text-xs font-medium border border-emerald-100">
                         <CheckCircle2 className="w-3.5 h-3.5" /> Eligible
                       </span>
@@ -133,14 +138,23 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                       >
                         Details
                       </button>
-                      {perf.eligible && (
+                      {perf.certificate ? (
                         <button 
-                          onClick={() => handleGenerateCertificate(perf.student._id)}
-                          disabled={isGenerating}
-                          className="text-indigo-600 hover:text-indigo-800 font-medium text-xs border border-indigo-200 px-3 py-1.5 rounded bg-indigo-50 hover:bg-indigo-100 transition-colors disabled:opacity-50"
+                          onClick={() => downloadCertificate(perf.certificate._id, `Certificate_${perf.certificate.certificateNumber}.pdf`)}
+                          className="text-emerald-600 hover:text-emerald-800 font-medium text-xs border border-emerald-200 px-3 py-1.5 rounded bg-emerald-50 hover:bg-emerald-100 transition-colors"
                         >
-                          Generate Cert
+                          Download
                         </button>
+                      ) : (
+                        perf.eligible && (
+                          <button 
+                            onClick={() => handleGenerateCertificate(perf.student._id)}
+                            disabled={isGenerating}
+                            className="text-indigo-600 hover:text-indigo-800 font-medium text-xs border border-indigo-200 px-3 py-1.5 rounded bg-indigo-50 hover:bg-indigo-100 transition-colors disabled:opacity-50"
+                          >
+                            Generate Cert
+                          </button>
+                        )
                       )}
                     </div>
                   </td>
@@ -206,11 +220,26 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
               <h2 className={`text-2xl font-bold mb-2 ${myPerformance.eligible ? 'text-emerald-900' : 'text-amber-900'}`}>
                 {myPerformance.eligible ? 'You are eligible! 🎉' : 'Keep going!'}
               </h2>
-              <p className={myPerformance.eligible ? 'text-emerald-700' : 'text-amber-700'}>
-                {myPerformance.eligible 
-                  ? "You have met all the criteria to earn your certificate for this course. If it hasn't been issued yet, your instructor will generate it soon."
-                  : `You are not eligible yet. ${myPerformance.reason}`}
-              </p>
+                {myPerformance.certificate ? (
+                  <div className="space-y-4 w-full">
+                    <p className="text-emerald-700">
+                      Congratulations! Your certificate has been issued. You can download it below.
+                    </p>
+                    <button 
+                      onClick={() => downloadCertificate(myPerformance.certificate._id, `Certificate_${myPerformance.certificate.certificateNumber}.pdf`)}
+                      className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 transition-all active:scale-[0.98]"
+                    >
+                      <Download className="w-4 h-4" />
+                      Download Certificate
+                    </button>
+                  </div>
+                ) : (
+                  <p className={myPerformance.eligible ? 'text-emerald-700' : 'text-amber-700'}>
+                    {myPerformance.eligible 
+                      ? "You have met all the criteria to earn your certificate for this course. If it hasn't been issued yet, your instructor will generate it soon."
+                      : `You are not eligible yet. ${myPerformance.reason}`}
+                  </p>
+                )}
             </div>
           </div>
         )
