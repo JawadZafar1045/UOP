@@ -8,6 +8,7 @@ const ctrl   = require('../controllers/lms.controller');
 
 // ── Public certificate verification (no auth) ──────────────────────────────────
 router.get('/certificates/verify/:code', ctrl.verifyCertificate);
+router.get('/certificates/verify/:code/pdf', ctrl.getCertificatePdfPublic);
 
 // All routes below require a valid JWT + tenantId
 router.use(protect, tenantIsolation);
@@ -35,6 +36,7 @@ router.get('/courses/:id/attendance',   authorize('admin', 'teacher'),          
 router.post('/assignments',             authorize('admin', 'teacher'), upload.array('materials', 5), ctrl.createAssignment);
 router.get('/courses/:courseId/assignments', authorize('admin', 'teacher', 'student'), ctrl.getCourseAssignments);
 router.patch('/assignments/:id',         authorize('admin', 'teacher'), ctrl.updateAssignment);
+router.delete('/assignments/:id',        authorize('admin', 'teacher'), ctrl.deleteAssignment);
 router.post('/assignments/:id/submit',  authorize('student'), upload.single('file'), ctrl.submitAssignment);
 
 // ── Sessions ───────────────────────────────────────────────────────────────────

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useStore } from "../../store/useStore";
 
 const navItems = [
@@ -12,7 +12,14 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const user = useStore(state => state.user);
+  const logout = useStore(state => state.logout);
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
 
   return (
     <aside className="w-[260px] bg-white border-r border-slate-200 h-screen fixed top-0 left-0 flex flex-col shadow-sm z-20">
@@ -82,17 +89,30 @@ export default function Sidebar() {
         </div>
       )}
 
-      <Link href="/profile" className="p-4 border-t border-slate-100 bg-slate-50/50 hover:bg-slate-100 transition-colors group">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center text-slate-600 font-semibold text-sm group-hover:border-blue-300 group-hover:bg-blue-50 transition-colors">
-            {user?.name?.charAt(0) || 'U'}
-          </div>
-          <div className="flex-1 overflow-hidden">
+      <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
+        <Link href="/profile" className="flex items-center gap-3 group flex-1 min-w-0">
+          {user?.avatar ? (
+            <img src={user.avatar} alt="avatar" className="w-9 h-9 rounded-full object-cover border border-slate-300 group-hover:border-blue-300 transition-colors" />
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center text-slate-600 font-semibold text-sm group-hover:border-blue-300 group-hover:bg-blue-50 transition-colors">
+              {user?.name?.charAt(0) || 'U'}
+            </div>
+          )}
+          <div className="overflow-hidden">
             <p className="text-sm font-medium text-slate-900 truncate group-hover:text-blue-700 transition-colors">{user?.name || 'User'}</p>
             <p className="text-xs text-slate-500 truncate">{user?.role || 'Role'}</p>
           </div>
-        </div>
-      </Link>
+        </Link>
+        <button 
+          onClick={handleLogout}
+          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors ml-2 flex-shrink-0"
+          title="Sign out"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        </button>
+      </div>
     </aside>
   );
 }

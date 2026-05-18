@@ -152,6 +152,11 @@ export const updateAssignment = async (id: string, data: any) => {
   return res.data?.data ?? res.data;
 };
 
+export const deleteAssignment = async (id: string) => {
+  const res = await api.delete(`/lms/assignments/${id}`);
+  return res;
+};
+
 export const submitAssignment = async (assignmentId: string, formData: FormData) => {
   const res = await api.post(`/lms/assignments/${assignmentId}/submit`, formData, {
     headers: {

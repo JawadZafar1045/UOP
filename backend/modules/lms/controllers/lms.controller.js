@@ -25,20 +25,43 @@ const getMimeType = (filename) => {
   return MIME_MAP[ext] || 'application/octet-stream';
 };
 
+const extractCloudinaryPublicId = (fileUrl) => {
+  const parts = fileUrl.split('/upload/');
+  if (parts.length < 2) return null;
+  const segments = parts[1].split('/');
+  const filteredSegments = segments.filter(seg => {
+    if (seg.startsWith('s--')) return false;
+    if (/^v\d+$/.test(seg)) return false;
+    return true;
+  });
+  if (filteredSegments.length > 0) {
+    const lastIdx = filteredSegments.length - 1;
+    filteredSegments[lastIdx] = filteredSegments[lastIdx].split('?')[0];
+  }
+  return filteredSegments.join('/');
+};
+
 const proxyDownload = (fileUrl, fileName, res, next) => {
   // Determine resource type from URL or assume raw
   let resourceType = 'raw';
   if (fileUrl.includes('/image/')) resourceType = 'image';
   if (fileUrl.includes('/video/')) resourceType = 'video';
   
-  const parts = fileUrl.split('/upload/');
-  if (parts.length >= 2) {
-    let p = parts[1];
-    if (p.startsWith('v')) p = p.substring(p.indexOf('/') + 1);
+  const parsedPublicId = extractCloudinaryPublicId(fileUrl);
+  if (parsedPublicId) {
+    // Cloudinary indexes 'image' and 'video' resources without their file extensions.
+    // 'raw' resources, however, are indexed with their extensions.
+    let publicId = parsedPublicId;
+    if (resourceType !== 'raw') {
+      const lastDot = publicId.lastIndexOf('.');
+      if (lastDot !== -1) {
+        publicId = publicId.substring(0, lastDot);
+      }
+    }
     
     const cloudinary = require('../../../config/cloudinary');
     const archiveUrl = cloudinary.utils.download_archive_url({
-      public_ids: [p],
+      public_ids: [publicId],
       resource_type: resourceType,
       flatten_folders: true,
       target_filename: fileName
@@ -47,17 +70,77 @@ const proxyDownload = (fileUrl, fileName, res, next) => {
     console.log(`[Proxy] Generated Archive URL: ${archiveUrl}`);
     const getter = archiveUrl.startsWith('https') ? https : http;
     getter.get(archiveUrl, (cloudRes) => {
-      if (cloudRes.statusCode !== 200) {
-        return res.status(502).json({ success: false, message: 'Failed to fetch file.' });
+      if (cloudRes.statusCode === 200) {
+        res.setHeader('Content-Type', 'application/zip');
+        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}.zip"`);
+        return cloudRes.pipe(res);
       }
-      res.setHeader('Content-Type', 'application/zip');
-      res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}.zip"`);
-      cloudRes.pipe(res);
+      
+      // Fallback 1: Try the opposite resource type
+      const fallbackResourceType = resourceType === 'raw' ? 'image' : 'raw';
+      let fallbackPublicId = parsedPublicId;
+      if (fallbackResourceType !== 'raw') {
+        const lastDot = fallbackPublicId.lastIndexOf('.');
+        if (lastDot !== -1) {
+          fallbackPublicId = fallbackPublicId.substring(0, lastDot);
+        }
+      }
+      
+      const fallbackArchiveUrl = cloudinary.utils.download_archive_url({
+        public_ids: [fallbackPublicId],
+        resource_type: fallbackResourceType,
+        flatten_folders: true,
+        target_filename: fileName
+      });
+      
+      console.log(`[Proxy] Archive failed (Status ${cloudRes.statusCode}). Trying fallback: ${fallbackArchiveUrl}`);
+      getter.get(fallbackArchiveUrl, (fallbackRes) => {
+        if (fallbackRes.statusCode === 200) {
+          res.setHeader('Content-Type', 'application/zip');
+          res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}.zip"`);
+          return fallbackRes.pipe(res);
+        }
+        
+        // Fallback 2: Direct signed download fallback
+        console.log(`[Proxy] Fallback archive failed (Status ${fallbackRes.statusCode}). Trying direct signed url.`);
+        const expiresAt = Math.floor(Date.now() / 1000) + 3600;
+        const directSignedUrl = cloudinary.utils.private_download_url(parsedPublicId, '', {
+          resource_type: resourceType,
+          type: 'upload',
+          expires_at: expiresAt
+        });
+        
+        getter.get(directSignedUrl, (directRes) => {
+          if (directRes.statusCode === 200) {
+            res.setHeader('Content-Type', getMimeType(fileName));
+            res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
+            return directRes.pipe(res);
+          }
+          
+          // Try direct signed url with the fallback resource type
+          const directSignedUrlFallback = cloudinary.utils.private_download_url(parsedPublicId, '', {
+            resource_type: fallbackResourceType,
+            type: 'upload',
+            expires_at: expiresAt
+          });
+          
+          getter.get(directSignedUrlFallback, (directResFallback) => {
+            if (directResFallback.statusCode === 200) {
+              res.setHeader('Content-Type', getMimeType(fileName));
+              res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
+              return directResFallback.pipe(res);
+            }
+            
+            console.error('[Proxy] All proxy and signed fallbacks failed.');
+            return res.status(502).json({ success: false, message: 'Failed to fetch file.' });
+          }).on('error', (e) => next(e));
+        }).on('error', (e) => next(e));
+      }).on('error', (e) => next(e));
     }).on('error', (e) => next(e));
     return;
   }
   
-  // Fallback to direct fetch (likely to fail with 401 on this account)
+  // Fallback to direct fetch
   const getter = fileUrl.startsWith('https') ? https : http;
   getter.get(fileUrl, (cloudRes) => {
     res.setHeader('Content-Type', getMimeType(fileName));
@@ -96,9 +179,16 @@ const submitAssignment = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
+const deleteAssignment = async (req, res, next) => {
+  try {
+    await lmsService.deleteAssignment(req.tenantId, req.params.id, req.user._id, req.user.role);
+    res.json({ success: true, message: 'Assignment deleted.' });
+  } catch (e) { next(e); }
+};
+
 // ── Sessions ───────────────────────────────────────────────────────────────────
 const createSession       = async (req, res, next) => { try { const s = await lmsService.createSession(req.tenantId, req.params.courseId, req.body, req.files, req.user._id); res.status(201).json({ success: true, data: s }); } catch (e) { next(e); } };
-const getCourseSessions   = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getCourseSessions(req.tenantId, req.params.courseId) }); } catch (e) { next(e); } };
+const getCourseSessions   = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getCourseSessions(req.tenantId, req.params.courseId, req.user._id, req.user.role) }); } catch (e) { next(e); } };
 const updateSession       = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.updateSession(req.tenantId, req.params.id, req.body, req.user._id, req.user.role) }); } catch (e) { next(e); } };
 const toggleSession       = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.toggleSession(req.tenantId, req.params.id, req.user._id) }); } catch (e) { next(e); } };
 const getSessionAttendance = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getSessionAttendance(req.tenantId, req.params.id) }); } catch (e) { next(e); } };
@@ -148,6 +238,75 @@ const generateAllCertificates = async (req, res, next) => { try { res.json({ suc
 const getCourseCertificates  = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getCourseCertificates(req.tenantId, req.params.courseId) }); } catch (e) { next(e); } };
 const getMyCertificates      = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getMyCertificates(req.tenantId, req.user._id) }); } catch (e) { next(e); } };
 const verifyCertificate      = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.verifyCertificate(req.params.code) }); } catch (e) { next(e); } };
+const getCertificatePdfPublic = async (req, res, next) => {
+  try {
+    const cert = await lmsService.verifyCertificate(req.params.code);
+    if (!cert) return res.status(404).json({ success: false, message: 'Certificate not found' });
+
+    let downloadUrl = cert.fileUrl;
+    const parsedPublicId = extractCloudinaryPublicId(cert.fileUrl);
+    if (parsedPublicId) {
+      // Stripping off extension for image resource type
+      let p = parsedPublicId;
+      const lastDot = p.lastIndexOf('.');
+      if (lastDot !== -1) {
+        p = p.substring(0, lastDot);
+      }
+
+      const cloudinary = require('../../../config/cloudinary');
+      const expiresAt = Math.floor(Date.now() / 1000) + 3600;
+      
+      // Try generating secure link as 'image' (PDFs are typically indexed under image namespace by Cloudinary)
+      downloadUrl = cloudinary.utils.private_download_url(p, '', {
+        resource_type: 'image',
+        type: 'upload',
+        expires_at: expiresAt
+      });
+    }
+
+    const https = require('https');
+    https.get(downloadUrl, (cloudRes) => {
+      // If the 'image' resource type fails, perform auto-fallback to 'raw' type
+      if (cloudRes.statusCode !== 200) {
+        let rawDownloadUrl = cert.fileUrl;
+        if (parsedPublicId) {
+          const cloudinary = require('../../../config/cloudinary');
+          const expiresAt = Math.floor(Date.now() / 1000) + 3600;
+          rawDownloadUrl = cloudinary.utils.private_download_url(parsedPublicId, '', {
+            resource_type: 'raw',
+            type: 'upload',
+            expires_at: expiresAt
+          });
+        }
+
+        https.get(rawDownloadUrl, (rawRes) => {
+          if (rawRes.statusCode !== 200) {
+            console.error(`[PDFProxy] Failed to fetch. Status: ${rawRes.statusCode}`);
+            return res.status(502).json({ success: false, message: 'Failed to fetch certificate file from storage.' });
+          }
+          res.removeHeader('X-Frame-Options');
+          res.setHeader('Content-Security-Policy', "frame-ancestors *");
+          res.setHeader('Content-Type', 'application/pdf');
+          res.setHeader('Content-Disposition', 'inline; filename="certificate.pdf"');
+          rawRes.pipe(res);
+        }).on('error', (e) => next(e));
+        return;
+      }
+
+      res.removeHeader('X-Frame-Options');
+      res.setHeader('Content-Security-Policy', "frame-ancestors *");
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'inline; filename="certificate.pdf"');
+      cloudRes.pipe(res);
+    }).on('error', (e) => {
+      console.error('[PDFProxy] Error:', e);
+      next(e);
+    });
+
+  } catch (e) {
+    next(e);
+  }
+};
 
 // ── File proxy for assignment materials/submissions ────────────────────────────
 const getCertificateAccess = async (req, res, next) => {
@@ -168,19 +327,15 @@ const signFileUrl = async (req, res, next) => {
     if (!fileUrl) return res.status(400).json({ success: false, message: 'URL is required' });
     
     let downloadUrl = fileUrl;
+    const parsedPublicId = extractCloudinaryPublicId(fileUrl);
     
-    if (fileUrl.includes('/raw/')) {
-      const parts = fileUrl.split('/upload/');
-      if (parts.length >= 2) {
-        let p = parts[1];
-        if (p.startsWith('v')) p = p.substring(p.indexOf('/') + 1);
-        const cloudinary = require('../../../config/cloudinary');
-        downloadUrl = cloudinary.utils.url(p, {
-          resource_type: 'raw',
-          sign_url: true,
-          secure: true
-        });
-      }
+    if (fileUrl.includes('/raw/') && parsedPublicId) {
+      const cloudinary = require('../../../config/cloudinary');
+      downloadUrl = cloudinary.utils.url(parsedPublicId, {
+        resource_type: 'raw',
+        sign_url: true,
+        secure: true
+      });
     }
 
     const urlParts = fileUrl.split('/');
@@ -267,14 +422,14 @@ const revokeCertificate = async (req, res, next) => {
 module.exports = {
   getCourses, getCourse, createCourse, updateCourse, deleteCourse, enrollStudent,
   markAttendance, getCourseAttendance,
-  createAssignment, updateAssignment, submitAssignment, getCourseAssignments,
+  createAssignment, updateAssignment, deleteAssignment, submitAssignment, getCourseAssignments,
   createSession, updateSession, getCourseSessions, toggleSession, getSessionAttendance, overrideAttendance,
   markSelfAttendance, getMyAttendanceSummary,
   uploadCourseDocument, getCourseDocuments, deleteCourseDocument, getCourseDocumentAccess,
   gradeSubmission, getAssignmentSubmissions, getMySubmission,
   createQuiz, updateQuiz, getCourseQuizzes, addQuizQuestion, updateQuizQuestion, publishQuiz, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
   getCoursePerformance, getMyPerformance,
-  generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate, getCertificateAccess, signFileUrl,
+  generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate, getCertificatePdfPublic, getCertificateAccess, signFileUrl,
   getAdminStats, getAdminUsers, updateUserRole, deactivateUser, getAdminCourses, deleteAdminCourse, getAdminCertificates, revokeCertificate,
   getCertificateTemplate, saveCertificateTemplate
 };

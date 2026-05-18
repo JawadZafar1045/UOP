@@ -58,7 +58,17 @@ const registerAdmin = async (data, secretKey) => {
   await user.save();
 
   return {
-    user: { _id: user._id, name: user.name, email: user.email, role: user.role, tenantId: user.tenantId },
+    user: { 
+      _id: user._id, 
+      name: user.name, 
+      email: user.email, 
+      role: user.role, 
+      tenantId: user.tenantId,
+      avatar: user.avatar,
+      phone: user.phone,
+      location: user.location,
+      bio: user.bio
+    },
     accessToken,
     refreshToken
   };
@@ -106,7 +116,16 @@ const loginUser = async ({ tenantId, email, password }) => {
   return {
     accessToken,
     refreshToken,
-    user: { _id: user._id, name: user.name, email: user.email, role: user.role, avatar: user.avatar },
+    user: { 
+      _id: user._id, 
+      name: user.name, 
+      email: user.email, 
+      role: user.role, 
+      avatar: user.avatar,
+      phone: user.phone,
+      location: user.location,
+      bio: user.bio
+    },
   };
 };
 
@@ -156,7 +175,7 @@ const getTenantUsers = async (tenantId) => {
  */
 const updateUser = async (userId, data) => {
   // Only allow updating specific fields
-  const allowedUpdates = ['name', 'avatar'];
+  const allowedUpdates = ['name', 'avatar', 'phone', 'location', 'bio'];
   const updates = {};
   
   allowedUpdates.forEach(field => {
@@ -169,4 +188,24 @@ const updateUser = async (userId, data) => {
   return user;
 };
 
-module.exports = { registerAdmin, registerUser, loginUser, refreshAccessToken, logoutUser, getTenantUsers, generateTokens, updateUser };
+/**
+ * Update user password.
+ */
+const updatePassword = async (userId, currentPwd, newPwd) => {
+  const user = await User.findById(userId).select('+password');
+  if (!user) {
+    throw Object.assign(new Error('User not found.'), { statusCode: 404 });
+  }
+
+  const isMatch = await user.comparePassword(currentPwd);
+  if (!isMatch) {
+    throw Object.assign(new Error('Incorrect current password.'), { statusCode: 400 });
+  }
+
+  user.password = newPwd;
+  await user.save();
+  
+  return user;
+};
+
+module.exports = { registerAdmin, registerUser, loginUser, refreshAccessToken, logoutUser, getTenantUsers, generateTokens, updateUser, updatePassword };

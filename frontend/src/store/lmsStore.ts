@@ -37,6 +37,8 @@ interface Session {
   attendanceCloseAt?: string;
   isOpen: boolean;
   materialUrl?: string;
+  materials?: any[];
+  isAttended?: boolean;
 }
 
 interface LmsDocument {
@@ -140,6 +142,7 @@ interface LmsState {
   updateCourse: (id: string, data: any) => Promise<void>;
   updateSession: (id: string, data: any) => Promise<void>;
   updateAssignment: (id: string, data: any) => Promise<void>;
+  deleteAssignment: (id: string) => Promise<void>;
   updateQuiz: (id: string, data: any) => Promise<void>;
 }
 
@@ -384,6 +387,20 @@ export const useLmsStore = create<LmsState>((set) => ({
       }));
     } catch (error: any) {
       set({ error: error?.message || 'Failed to update assignment', isLoading: false });
+      throw error;
+    }
+  },
+
+  deleteAssignment: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      await lmsService.deleteAssignment(id);
+      set((state) => ({
+        assignments: state.assignments.filter((a) => a._id !== id),
+        isLoading: false,
+      }));
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to delete assignment', isLoading: false });
       throw error;
     }
   },

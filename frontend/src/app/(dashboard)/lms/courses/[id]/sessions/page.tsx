@@ -131,8 +131,9 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
     try {
       await markPresent(sessionId);
       alert('Successfully marked present!');
-      // Refresh to update summary
+      // Refresh to update summary and session list
       if (!isTeacherOrAdmin) {
+        fetchSessions(courseId);
         lmsService.getMyAttendanceSummary(courseId)
           .then(res => setAttendanceSummary(res))
           .catch(console.error);
@@ -301,10 +302,22 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
                     ) : (
                       <button 
                         onClick={() => handleMarkPresent(session._id)}
-                        disabled={!session.isOpen || isMarking === session._id}
-                        className={`px-3 py-1.5 rounded-md font-medium transition-all ${session.isOpen ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}
+                        disabled={!session.isOpen || session.isAttended || isMarking === session._id}
+                        className={`px-3 py-1.5 rounded-md font-medium border transition-all ${
+                          session.isAttended
+                            ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                            : session.isOpen 
+                              ? 'bg-emerald-600 text-white border-transparent hover:bg-emerald-700' 
+                              : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                        }`}
                       >
-                        {isMarking === session._id ? 'Marking...' : session.isOpen ? 'Mark Present' : 'Closed'}
+                        {isMarking === session._id 
+                          ? 'Marking...' 
+                          : session.isAttended 
+                            ? 'Present' 
+                            : session.isOpen 
+                              ? 'Mark Present' 
+                              : 'Closed'}
                       </button>
                     )}
                   </td>

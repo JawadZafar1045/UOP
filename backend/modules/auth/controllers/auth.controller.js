@@ -132,4 +132,21 @@ const updateProfile = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { registerAdmin, register, registerValidation, login, loginValidation, refresh, logout, getMe, getUsers, updateProfile };
+/** PATCH /api/auth/password */
+const updatePassword = async (req, res, next) => {
+  try {
+    const { currentPwd, newPwd } = req.body;
+    if (!currentPwd || !newPwd) {
+      return res.status(400).json({ success: false, message: 'Current password and new password are required.' });
+    }
+    if (newPwd.length < 6) {
+      return res.status(400).json({ success: false, message: 'New password must be at least 6 characters.' });
+    }
+    await authService.updatePassword(req.user._id, currentPwd, newPwd);
+    res.json({ success: true, message: 'Password updated successfully.' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { registerAdmin, register, registerValidation, login, loginValidation, refresh, logout, getMe, getUsers, updateProfile, updatePassword };

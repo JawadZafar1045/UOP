@@ -238,7 +238,26 @@ const toggleSession = async (tenantId, sessionId, userId) => {
   return session;
 };
 
-const getCourseSessions = async (tenantId, courseId) => Session.find({ courseId }).sort({ date: -1 });
+const getCourseSessions = async (tenantId, courseId, userId = null, userRole = null) => {
+  const sessions = await Session.find({ courseId }).sort({ date: -1 });
+  
+  if (userRole === 'student' && userId) {
+    const attendanceRecords = await Attendance.find({ 
+      courseId, 
+      studentId: userId, 
+      status: 'present' 
+    });
+    const attendedSessionIds = new Set(attendanceRecords.map(r => String(r.sessionId)));
+    
+    return sessions.map(s => {
+      const obj = s.toObject();
+      obj.isAttended = attendedSessionIds.has(String(s._id));
+      return obj;
+    });
+  }
+  
+  return sessions;
+};
 
 const getSessionAttendance = async (tenantId, sessionId) =>
   Attendance.find({ tenantId, sessionId }).populate('studentId', 'name email');
@@ -333,6 +352,50 @@ const updateAssignment = async (tenantId, assignmentId, data, userId, userRole) 
   const updatedAssignment = await Assignment.findByIdAndUpdate(assignmentId, data, { new: true, runValidators: true });
   await logActivity({ userId, tenantId, action: 'UPDATE_ASSIGNMENT', entityType: 'Assignment', entityId: assignmentId });
   return updatedAssignment;
+};
+
+const deleteAssignment = async (tenantId, assignmentId, userId, userRole) => {
+  const assignment = await Assignment.findOne({ _id: assignmentId, tenantId });
+  if (!assignment) throw err('Assignment not found.', 404);
+
+  // Check ownership: course must be owned by the instructor
+  const course = await Course.findOne({ _id: assignment.courseId, tenantId });
+  if (!course) throw err('Course associated with assignment not found.', 404);
+
+  if (userRole !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to delete this assignment.', 403);
+  }
+
+  // Delete attached materials from Cloudinary
+  if (assignment.materials && assignment.materials.length > 0) {
+    const { deleteFile } = require('../../shared/services/fileService');
+    for (const mat of assignment.materials) {
+      if (mat.publicId) {
+        try {
+          await deleteFile(mat.publicId);
+        } catch (e) {
+          console.error(`Failed to delete assignment material file: ${mat.publicId}`, e);
+        }
+      }
+    }
+  }
+
+  // Delete submission files from Cloudinary
+  if (assignment.submissions && assignment.submissions.length > 0) {
+    const { deleteFile } = require('../../shared/services/fileService');
+    for (const sub of assignment.submissions) {
+      if (sub.publicId) {
+        try {
+          await deleteFile(sub.publicId);
+        } catch (e) {
+          console.error(`Failed to delete assignment submission file: ${sub.publicId}`, e);
+        }
+      }
+    }
+  }
+
+  await assignment.deleteOne();
+  await logActivity({ userId, tenantId, action: 'DELETE_ASSIGNMENT', entityType: 'Assignment', entityId: assignmentId });
 };
 
 const getLmsDocumentById = async (tenantId, documentId) => {
@@ -808,7 +871,7 @@ const revokeCertificate = async (tenantId, certId) => {
 module.exports = {
   getCourses, getCourseById, createCourse, updateCourse, deleteCourse, enrollStudent,
   markAttendance, getCourseAttendance,
-  createAssignment, updateAssignment, submitAssignment, getCourseAssignments,
+  createAssignment, updateAssignment, deleteAssignment, submitAssignment, getCourseAssignments,
   createSession, updateSession, toggleSession, getCourseSessions, getSessionAttendance, overrideAttendance,
   markSelfAttendance, getMyAttendanceSummary,
   uploadCourseDocument, getCourseDocuments, deleteCourseDocument, getLmsDocumentById, getCourseDocumentAccess,
