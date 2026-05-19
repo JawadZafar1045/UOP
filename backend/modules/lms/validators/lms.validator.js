@@ -407,8 +407,11 @@ const saveCertificateTemplateVal = [
 
 const signFileUrlVal = [
   body('url')
-    .isURL()
-    .withMessage('Valid file URL is required'),
+    .trim()
+    .notEmpty()
+    .withMessage('Valid file URL is required')
+    .isString()
+    .withMessage('URL must be a string'),
 ];
 
 module.exports = {

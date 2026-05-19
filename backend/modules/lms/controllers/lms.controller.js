@@ -69,6 +69,7 @@ const proxyDownload = (fileUrl, fileName, res, next) => {
 
     console.log(`[Proxy] Generated Archive URL: ${archiveUrl}`);
     const getter = archiveUrl.startsWith('https') ? https : http;
+    console.log(`[Proxy] Calling getter.get on: ${archiveUrl}`);
     getter.get(archiveUrl, (cloudRes) => {
       if (cloudRes.statusCode === 200) {
         res.setHeader('Content-Type', 'application/zip');
@@ -94,6 +95,7 @@ const proxyDownload = (fileUrl, fileName, res, next) => {
       });
       
       console.log(`[Proxy] Archive failed (Status ${cloudRes.statusCode}). Trying fallback: ${fallbackArchiveUrl}`);
+      console.log(`[Proxy] Calling getter.get on fallback: ${fallbackArchiveUrl}`);
       getter.get(fallbackArchiveUrl, (fallbackRes) => {
         if (fallbackRes.statusCode === 200) {
           res.setHeader('Content-Type', 'application/zip');
@@ -110,6 +112,7 @@ const proxyDownload = (fileUrl, fileName, res, next) => {
           expires_at: expiresAt
         });
         
+        console.log(`[Proxy] Calling getter.get on directSignedUrl: ${directSignedUrl}`);
         getter.get(directSignedUrl, (directRes) => {
           if (directRes.statusCode === 200) {
             res.setHeader('Content-Type', getMimeType(fileName));
@@ -124,6 +127,7 @@ const proxyDownload = (fileUrl, fileName, res, next) => {
             expires_at: expiresAt
           });
           
+          console.log(`[Proxy] Calling getter.get on directSignedUrlFallback: ${directSignedUrlFallback}`);
           getter.get(directSignedUrlFallback, (directResFallback) => {
             if (directResFallback.statusCode === 200) {
               res.setHeader('Content-Type', getMimeType(fileName));
@@ -142,6 +146,7 @@ const proxyDownload = (fileUrl, fileName, res, next) => {
   
   // Fallback to direct fetch
   const getter = fileUrl.startsWith('https') ? https : http;
+  console.log(`[Proxy] Calling getter.get on direct fetch fileUrl: ${fileUrl}`);
   getter.get(fileUrl, (cloudRes) => {
     res.setHeader('Content-Type', getMimeType(fileName));
     res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
@@ -321,8 +326,17 @@ const getCertificateAccess = async (req, res, next) => {
 
 const signFileUrl = async (req, res, next) => {
   try {
-    const { url: fileUrl } = req.body;
+    let { url: fileUrl } = req.body;
     if (!fileUrl) return res.status(400).json({ success: false, message: 'URL is required' });
+    
+    // Unescape the URL that was escaped by XSS sanitization middleware
+    fileUrl = fileUrl
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#x27;/g, "'")
+      .replace(/&#x2F;/g, '/');
     
     let downloadUrl = fileUrl;
     const parsedPublicId = extractCloudinaryPublicId(fileUrl);
