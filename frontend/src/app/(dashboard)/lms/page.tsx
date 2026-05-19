@@ -344,7 +344,7 @@ export default function LMSPage() {
                         {
                           courses.filter(
                             (c) =>
-                              c.status === "active" || c.status === "published",
+                              c.status === "active",
                           ).length
                         }{" "}
                         Published
@@ -513,7 +513,6 @@ export default function LMSPage() {
                       <div className="absolute top-4 right-4 z-20">
                         <span
                           className={`text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-full shadow-lg backdrop-blur-xl border-2 ${
-                            course.status === "published" ||
                             course.status === "active"
                               ? "bg-emerald-500/95 text-white border-emerald-300/50"
                               : "bg-slate-700/95 text-white border-slate-500/50"

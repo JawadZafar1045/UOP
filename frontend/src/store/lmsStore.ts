@@ -78,6 +78,7 @@ interface Quiz {
   status: 'draft' | 'published' | 'closed';
   questionCount?: number;
   myAttempts?: number;
+  bestScore?: number | null;
 }
 
 interface Certificate {
@@ -154,6 +155,7 @@ export const useLmsStore = create<LmsState>((set) => ({
   sessions: [],
   documents: [],
   assignments: [],
+  currentAssignmentSubmissions: null,
   quizzes: [],
   certificates: [],
   myPerformance: null,
