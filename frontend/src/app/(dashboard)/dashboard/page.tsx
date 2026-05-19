@@ -66,7 +66,7 @@ export default function DashboardPage() {
   // Derive LMS stats for charts (Admin/Teacher view)
   const lmsStats = useMemo(() => {
     const total = courses.length;
-    const published = courses.filter(c => c.status === 'published' || c.status === 'active').length;
+    const published = courses.filter(c => c.status === 'active').length;
     const draft = courses.filter(c => c.status === 'draft').length;
     const enrolled = courses.reduce((acc, curr) => acc + (curr.enrolledStudents?.length || 0), 0);
     

@@ -77,6 +77,7 @@ interface Quiz {
   showResultImmediately: boolean;
   status: 'draft' | 'published' | 'closed';
   questionCount?: number;
+  myAttempts?: number;
 }
 
 interface Certificate {
@@ -100,6 +101,7 @@ interface Performance {
   attendancePercent: number;
   assignmentScore: number;
   quizScore: number;
+  certificate?: any;
 }
 
 interface LmsState {

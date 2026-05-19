@@ -29,9 +29,8 @@ const getCourses = async ({ tenantId, userId, role, page = 1, limit = 20 }) => {
     // OR active courses in their tenant.
     filter.$or = [
       { enrolledStudents: userId },
-      { tenantId: tenantId, status: 'active' }
+      { status: 'active' }
     ];
-    delete filter.tenantId;
   } else if (role === 'teacher') {
     // Teachers only see courses they are assigned to as instructor
     filter.instructor = userId;
@@ -48,10 +47,7 @@ const getCourses = async ({ tenantId, userId, role, page = 1, limit = 20 }) => {
 };
 
 const getCourseById = async (tenantId, courseId, userId, role) => {
-  const filter = { _id: courseId };
-  if (role !== 'student') {
-    filter.tenantId = tenantId;
-  }
+  const filter = { _id: courseId, tenantId };
 
   const course = await Course.findOne(filter)
     .populate('instructor', 'name email avatar')
@@ -65,9 +61,9 @@ const getCourseById = async (tenantId, courseId, userId, role) => {
   }
 
   const [sessionCount, assignmentCount, quizCount] = await Promise.all([
-    Session.countDocuments({ courseId }),
-    Assignment.countDocuments({ courseId }),
-    Quiz.countDocuments({ courseId, status: 'published' })
+    Session.countDocuments({ courseId, tenantId }),
+    Assignment.countDocuments({ courseId, tenantId }),
+    Quiz.countDocuments({ courseId, status: 'published', tenantId })
   ]);
 
   const courseObj = course.toObject();
@@ -111,23 +107,13 @@ const enrollStudent = async (tenantId, courseId, studentIdentifier, userId) => {
   const identifier = String(studentIdentifier).trim();
   const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(identifier);
 
-  let student = await User.findOne({
+  const student = await User.findOne({
     tenantId,
     $or: [
       { email: identifier.toLowerCase() },
       ...(isValidObjectId ? [{ _id: identifier }] : [])
     ]
   });
-
-  if (!student) {
-    const globalStudent = await User.findOne({
-      $or: [
-        { email: identifier.toLowerCase() },
-        ...(isValidObjectId ? [{ _id: identifier }] : [])
-      ]
-    });
-    if (globalStudent) student = globalStudent;
-  }
 
   if (!student) throw err('Student not found. Please ensure the email is correct and the student is registered.', 404);
 
@@ -150,7 +136,13 @@ const getCourseAttendance = async (tenantId, courseId) =>
   Attendance.find({ tenantId, courseId }).populate('studentId', 'name email').sort({ createdAt: -1 });
 
 // ── Assignments ────────────────────────────────────────────────────────────────
-const createAssignment = async (tenantId, data, files, userId) => {
+const createAssignment = async (tenantId, data, files, userId, userRole) => {
+  const course = await Course.findOne({ _id: data.courseId, tenantId });
+  if (!course) throw err('Course not found.', 404);
+  if (userRole !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to create an assignment for this course.', 403);
+  }
+
   const materials = [];
   if (files && files.length > 0) {
     const { uploadFile } = require('../../shared/services/fileService');
@@ -164,11 +156,24 @@ const createAssignment = async (tenantId, data, files, userId) => {
   return assignment;
 };
 
-const getCourseAssignments = async (tenantId, courseId) => Assignment.find({ courseId }).sort({ createdAt: -1 });
+const getCourseAssignments = async (tenantId, courseId, userId, role) => {
+  const course = await Course.findOne({ _id: courseId, tenantId });
+  if (!course) throw err('Course not found.', 404);
+  if (role === 'student' && !course.enrolledStudents.map(String).includes(String(userId))) {
+    throw err('You are not enrolled in this course.', 403);
+  }
+  return Assignment.find({ courseId, tenantId }).sort({ createdAt: -1 });
+};
 
 const submitAssignment = async (tenantId, assignmentId, studentId, submissionData, file) => {
-  const assignment = await Assignment.findOne({ _id: assignmentId });
+  const assignment = await Assignment.findOne({ _id: assignmentId, tenantId });
   if (!assignment) throw err('Assignment not found.', 404);
+
+  const course = await Course.findOne({ _id: assignment.courseId, tenantId });
+  if (!course) throw err('Course associated with assignment not found.', 404);
+  if (!course.enrolledStudents.map(String).includes(String(studentId))) {
+    throw err('You are not enrolled in this course.', 403);
+  }
 
   const submission = { 
     studentId, 
@@ -189,9 +194,13 @@ const submitAssignment = async (tenantId, assignmentId, studentId, submissionDat
 };
 
 // ── Sessions ───────────────────────────────────────────────────────────────────
-const createSession = async (tenantId, courseId, data, files, userId) => {
+const createSession = async (tenantId, courseId, data, files, userId, userRole) => {
   const course = await Course.findOne({ _id: courseId, tenantId });
   if (!course) throw err('Course not found.', 404);
+  if (userRole !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to create sessions for this course.', 403);
+  }
+
   const materials = [];
   if (files && files.length > 0) {
     const { uploadFile } = require('../../shared/services/fileService');
@@ -219,14 +228,21 @@ const updateSession = async (tenantId, sessionId, data, userId, userRole) => {
     throw err('You do not have permission to update this session.', 403);
   }
 
-  const updatedSession = await Session.findByIdAndUpdate(sessionId, data, { new: true, runValidators: true });
+  const updatedSession = await Session.findOneAndUpdate({ _id: sessionId, tenantId }, data, { new: true, runValidators: true });
   await logActivity({ userId, tenantId, action: 'UPDATE_SESSION', entityType: 'Session', entityId: sessionId });
   return updatedSession;
 };
 
-const toggleSession = async (tenantId, sessionId, userId) => {
+const toggleSession = async (tenantId, sessionId, userId, userRole) => {
   const session = await Session.findOne({ _id: sessionId, tenantId });
   if (!session) throw err('Session not found.', 404);
+
+  const course = await Course.findOne({ _id: session.courseId, tenantId });
+  if (!course) throw err('Course associated with session not found.', 404);
+  if (userRole !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to modify this session.', 403);
+  }
+
   session.isOpen = !session.isOpen;
   if (session.isOpen) {
     session.attendanceCloseAt = null;
@@ -239,13 +255,21 @@ const toggleSession = async (tenantId, sessionId, userId) => {
 };
 
 const getCourseSessions = async (tenantId, courseId, userId = null, userRole = null) => {
-  const sessions = await Session.find({ courseId }).sort({ date: -1 });
+  const course = await Course.findOne({ _id: courseId, tenantId });
+  if (!course) throw err('Course not found.', 404);
+  
+  if (userRole === 'student' && !course.enrolledStudents.map(String).includes(String(userId))) {
+    throw err('You are not enrolled in this course.', 403);
+  }
+
+  const sessions = await Session.find({ courseId, tenantId }).sort({ date: -1 });
   
   if (userRole === 'student' && userId) {
     const attendanceRecords = await Attendance.find({ 
       courseId, 
       studentId: userId, 
-      status: 'present' 
+      status: 'present',
+      tenantId
     });
     const attendedSessionIds = new Set(attendanceRecords.map(r => String(r.sessionId)));
     
@@ -259,12 +283,22 @@ const getCourseSessions = async (tenantId, courseId, userId = null, userRole = n
   return sessions;
 };
 
-const getSessionAttendance = async (tenantId, sessionId) =>
-  Attendance.find({ tenantId, sessionId }).populate('studentId', 'name email');
+const getSessionAttendance = async (tenantId, sessionId, userId, role) => {
+  const session = await Session.findOne({ _id: sessionId, tenantId });
+  if (!session) throw err('Session not found.', 404);
+
+  const course = await Course.findOne({ _id: session.courseId, tenantId });
+  if (!course) throw err('Course associated with session not found.', 404);
+  if (role !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to view attendance for this session.', 403);
+  }
+
+  return Attendance.find({ tenantId, sessionId }).populate('studentId', 'name email');
+};
 
 // ── Attendance Self-Mark ──────────────────────────────────────────────────────
 const markSelfAttendance = async (tenantId, sessionId, studentId, ipAddress) => {
-  const session = await Session.findById(sessionId);
+  const session = await Session.findOne({ _id: sessionId, tenantId });
   if (!session) throw err('Session not found.', 404);
   if (!session.isOpen) throw err('Attendance window is not open for this session.', 403);
 
@@ -273,12 +307,12 @@ const markSelfAttendance = async (tenantId, sessionId, studentId, ipAddress) => 
     await session.save();
   }
 
-  const course = await Course.findById(session.courseId);
+  const course = await Course.findOne({ _id: session.courseId, tenantId });
   if (!course) throw err('Course not found.', 404);
   if (!course.enrolledStudents.map(String).includes(String(studentId)))
     throw err('You are not enrolled in this course.', 403);
 
-  const existing = await Attendance.findOne({ sessionId, studentId });
+  const existing = await Attendance.findOne({ sessionId, studentId, tenantId });
   if (existing) throw err('Attendance already marked for this session.', 409);
 
   return Attendance.create({ 
@@ -293,7 +327,7 @@ const markSelfAttendance = async (tenantId, sessionId, studentId, ipAddress) => 
 };
 
 const getMyAttendanceSummary = async (tenantId, courseId, studentId) => {
-  const course = await Course.findById(courseId);
+  const course = await Course.findOne({ _id: courseId, tenantId });
   if (!course) return { total: 0, present: 0, percentage: 0 };
   const [total, present] = await Promise.all([
     Session.countDocuments({ courseId, tenantId: course.tenantId }),
@@ -302,9 +336,16 @@ const getMyAttendanceSummary = async (tenantId, courseId, studentId) => {
   return { total, present, percentage: total === 0 ? 0 : Math.round((present / total) * 100) };
 };
 
-const overrideAttendance = async (tenantId, sessionId, studentId, status, reason, teacherId) => {
+const overrideAttendance = async (tenantId, sessionId, studentId, status, reason, teacherId, role) => {
   const session = await Session.findOne({ _id: sessionId, tenantId });
   if (!session) throw err('Session not found.', 404);
+
+  const course = await Course.findOne({ _id: session.courseId, tenantId });
+  if (!course) throw err('Course associated with session not found.', 404);
+  if (role !== 'admin' && course.instructor.toString() !== teacherId.toString()) {
+    throw err('You do not have permission to override attendance for this session.', 403);
+  }
+
   return Attendance.findOneAndUpdate(
     { tenantId, sessionId, studentId },
     { status, overriddenBy: teacherId, overrideReason: reason, courseId: session.courseId },
@@ -313,7 +354,13 @@ const overrideAttendance = async (tenantId, sessionId, studentId, status, reason
 };
 
 // ── LMS Documents ──────────────────────────────────────────────────────────────
-const uploadCourseDocument = async (tenantId, courseId, file, data, userId) => {
+const uploadCourseDocument = async (tenantId, courseId, file, data, userId, role) => {
+  const course = await Course.findOne({ _id: courseId, tenantId });
+  if (!course) throw err('Course not found.', 404);
+  if (role !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to upload documents for this course.', 403);
+  }
+
   const { url, publicId, resourceType } = await uploadFile(file, 'lms_documents');
   return LmsDocument.create({
     tenantId, courseId, uploadedBy: userId,
@@ -323,15 +370,28 @@ const uploadCourseDocument = async (tenantId, courseId, file, data, userId) => {
   });
 };
 
-const getCourseDocuments = async (tenantId, courseId, userRole) => {
-  const filter = { courseId };
+const getCourseDocuments = async (tenantId, courseId, userRole, userId) => {
+  const course = await Course.findOne({ _id: courseId, tenantId });
+  if (!course) throw err('Course not found.', 404);
+  if (userRole === 'student' && !course.enrolledStudents.map(String).includes(String(userId))) {
+    throw err('You are not enrolled in this course.', 403);
+  }
+
+  const filter = { courseId, tenantId };
   if (userRole === 'student') filter.visibleToStudents = true;
   return LmsDocument.find(filter).sort({ createdAt: -1 });
 };
 
-const deleteCourseDocument = async (tenantId, documentId, userId) => {
+const deleteCourseDocument = async (tenantId, documentId, userId, role) => {
   const doc = await LmsDocument.findOne({ _id: documentId, tenantId });
   if (!doc) throw err('Document not found.', 404);
+
+  const course = await Course.findOne({ _id: doc.courseId, tenantId });
+  if (!course) throw err('Course associated with document not found.', 404);
+  if (role !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to delete this document.', 403);
+  }
+
   await deleteFile(doc.publicId);
   await doc.deleteOne();
   await logActivity({ userId, tenantId, action: 'DELETE_LMS_DOCUMENT', entityType: 'LmsDocument', entityId: documentId });
@@ -349,7 +409,7 @@ const updateAssignment = async (tenantId, assignmentId, data, userId, userRole) 
     throw err('You do not have permission to update this assignment.', 403);
   }
 
-  const updatedAssignment = await Assignment.findByIdAndUpdate(assignmentId, data, { new: true, runValidators: true });
+  const updatedAssignment = await Assignment.findOneAndUpdate({ _id: assignmentId, tenantId }, data, { new: true, runValidators: true });
   await logActivity({ userId, tenantId, action: 'UPDATE_ASSIGNMENT', entityType: 'Assignment', entityId: assignmentId });
   return updatedAssignment;
 };
@@ -402,9 +462,20 @@ const getLmsDocumentById = async (tenantId, documentId) => {
   return LmsDocument.findOne({ _id: documentId, tenantId });
 };
 
-const getCourseDocumentAccess = async (tenantId, documentId) => {
+const getCourseDocumentAccess = async (tenantId, documentId, userId, role) => {
   const doc = await getLmsDocumentById(tenantId, documentId);
   if (!doc) throw err('Document not found.', 404);
+  
+  const course = await Course.findOne({ _id: doc.courseId, tenantId });
+  if (!course) throw err('Course associated with document not found.', 404);
+  if (role === 'student') {
+    if (!course.enrolledStudents.map(String).includes(String(userId))) {
+      throw err('You are not enrolled in this course.', 403);
+    }
+    if (!doc.visibleToStudents) {
+      throw err('This document is not visible to students.', 403);
+    }
+  }
   
   const cloudinary = require('../../../config/cloudinary');
   const isRaw = doc.fileUrl.includes('/raw/');
@@ -423,9 +494,16 @@ const getCourseDocumentAccess = async (tenantId, documentId) => {
 };
 
 // ── Assignment Grading ─────────────────────────────────────────────────────────
-const gradeSubmission = async (tenantId, assignmentId, studentId, score, feedback, teacherId) => {
+const gradeSubmission = async (tenantId, assignmentId, studentId, score, feedback, teacherId, role) => {
   const assignment = await Assignment.findOne({ _id: assignmentId, tenantId });
   if (!assignment) throw err('Assignment not found.', 404);
+
+  const course = await Course.findOne({ _id: assignment.courseId, tenantId });
+  if (!course) throw err('Course associated with assignment not found.', 404);
+  if (role !== 'admin' && course.instructor.toString() !== teacherId.toString()) {
+    throw err('You do not have permission to grade submissions for this course.', 403);
+  }
+
   const sub = assignment.submissions.find(s => String(s.studentId) === String(studentId));
   if (!sub) throw err('Submission not found.', 404);
   sub.marks = score; sub.feedback = feedback; sub.status = 'graded';
@@ -434,36 +512,55 @@ const gradeSubmission = async (tenantId, assignmentId, studentId, score, feedbac
   return assignment;
 };
 
-const getAssignmentSubmissions = async (tenantId, assignmentId) => {
+const getAssignmentSubmissions = async (tenantId, assignmentId, userId, role) => {
   const assignment = await Assignment.findOne({ _id: assignmentId, tenantId }).populate('submissions.studentId', 'name email');
   if (!assignment) throw err('Assignment not found.', 404);
+
+  const course = await Course.findOne({ _id: assignment.courseId, tenantId });
+  if (!course) throw err('Course associated with assignment not found.', 404);
+  if (role !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to view submissions for this assignment.', 403);
+  }
+
   return assignment;
 };
 
 const getMySubmission = async (tenantId, assignmentId, studentId) => {
-  const assignment = await Assignment.findOne({ _id: assignmentId });
+  const assignment = await Assignment.findOne({ _id: assignmentId, tenantId });
   if (!assignment) throw err('Assignment not found.', 404);
+
+  const course = await Course.findOne({ _id: assignment.courseId, tenantId });
+  if (!course || !course.enrolledStudents.map(String).includes(String(studentId))) {
+    throw err('You are not enrolled in this course.', 403);
+  }
+
   return assignment.submissions.find(s => String(s.studentId) === String(studentId)) || null;
 };
 
 // ── Quizzes ────────────────────────────────────────────────────────────────────
-const createQuiz = async (tenantId, courseId, data, userId) => {
+const createQuiz = async (tenantId, courseId, data, userId, role) => {
+  const course = await Course.findOne({ _id: courseId, tenantId });
+  if (!course) throw err('Course not found.', 404);
+  if (role !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to create quizzes for this course.', 403);
+  }
+
   const quiz = await Quiz.create({ tenantId, courseId, createdBy: userId, ...data });
   await logActivity({ userId, tenantId, action: 'CREATE_QUIZ', entityType: 'Quiz', entityId: quiz._id });
   return quiz;
 };
 
 const getCourseQuizzes = async (tenantId, courseId, userRole, userId) => {
-  const filter = { courseId };
+  const filter = { courseId, tenantId };
   if (userRole === 'student') filter.status = 'published';
   const quizzes = await Quiz.find(filter).sort({ createdAt: -1 });
   return Promise.all(quizzes.map(async (quiz) => {
-    const count = await QuizQuestion.countDocuments({ quizId: quiz._id });
+    const count = await QuizQuestion.countDocuments({ quizId: quiz._id, tenantId });
     const quizObj = { ...quiz.toObject(), questionCount: count };
 
     if (userRole === 'student' && userId) {
-      const attempts = await QuizAttempt.countDocuments({ quizId: quiz._id, studentId: userId });
-      const bestAttempt = await QuizAttempt.findOne({ quizId: quiz._id, studentId: userId }).sort({ percentScore: -1 });
+      const attempts = await QuizAttempt.countDocuments({ quizId: quiz._id, studentId: userId, tenantId });
+      const bestAttempt = await QuizAttempt.findOne({ quizId: quiz._id, studentId: userId, tenantId }).sort({ percentScore: -1 });
       quizObj.myAttempts = attempts;
       quizObj.bestScore = bestAttempt ? bestAttempt.percentScore : null;
     }
@@ -472,9 +569,16 @@ const getCourseQuizzes = async (tenantId, courseId, userRole, userId) => {
   }));
 };
 
-const addQuizQuestion = async (tenantId, quizId, questionData) => {
+const addQuizQuestion = async (tenantId, quizId, questionData, userId, role) => {
   const quiz = await Quiz.findOne({ _id: quizId, tenantId });
   if (!quiz) throw err('Quiz not found.', 404);
+
+  const course = await Course.findOne({ _id: quiz.courseId, tenantId });
+  if (!course) throw err('Course associated with quiz not found.', 404);
+  if (role !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to add questions to this quiz.', 403);
+  }
+
   if (!Array.isArray(questionData.options) || questionData.options.length !== 4) throw err('options must be an array of exactly 4 items.', 400);
   return QuizQuestion.create({ tenantId, quizId, ...questionData });
 };
@@ -490,9 +594,9 @@ const updateQuiz = async (tenantId, quizId, data, userId, userRole) => {
     throw err('You do not have permission to update this quiz.', 403);
   }
 
-  const updatedQuiz = await Quiz.findByIdAndUpdate(quizId, data, { new: true, runValidators: true }).lean();
+  const updatedQuiz = await Quiz.findOneAndUpdate({ _id: quizId, tenantId }, data, { new: true, runValidators: true }).lean();
   if (updatedQuiz) {
-    updatedQuiz.questionCount = await QuizQuestion.countDocuments({ quizId });
+    updatedQuiz.questionCount = await QuizQuestion.countDocuments({ quizId, tenantId });
   }
   await logActivity({ userId, tenantId, action: 'UPDATE_QUIZ', entityType: 'Quiz', entityId: quizId });
   return updatedQuiz;
@@ -512,21 +616,36 @@ const updateQuizQuestion = async (tenantId, questionId, data, userId, userRole) 
     throw err('You do not have permission to update this question.', 403);
   }
 
-  const updatedQuestion = await QuizQuestion.findByIdAndUpdate(questionId, data, { new: true, runValidators: true });
+  const updatedQuestion = await QuizQuestion.findOneAndUpdate({ _id: questionId, tenantId }, data, { new: true, runValidators: true });
   await logActivity({ userId, tenantId, action: 'UPDATE_QUIZ_QUESTION', entityType: 'QuizQuestion', entityId: questionId });
   return updatedQuestion;
 };
 
-const publishQuiz = async (tenantId, quizId, userId) => {
-  const quiz = await Quiz.findOneAndUpdate({ _id: quizId, tenantId }, { status: 'published' }, { new: true });
+const publishQuiz = async (tenantId, quizId, userId, role) => {
+  const quiz = await Quiz.findOne({ _id: quizId, tenantId });
   if (!quiz) throw err('Quiz not found.', 404);
+
+  const course = await Course.findOne({ _id: quiz.courseId, tenantId });
+  if (!course) throw err('Course associated with quiz not found.', 404);
+  if (role !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to publish this quiz.', 403);
+  }
+
+  quiz.status = 'published';
+  await quiz.save();
   await logActivity({ userId, tenantId, action: 'PUBLISH_QUIZ', entityType: 'Quiz', entityId: quizId });
   return quiz;
 };
 
 const startQuizAttempt = async (tenantId, quizId, studentId) => {
-  const quiz = await Quiz.findOne({ _id: quizId });
+  const quiz = await Quiz.findOne({ _id: quizId, tenantId });
   if (!quiz || quiz.status !== 'published') throw err('Quiz not available.', 403);
+
+  const course = await Course.findOne({ _id: quiz.courseId, tenantId });
+  if (!course || !course.enrolledStudents.map(String).includes(String(studentId))) {
+    throw err('You are not enrolled in this course.', 403);
+  }
+
   const attemptCount = await QuizAttempt.countDocuments({ tenantId, quizId, studentId });
   if (attemptCount >= quiz.maxAttempts) throw err('No attempts remaining.', 403);
   const attempt = await QuizAttempt.create({ tenantId, quizId, courseId: quiz.courseId, studentId, startedAt: new Date(), attemptNumber: attemptCount + 1 });
@@ -539,7 +658,14 @@ const startQuizAttempt = async (tenantId, quizId, studentId) => {
 const submitQuizAttempt = async (tenantId, quizId, studentId, answers) => {
   const attempt = await QuizAttempt.findOne({ tenantId, quizId, studentId, submittedAt: null });
   if (!attempt) throw err('No active attempt found.', 404);
-  const quiz = await Quiz.findOne({ _id: quizId });
+  const quiz = await Quiz.findOne({ _id: quizId, tenantId });
+  if (!quiz) throw err('Quiz not found.', 404);
+
+  const course = await Course.findOne({ _id: quiz.courseId, tenantId });
+  if (!course || !course.enrolledStudents.map(String).includes(String(studentId))) {
+    throw err('You are not enrolled in this course.', 403);
+  }
+
   const questions = await QuizQuestion.find({ tenantId, quizId }).lean();
   const qMap = Object.fromEntries(questions.map(q => [String(q._id), q]));
   let totalMarks = 0, maxMarks = 0;
@@ -562,12 +688,34 @@ const submitQuizAttempt = async (tenantId, quizId, studentId, answers) => {
   return result;
 };
 
-const getQuizResults = async (tenantId, quizId) => QuizAttempt.find({ tenantId, quizId }).populate('studentId', 'name email');
-const getMyQuizAttempts = async (tenantId, quizId, studentId) => QuizAttempt.find({ tenantId, quizId, studentId });
+const getQuizResults = async (tenantId, quizId, userId, role) => {
+  const quiz = await Quiz.findOne({ _id: quizId, tenantId });
+  if (!quiz) throw err('Quiz not found.', 404);
+
+  const course = await Course.findOne({ _id: quiz.courseId, tenantId });
+  if (!course) throw err('Course associated with quiz not found.', 404);
+  if (role !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to view results for this quiz.', 403);
+  }
+
+  return QuizAttempt.find({ tenantId, quizId }).populate('studentId', 'name email');
+};
+
+const getMyQuizAttempts = async (tenantId, quizId, studentId) => {
+  const quiz = await Quiz.findOne({ _id: quizId, tenantId });
+  if (!quiz) throw err('Quiz not found.', 404);
+
+  const course = await Course.findOne({ _id: quiz.courseId, tenantId });
+  if (!course || !course.enrolledStudents.map(String).includes(String(studentId))) {
+    throw err('You are not enrolled in this course.', 403);
+  }
+
+  return QuizAttempt.find({ tenantId, quizId, studentId });
+};
 
 // ── Performance + Certificates ────────────────────────────────────────────────
 const checkEligibility = async (tenantId, courseId, studentId) => {
-  const course = await Course.findById(courseId);
+  const course = await Course.findOne({ _id: courseId, tenantId });
   if (!course) throw err('Course not found.', 404);
   
   // If not student, ensure tenant matches. If student, they must be enrolled.
@@ -610,7 +758,7 @@ const checkEligibility = async (tenantId, courseId, studentId) => {
   if (assignmentScore < minAssignmentScore) reasons.push(`Assignment avg ${assignmentScore}% < required ${minAssignmentScore}%`);
   if (quizScore < minQuizScore) reasons.push(`Quiz avg ${quizScore}% < required ${minQuizScore}%`);
 
-  const certificate = await Certificate.findOne({ courseId, studentId }).select('_id certificateNumber issuedAt');
+  const certificate = await Certificate.findOne({ courseId, studentId, tenantId }).select('_id certificateNumber issuedAt');
 
   return {
     eligible: reasons.length === 0,
@@ -629,7 +777,7 @@ const checkEligibility = async (tenantId, courseId, studentId) => {
 const getMyPerformance = async (tenantId, courseId, studentId) => checkEligibility(tenantId, courseId, studentId);
 
 const getCoursePerformance = async (tenantId, courseId) => {
-  const course = await Course.findById(courseId).populate('enrolledStudents', 'name email');
+  const course = await Course.findOne({ _id: courseId, tenantId }).populate('enrolledStudents', 'name email');
   if (!course) throw err('Course not found.', 404);
   
   if (course.tenantId !== tenantId) throw err('Access denied to this course performance.', 403);
@@ -642,7 +790,13 @@ const getCoursePerformance = async (tenantId, courseId) => {
 
 // ── Certificate Template ───────────────────────────────────────────────────────
 
-const getCertificateTemplate = async (tenantId, courseId) => {
+const getCertificateTemplate = async (tenantId, courseId, userId, role) => {
+  const course = await Course.findOne({ _id: courseId, tenantId });
+  if (!course) throw err('Course not found.', 404);
+  if (role === 'student' && !course.enrolledStudents.map(String).includes(String(userId))) {
+    throw err('You are not enrolled in this course.', 403);
+  }
+
   let template = await CertificateTemplate.findOne({ tenantId, courseId });
   if (!template) {
     // Return default design if no template exists
@@ -659,7 +813,13 @@ const getCertificateTemplate = async (tenantId, courseId) => {
   return template;
 };
 
-const saveCertificateTemplate = async (tenantId, courseId, data, file, userId) => {
+const saveCertificateTemplate = async (tenantId, courseId, data, file, userId, role) => {
+  const course = await Course.findOne({ _id: courseId, tenantId });
+  if (!course) throw err('Course not found.', 404);
+  if (role !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to modify the certificate template for this course.', 403);
+  }
+
   let template = await CertificateTemplate.findOne({ tenantId, courseId });
   let design = template ? { ...template.design.toObject() } : {};
   
@@ -699,7 +859,13 @@ const saveCertificateTemplate = async (tenantId, courseId, data, file, userId) =
   return template;
 };
 
-const generateCertificate = async (tenantId, courseId, studentId, issuedBy) => {
+const generateCertificate = async (tenantId, courseId, studentId, issuedBy, role) => {
+  const course = await Course.findOne({ _id: courseId, tenantId });
+  if (!course) throw err('Course not found.', 404);
+  if (role !== 'admin' && course.instructor.toString() !== issuedBy.toString()) {
+    throw err('You do not have permission to generate certificates for this course.', 403);
+  }
+
   const eligibility = await checkEligibility(tenantId, courseId, studentId);
   if (!eligibility.eligible) throw err(`Student is not eligible: ${eligibility.reason}`, 400);
   const existing = await Certificate.findOne({ tenantId, courseId, studentId });
@@ -708,11 +874,10 @@ const generateCertificate = async (tenantId, courseId, studentId, issuedBy) => {
   const count = await Certificate.countDocuments({ tenantId }) + 1;
   const certNum = `UOP-${year}-${String(count).padStart(5, '0')}`;
   const verCode = uuidv4();
-  const course = await Course.findOne({ _id: courseId, tenantId });
   const User = require('../../auth/models/user.model');
-  const student = await User.findById(studentId);
+  const student = await User.findOne({ _id: studentId, tenantId });
   
-  const template = await getCertificateTemplate(tenantId, courseId);
+  const template = await getCertificateTemplate(tenantId, courseId, issuedBy, role);
   
   const { fileUrl, publicId } = await certificateGenerator.generate({
     studentName: student.name, 
@@ -730,8 +895,13 @@ const generateCertificate = async (tenantId, courseId, studentId, issuedBy) => {
   return certificate;
 };
 
-const generateAllCertificates = async (tenantId, courseId, issuedBy) => {
+const generateAllCertificates = async (tenantId, courseId, issuedBy, role) => {
   const course = await Course.findOne({ _id: courseId, tenantId });
+  if (!course) throw err('Course not found.', 404);
+  if (role !== 'admin' && course.instructor.toString() !== issuedBy.toString()) {
+    throw err('You do not have permission to generate certificates for this course.', 403);
+  }
+
   const generated = [], skipped = [], errors = [];
   await Promise.all(course.enrolledStudents.map(async studentId => {
     try {
@@ -739,30 +909,45 @@ const generateAllCertificates = async (tenantId, courseId, issuedBy) => {
       if (already) { skipped.push({ studentId, reason: 'Already exists' }); return; }
       const elig = await checkEligibility(tenantId, courseId, studentId);
       if (!elig.eligible) { skipped.push({ studentId, reason: elig.reason }); return; }
-      await generateCertificate(tenantId, courseId, studentId, issuedBy);
+      await generateCertificate(tenantId, courseId, studentId, issuedBy, role);
       generated.push(studentId);
     } catch (e) { errors.push({ studentId, error: e.message }); }
   }));
   return { generated, skipped, errors };
 };
 
-const getCourseCertificates = async (tenantId, courseId) => {
-  const course = await Course.findById(courseId);
+const getCourseCertificates = async (tenantId, courseId, userId, role) => {
+  const course = await Course.findOne({ _id: courseId, tenantId });
   if (!course) throw err('Course not found.', 404);
-  if (course.tenantId !== tenantId) throw err('Access denied.', 403);
+  if (role !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to view certificates for this course.', 403);
+  }
   
-  return Certificate.find({ courseId }).populate('studentId', 'name email');
+  return Certificate.find({ courseId, tenantId }).populate('studentId', 'name email');
 };
+
 const getMyCertificates = async (tenantId, studentId) => Certificate.find({ tenantId, studentId }).populate('courseId', 'title instructor');
+
 const verifyCertificate = async (code) => {
   const cert = await Certificate.findOne({ verificationCode: code }).populate('studentId', 'name').populate('courseId', 'title instructor');
   if (!cert) throw err('Invalid certificate code.', 404);
   return cert;
 };
 
-const getCertificateById = async (tenantId, id) => {
+const getCertificateById = async (tenantId, id, userId, role) => {
   const cert = await Certificate.findOne({ _id: id, tenantId });
   if (!cert) throw err('Certificate not found.', 404);
+
+  if (role === 'student' && cert.studentId.toString() !== userId.toString()) {
+    throw err('You do not have permission to view this certificate.', 403);
+  }
+  if (role === 'teacher') {
+    const course = await Course.findOne({ _id: cert.courseId, tenantId });
+    if (!course || course.instructor.toString() !== userId.toString()) {
+      throw err('You do not have permission to view this certificate.', 403);
+    }
+  }
+
   return cert;
 };
 
