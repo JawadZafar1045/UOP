@@ -10,8 +10,8 @@ const verifyCertificateVal = [
     .trim()
     .notEmpty()
     .withMessage('Certificate verification code is required')
-    .isAlphanumeric()
-    .withMessage('Certificate code must be alphanumeric'),
+    .isUUID()
+    .withMessage('Certificate code must be a valid UUID'),
 ];
 
 const getCourseVal = [
