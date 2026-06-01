@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const User = require('../models/user.model');
 
 /**
@@ -7,13 +8,13 @@ const User = require('../models/user.model');
  */
 const generateTokens = (userId, tenantId, role) => {
   const accessToken = jwt.sign(
-    { userId, tenantId, role },
+    { userId, id: userId, tenantId, role },
     process.env.JWT_ACCESS_SECRET,
     { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m' }
   );
 
   const refreshToken = jwt.sign(
-    { userId, tenantId },
+    { userId, id: userId, tenantId },
     process.env.JWT_REFRESH_SECRET,
     { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' }
   );
@@ -21,10 +22,34 @@ const generateTokens = (userId, tenantId, role) => {
   return { accessToken, refreshToken };
 };
 
+const generateAccessToken = (user) => {
+  return jwt.sign(
+    { userId: user._id.toString(), id: user._id.toString(), tenantId: user.tenantId, role: user.role },
+    process.env.JWT_ACCESS_SECRET,
+    { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m' }
+  );
+};
+
+const generateRefreshToken = (user) => {
+  return jwt.sign(
+    { userId: user._id.toString(), id: user._id.toString(), tenantId: user.tenantId },
+    process.env.JWT_REFRESH_SECRET,
+    { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' }
+  );
+};
+
 /**
  * Register a new admin (with college code creation).
  */
 const registerAdmin = async (data, secretKey) => {
+  const email = data?.email;
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!email || !emailRegex.test(email.trim())) {
+    throw new Error('Please provide a valid email address');
+  }
+
+  const normalizedEmail = email.toLowerCase().trim();
+
   if (secretKey !== process.env.ADMIN_REGISTER_SECRET) {
     throw Object.assign(new Error('Invalid secret key'), { statusCode: 403 });
   }
@@ -41,20 +66,27 @@ const registerAdmin = async (data, secretKey) => {
     throw Object.assign(new Error('A college with this code already exists'), { statusCode: 409 });
   }
 
+  const tenantId = data.tenantId;
+  const existing = await User.findOne({
+    email: normalizedEmail, tenantId
+  });
+  if (existing) throw new Error('Email already registered');
+
   const user = await User.create({
     name: data.name,
-    email: data.email,
+    email: normalizedEmail,
     password: data.password,
     tenantId: data.tenantId,
     role: 'admin',
     isActive: true
   });
 
-  const { accessToken, refreshToken } = generateTokens(user._id.toString(), user.tenantId, user.role);
-  
-  // Store hashed refresh token
-  const salt = await bcrypt.genSalt(10);
-  user.refreshToken = await bcrypt.hash(refreshToken, salt);
+  const refreshToken = generateRefreshToken(user);
+  const accessToken = generateAccessToken(user);
+  user.refreshToken = crypto
+    .createHash('sha256')
+    .update(refreshToken)
+    .digest('hex');
   await user.save();
 
   return {
@@ -78,6 +110,13 @@ const registerAdmin = async (data, secretKey) => {
  * Register a new user (student or teacher only).
  */
 const registerUser = async ({ tenantId, name, email, password, role }) => {
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!email || !emailRegex.test(email.trim())) {
+    throw new Error('Please provide a valid email address');
+  }
+
+  const normalizedEmail = email.toLowerCase().trim();
+
   if (!['student', 'teacher'].includes(role)) {
     throw Object.assign(new Error('Invalid role'), { statusCode: 400 });
   }
@@ -87,10 +126,12 @@ const registerUser = async ({ tenantId, name, email, password, role }) => {
     throw Object.assign(new Error('No college found with this code. Ask your admin for the correct college code.'), { statusCode: 404 });
   }
 
-  const existing = await User.findOne({ tenantId, email });
-  if (existing) throw Object.assign(new Error('Email already registered in this tenant.'), { statusCode: 409 });
+  const existing = await User.findOne({
+    email: normalizedEmail, tenantId
+  });
+  if (existing) throw new Error('Email already registered');
 
-  const user = await User.create({ tenantId, name, email, password, role });
+  const user = await User.create({ tenantId, name, email: normalizedEmail, password, role });
   return user;
 };
 
@@ -98,18 +139,20 @@ const registerUser = async ({ tenantId, name, email, password, role }) => {
  * Login with email + password. Returns tokens.
  */
 const loginUser = async ({ tenantId, email, password }) => {
-  const user = await User.findOne({ tenantId, email }).select('+password');
+  const normalizedEmail = email ? email.toLowerCase().trim() : '';
+  const user = await User.findOne({ tenantId, email: normalizedEmail }).select('+password');
   if (!user) throw Object.assign(new Error('Invalid credentials.'), { statusCode: 401 });
   if (!user.isActive) throw Object.assign(new Error('Account is deactivated.'), { statusCode: 403 });
 
   const isMatch = await user.comparePassword(password);
   if (!isMatch) throw Object.assign(new Error('Invalid credentials.'), { statusCode: 401 });
 
-  const { accessToken, refreshToken } = generateTokens(user._id.toString(), tenantId, user.role);
-
-  // Store hashed refresh token
-  const salt = await bcrypt.genSalt(10);
-  user.refreshToken = await bcrypt.hash(refreshToken, salt);
+  const refreshToken = generateRefreshToken(user);
+  const accessToken = generateAccessToken(user);
+  user.refreshToken = crypto
+    .createHash('sha256')
+    .update(refreshToken)
+    .digest('hex');
   user.lastLogin = new Date();
   await user.save();
 
@@ -132,35 +175,63 @@ const loginUser = async ({ tenantId, email, password }) => {
 /**
  * Refresh access token using a valid refresh token.
  */
-const refreshAccessToken = async (refreshToken) => {
+const refreshAccessToken = async (token) => {
   let decoded;
   try {
-    decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-  } catch {
-    throw Object.assign(new Error('Invalid or expired refresh token.'), { statusCode: 401 });
+    decoded = jwt.verify(
+      token,
+      process.env.JWT_REFRESH_SECRET
+    );
+  } catch (err) {
+    throw new Error('Invalid or expired refresh token');
   }
 
-  const user = await User.findById(decoded.userId).select('+refreshToken');
-  if (!user || !user.refreshToken) throw Object.assign(new Error('User not found or logged out.'), { statusCode: 401 });
+  // Hash the submitted token same way it was stored
+  const hashedSubmitted = crypto
+    .createHash('sha256')
+    .update(token)
+    .digest('hex');
 
-  const isValid = await bcrypt.compare(refreshToken, user.refreshToken);
-  if (!isValid) throw Object.assign(new Error('Refresh token mismatch.'), { statusCode: 401 });
+  // Find user AND verify stored token matches
+  const user = await User.findOne({
+    _id: decoded.id,
+    refreshToken: hashedSubmitted
+  });
 
-  const { accessToken, refreshToken: newRefreshToken } = generateTokens(user._id.toString(), user.tenantId, user.role);
+  if (!user) {
+    throw new Error('Invalid or already used refresh token');
+  }
 
-  // Rotate refresh token
-  const salt = await bcrypt.genSalt(10);
-  user.refreshToken = await bcrypt.hash(newRefreshToken, salt);
+  if (!user.isActive) {
+    throw new Error('Account deactivated');
+  }
+
+  // Generate new token pair
+  const newAccessToken = generateAccessToken(user);
+  const newRefreshToken = generateRefreshToken(user);
+
+  // Rotate — save new hash, old one is now invalid
+  const hashedNew = crypto
+    .createHash('sha256')
+    .update(newRefreshToken)
+    .digest('hex');
+
+  user.refreshToken = hashedNew;
   await user.save();
 
-  return { accessToken, refreshToken: newRefreshToken };
+  return { accessToken: newAccessToken,
+           refreshToken: newRefreshToken };
 };
 
 /**
  * Logout — invalidate refresh token.
  */
 const logoutUser = async (userId) => {
-  await User.findByIdAndUpdate(userId, { refreshToken: null });
+  const user = await User.findById(userId);
+  if (user) {
+    user.refreshToken = null;
+    await user.save();
+  }
 };
 
 /**

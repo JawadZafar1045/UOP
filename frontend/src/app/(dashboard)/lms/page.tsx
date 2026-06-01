@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useLmsStore } from "@/store/lmsStore";
 import { useStore } from "@/store/useStore";
 import {
@@ -27,6 +27,23 @@ export default function LMSPage() {
     fetchCourses();
   }, [fetchCourses]);
 
+  const visibleCourses = useMemo(() => {
+    if (!courses) return [];
+    if (user?.role !== 'student') return courses;
+
+    // Defense in depth — filter even if backend
+    // already filtered correctly
+    return courses.filter(course => {
+      const studentsList = course.students || course.enrolledStudents;
+      if (!studentsList || !Array.isArray(studentsList)) return false;
+      return studentsList.some(
+        s => s === user._id ||
+             s?._id === user._id ||
+             s?.toString() === user._id
+      );
+    });
+  }, [courses, user]);
+
   const handlePublishCourse = async (e: React.MouseEvent, courseId: string) => {
     e.preventDefault();
     e.stopPropagation();
@@ -38,6 +55,21 @@ export default function LMSPage() {
       console.error(err);
     }
   };
+
+  if (user?.role === 'student' && visibleCourses.length === 0 && !isLoading && !error) {
+    return (
+      <div className="text-center py-20">
+        <div className="text-4xl mb-4">📚</div>
+        <h3 className="text-lg font-semibold text-gray-800 mb-2">
+          No Courses Yet
+        </h3>
+        <p className="text-gray-500 text-sm">
+          You are not enrolled in any courses.
+          Contact your teacher or admin to get enrolled.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
@@ -412,7 +444,7 @@ export default function LMSPage() {
               Try Again
             </button>
           </div>
-        ) : courses.length === 0 ? (
+        ) : visibleCourses.length === 0 ? (
           <div className="bg-white border border-slate-200/60 rounded-3xl p-16 flex flex-col items-center justify-center text-center shadow-lg">
             <div className="relative mb-8">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-3xl blur-2xl opacity-20"></div>
@@ -444,10 +476,12 @@ export default function LMSPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
-                  {isTeacherOrAdmin ? "All Courses" : "Your Courses"}
+                  {user?.role === 'teacher' ? 'My Courses' :
+                   user?.role === 'admin'   ? 'All Courses' :
+                                              'My Enrolled Courses'}
                 </h2>
                 <p className="text-slate-500 mt-1">
-                  {courses.length} course{courses.length !== 1 ? "s" : ""}{" "}
+                  {visibleCourses.length} course{visibleCourses.length !== 1 ? "s" : ""}{" "}
                   available
                 </p>
               </div>
@@ -455,7 +489,7 @@ export default function LMSPage() {
 
             {/* Course Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {courses.map((course) => (
+              {visibleCourses.map((course) => (
                 <Link
                   href={`/lms/courses/${course._id}`}
                   key={course._id}

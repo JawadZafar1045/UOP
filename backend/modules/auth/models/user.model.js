@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema(
     location:     { type: String },
     bio:          { type: String },
     isActive:     { type: Boolean, default: true },
-    refreshToken: { type: String, select: false }, // Store hashed refresh token
+    refreshToken: { type: String, default: null }, // Store hashed refresh token
     lastLogin:    { type: Date },
   },
   { timestamps: true }
