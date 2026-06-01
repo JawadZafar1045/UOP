@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useStore } from "@/store/useStore";
-import { updateProfile } from "@/services/auth.service";
+import { updateProfile, updatePassword } from "@/services/auth.service";
 import {
   User,
   Mail,
@@ -123,10 +123,10 @@ export default function ProfilePage() {
 
   // Personal info state
   const [name, setName] = useState(user?.name || "");
-  const [phone, setPhone] = useState("");
-  const [location, setLocation] = useState("");
-  const [bio, setBio] = useState("");
-  const [avatarSrc, setAvatarSrc] = useState<string | null>(null);
+  const [phone, setPhone] = useState(user?.phone || "");
+  const [location, setLocation] = useState(user?.location || "");
+  const [bio, setBio] = useState(user?.bio || "");
+  const [avatarSrc, setAvatarSrc] = useState<string | null>(user?.avatar || null);
 
   // Password state
   const [currentPwd, setCurrentPwd] = useState("");
@@ -154,49 +154,65 @@ export default function ProfilePage() {
       label: "Grade notifications",
       sub: "When assignments are graded",
       enabled: true,
-    },
-    {
-      id: "replies",
-      label: "Discussion replies",
-      sub: "When someone replies to your posts",
-      enabled: false,
-    },
-    {
-      id: "weekly",
-      label: "Weekly progress report",
-      sub: "Summary of your learning activity",
-      enabled: false,
-    },
+    }
   ]);
 
   const [activeTab, setActiveTab] = useState<Tab>("personal");
   const [isLoading, setIsLoading] = useState(false);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [toast, setToast] = useState<{
     type: "success" | "error";
     text: string;
   } | null>(null);
 
   useEffect(() => {
-    if (user) setName(user.name);
+    if (user) {
+      setName(user.name);
+      setPhone(user.phone || "");
+      setLocation(user.location || "");
+      setBio(user.bio || "");
+      setAvatarSrc(user.avatar || null);
+    }
   }, [user]);
 
-  // Avatar upload
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => setAvatarSrc(ev.target?.result as string);
-    reader.readAsDataURL(file);
-  };
+  const PRESETS = [
+    { name: "Student 1", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jordan&eyes=default,happy&mouth=default,smile,twinkle" },
+    { name: "Student 2", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Taylor&eyes=default,happy&mouth=default,smile,twinkle" },
+    { name: "Student 3", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Morgan&eyes=default,happy&mouth=default,smile,twinkle" },
+    { name: "Student 4", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex&eyes=default,happy&mouth=default,smile,twinkle" },
+    { name: "Student 5", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sam&eyes=default,happy&mouth=default,smile,twinkle" },
+    { name: "Student 6", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Pat&eyes=default,happy&mouth=default,smile,twinkle" },
+    { name: "Student 7", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Robin&eyes=default,happy&mouth=default,smile,twinkle" },
+    { name: "Student 8", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Casey&eyes=default,happy&mouth=default,smile,twinkle" },
+  ];
 
   // Save personal info
   const handleSavePersonal = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || name === user.name) return;
+    if (!user) return;
+
+    // Check if anything has actually changed
+    const hasChanges = 
+      name.trim() !== user.name ||
+      phone.trim() !== (user.phone || "") ||
+      location.trim() !== (user.location || "") ||
+      bio.trim() !== (user.bio || "") ||
+      avatarSrc !== (user.avatar || null);
+      
+    if (!hasChanges) return;
+
     setIsLoading(true);
     try {
-      const res = await updateProfile({ name });
-      updateUser({ name: res.data.name });
+      const res = await updateProfile({
+        name: name.trim(),
+        phone: phone.trim(),
+        location: location.trim(),
+        bio: bio.trim(),
+        avatar: avatarSrc || undefined
+      });
+      
+      const updatedUser = res.data || res;
+      updateUser(updatedUser);
       setToast({ type: "success", text: "Profile updated successfully!" });
     } catch (err: any) {
       setToast({ type: "error", text: err.message || "Failed to update profile" });
@@ -214,8 +230,7 @@ export default function ProfilePage() {
     }
     setIsLoading(true);
     try {
-      // await updatePassword({ currentPwd, newPwd });
-      await new Promise((r) => setTimeout(r, 800));
+      await updatePassword({ currentPwd, newPwd });
       setToast({ type: "success", text: "Password updated successfully!" });
       setCurrentPwd("");
       setNewPwd("");
@@ -268,7 +283,7 @@ export default function ProfilePage() {
               <div className="relative group mb-3">
                 <button
                   type="button"
-                  onClick={() => fileRef.current?.click()}
+                  onClick={() => setShowAvatarModal(true)}
                   className="w-20 h-20 rounded-full ring-4 ring-white shadow-lg overflow-hidden bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-2xl font-bold hover:opacity-90 transition-opacity"
                 >
                   {avatarSrc ? (
@@ -281,13 +296,6 @@ export default function ProfilePage() {
                   <Camera className="w-3 h-3 text-slate-500" />
                 </div>
               </div>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleAvatarChange}
-              />
 
               <h2 className="font-semibold text-slate-900 text-base">{user.name}</h2>
               <span className="mt-1.5 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full">
@@ -449,14 +457,27 @@ export default function ProfilePage() {
               <div className="flex items-center justify-between pt-2 border-t border-slate-100">
                 <button
                   type="button"
-                  onClick={() => { setName(user.name); setPhone(""); setLocation(""); setBio(""); }}
+                  onClick={() => {
+                    setName(user.name);
+                    setPhone(user.phone || "");
+                    setLocation(user.location || "");
+                    setBio(user.bio || "");
+                    setAvatarSrc(user.avatar || null);
+                  }}
                   className="text-sm text-slate-500 hover:text-slate-700 px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all"
                 >
                   Discard
                 </button>
                 <button
                   type="submit"
-                  disabled={isLoading || name.trim() === user.name}
+                  disabled={
+                    isLoading ||
+                    (name.trim() === user.name &&
+                      phone.trim() === (user.phone || "") &&
+                      location.trim() === (user.location || "") &&
+                      bio.trim() === (user.bio || "") &&
+                      avatarSrc === (user.avatar || null))
+                  }
                   className="flex items-center gap-2 bg-indigo-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.97] shadow-sm shadow-indigo-200"
                 >
                   {isLoading ? (
@@ -614,6 +635,94 @@ export default function ProfilePage() {
       {/* Toast */}
       {toast && (
         <Toast type={toast.type} message={toast.text} onClose={() => setToast(null)} />
+      )}
+
+      {/* Avatar Picker Modal */}
+      {showAvatarModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full overflow-hidden p-6 space-y-4 animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Choose Profile Avatar</h3>
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                  Select a premium illustration preset. These lightweight avatars keep the platform fast and save database storage!
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAvatarModal(false)}
+                className="p-1.5 rounded-xl border border-slate-100 text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Grid */}
+            <div className="grid grid-cols-4 gap-3 py-2">
+              {/* Dynamic Initials Avatar */}
+              <button
+                type="button"
+                onClick={() => {
+                  setAvatarSrc(`https://api.dicebear.com/7.x/initials/svg?seed=${name}`);
+                  setShowAvatarModal(false);
+                }}
+                className={`aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-500 to-violet-600 p-0.5 transition-all hover:scale-105 ${
+                  avatarSrc?.includes("initials")
+                    ? "ring-4 ring-indigo-500 ring-offset-2"
+                    : "ring-1 ring-slate-200"
+                }`}
+              >
+                <div className="w-full h-full bg-slate-950/10 flex flex-col items-center justify-center text-white text-xs font-bold leading-tight">
+                  <span className="text-lg uppercase">{name ? name.charAt(0) : "U"}</span>
+                  <span className="text-[9px] font-semibold opacity-80 uppercase mt-0.5">Initials</span>
+                </div>
+              </button>
+
+              {PRESETS.map((p) => {
+                const isSelected = avatarSrc === p.url;
+                return (
+                  <button
+                    key={p.name}
+                    type="button"
+                    onClick={() => {
+                      setAvatarSrc(p.url);
+                      setShowAvatarModal(false);
+                    }}
+                    className={`aspect-square rounded-2xl overflow-hidden bg-slate-50 border p-1 transition-all hover:scale-105 hover:bg-slate-100 ${
+                      isSelected
+                        ? "border-indigo-500 ring-4 ring-indigo-500 ring-offset-2"
+                        : "border-slate-200"
+                    }`}
+                  >
+                    <img src={p.url} alt={p.name} className="w-full h-full object-contain" />
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setAvatarSrc(null);
+                  setShowAvatarModal(false);
+                }}
+                className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 px-4 py-2.5 rounded-xl hover:bg-rose-100 transition-colors"
+              >
+                Remove Avatar
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowAvatarModal(false)}
+                className="text-xs font-semibold text-white bg-indigo-600 px-4 py-2.5 rounded-xl hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-100"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

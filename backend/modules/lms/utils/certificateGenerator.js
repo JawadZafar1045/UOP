@@ -116,7 +116,7 @@ exports.generate = async ({
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         folder: 'certificates',
-        resource_type: 'raw', // Ensure PDF is uploaded as raw
+        resource_type: 'auto', // Auto-detect PDF as image/document resource type
         format: 'pdf'
       },
       (error, result) => {
