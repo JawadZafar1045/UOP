@@ -644,9 +644,9 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
       {/* Question Builder Modal */}
       {showQuestionBuilder && currentQuiz && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl w-full max-w-6xl h-[90vh] shadow-xl overflow-hidden flex">
+          <div className="bg-white rounded-2xl w-full max-w-6xl h-[90vh] shadow-xl overflow-hidden flex flex-col md:flex-row">
             {/* Left Side - Questions List */}
-            <div className="w-1/3 border-r border-slate-200 p-6">
+            <div className="w-full md:w-1/3 border-b md:border-b-0 md:border-r border-slate-200 p-6 flex flex-col max-h-[40vh] md:max-h-none overflow-y-auto md:overflow-visible">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-semibold text-slate-900">Questions</h3>
                 <span className="text-sm text-slate-500">{quizQuestions.length} added</span>

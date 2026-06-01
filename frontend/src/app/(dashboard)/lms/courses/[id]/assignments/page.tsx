@@ -397,9 +397,9 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
               </button>
             </div>
             
-            <div className="flex-1 overflow-hidden flex">
+            <div className="flex-1 overflow-y-auto sm:overflow-hidden flex flex-col sm:flex-row">
               {/* Submission List */}
-              <div className="w-1/2 border-r border-slate-100 overflow-y-auto p-4 space-y-4">
+              <div className="w-full sm:w-1/2 border-b sm:border-b-0 sm:border-r border-slate-100 sm:overflow-y-auto p-4 space-y-4 min-h-[30vh] sm:min-h-0">
                 {currentAssignmentSubmissions?.submissions?.length === 0 ? (
                   <div className="text-center py-12 text-slate-400">No submissions yet.</div>
                 ) : (
@@ -424,7 +424,7 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
               </div>
 
               {/* Grading Panel */}
-              <div className="w-1/2 p-6 bg-slate-50/50 overflow-y-auto">
+              <div className="w-full sm:w-1/2 p-6 bg-slate-50/50 sm:overflow-y-auto">
                 {gradingData.studentId ? (
                   <form onSubmit={handleGrade} className="space-y-6">
                     <h3 className="font-bold text-slate-900 flex items-center gap-2">

@@ -95,7 +95,8 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
 
       {isTeacherOrAdmin ? (
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-          <table className="w-full text-left text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
               <tr>
                 <th className="px-6 py-4 font-medium">Student Name</th>

@@ -4,8 +4,8 @@ import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/store/useStore";
 import * as lmsService from "@/services/lms.service";
-import { Save, Image as ImageIcon, CheckCircle } from "lucide-react";
-
+import Link from "next/link";
+import { ChevronLeft, Save, Image as ImageIcon, CheckCircle } from "lucide-react";
 export default function CertificateTemplatePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const courseId = resolvedParams.id;
@@ -124,7 +124,9 @@ export default function CertificateTemplatePage({ params }: { params: Promise<{ 
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 min-h-[800px]">
+    <>
+
+<div className="flex flex-col lg:flex-row gap-6 min-h-[800px]">
       {/* LEFT - CONTROLS (40%) */}
       <div className="w-full lg:w-2/5 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
         <div className="p-5 border-b border-slate-100 bg-slate-50 flex flex-col gap-4">
@@ -265,10 +267,9 @@ export default function CertificateTemplatePage({ params }: { params: Promise<{ 
             <CheckCircle className="w-4 h-4 text-emerald-500" /> Live Preview (A4 Scaled)
           </h3>
         </div>
-        
-        <div className="flex-1 flex items-center justify-center p-8 overflow-hidden relative bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
+        <div className="flex-1 flex items-center justify-start lg:justify-center p-4 md:p-8 overflow-auto relative bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] min-h-[500px]">
           {/* We scale the 1122x794 div so it fits visually in the container */}
-            <div className="shadow-2xl bg-white origin-center" style={{ width: 1122, height: 794, transform: 'scale(0.55)', backgroundColor, color: textColor, fontFamily }}>
+            <div className="shadow-2xl bg-white origin-center shrink-0" style={{ width: 1122, height: 794, transform: 'scale(0.55)', backgroundColor, color: textColor, fontFamily }}>
               <div style={{ ...borderCSS, width: '100%', height: '100%', padding: 40, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                 
                 {logoUrl && <img src={logoUrl} alt="Logo" style={{ maxHeight: 80, marginBottom: 20 }} />}
@@ -328,5 +329,6 @@ export default function CertificateTemplatePage({ params }: { params: Promise<{ 
         </div>
       </div>
     </div>
+    </>
   );
 }
