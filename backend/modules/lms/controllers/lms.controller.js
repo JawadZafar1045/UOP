@@ -155,10 +155,50 @@ const proxyDownload = (fileUrl, fileName, res, next) => {
 };
 
 // ── Courses ────────────────────────────────────────────────────────────────────
-const getCourses    = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getCourses({ tenantId: req.tenantId, userId: req.user._id, role: req.user.role, ...req.query }) }); } catch (e) { next(e); } };
+const getCourses    = async (req, res, next) => {
+  try {
+    res.json({
+      success: true,
+      data: await lmsService.getCourses(
+        req.tenantId,
+        req.userId || req.user?._id,
+        req.user.role
+      )
+    });
+  } catch (e) {
+    next(e);
+  }
+};
 const getCourse     = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getCourseById(req.tenantId, req.params.id, req.user._id, req.user.role) }); } catch (e) { next(e); } };
-const createCourse  = async (req, res, next) => { try { const c = await lmsService.createCourse(req.tenantId, req.body, req.user._id); res.status(201).json({ success: true, data: c }); } catch (e) { next(e); } };
+const createCourse  = async (req, res, next) => {
+  try {
+    const c = await lmsService.createCourse(req.tenantId, req.body, req.user._id);
+    res.status(201).json({ success: true, data: c });
+  } catch (error) {
+    if (error.errors && Array.isArray(error.errors)) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+        errors: error.errors
+      });
+    }
+    next(error);
+  }
+};
 const updateCourse  = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.updateCourse(req.tenantId, req.params.id, req.body, req.user._id, req.user.role) }); } catch (e) { next(e); } };
+const saveDraft     = async (req, res, next) => {
+  try {
+    const course = await lmsService.saveDraft(
+      req.tenantId,
+      req.params.id,
+      req.body,
+      req.user._id
+    );
+    res.json({ success: true, data: course });
+  } catch (e) {
+    next(e);
+  }
+};
 const deleteCourse  = async (req, res, next) => { try { await lmsService.deleteCourse(req.tenantId, req.params.id, req.user._id); res.json({ success: true, message: 'Course deleted.' }); } catch (e) { next(e); } };
 
 // ── Enrollment ─────────────────────────────────────────────────────────────────
@@ -432,7 +472,7 @@ const revokeCertificate = async (req, res, next) => {
 };
 
 module.exports = {
-  getCourses, getCourse, createCourse, updateCourse, deleteCourse, enrollStudent,
+  getCourses, getCourse, createCourse, updateCourse, saveDraft, deleteCourse, enrollStudent,
   markAttendance, getCourseAttendance,
   createAssignment, updateAssignment, deleteAssignment, submitAssignment, getCourseAssignments,
   createSession, updateSession, getCourseSessions, toggleSession, getSessionAttendance, overrideAttendance,

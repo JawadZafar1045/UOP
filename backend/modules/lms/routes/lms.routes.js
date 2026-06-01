@@ -25,6 +25,7 @@ router.get('/courses',        authorize('admin', 'teacher', 'student'), ctrl.get
 router.get('/courses/:id',    val.getCourseVal, validateResult, authorize('admin', 'teacher', 'student'), ctrl.getCourse);
 router.post('/courses',       val.createCourseVal, validateResult, authorize('admin', 'teacher'),                  ctrl.createCourse);
 router.patch('/courses/:id',    val.updateCourseVal, validateResult, authorize('admin', 'teacher'),                  ctrl.updateCourse);
+router.patch('/courses/:id/draft', authorize('admin', 'teacher'), ctrl.saveDraft);
 router.delete('/courses/:id', val.deleteCourseVal, validateResult, authorize('admin'),                             ctrl.deleteCourse);
 
 // ── Enrollment ─────────────────────────────────────────────────────────────────

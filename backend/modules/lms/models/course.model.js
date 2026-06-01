@@ -3,15 +3,36 @@ const mongoose = require('mongoose');
 const courseSchema = new mongoose.Schema(
   {
     tenantId: { type: String, required: true, index: true },
-    title: { type: String, required: [true, 'Course title is required'], trim: true },
-    description: { type: String, trim: true },
-    instructor: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    title: {
+      type: String,
+      required: [true, 'Course title is required'],
+      trim: true,
+      minlength: [3, 'Title must be at least 3 characters'],
+      maxlength: [100, 'Title cannot exceed 100 characters']
+    },
+    description: {
+      type: String,
+      required: false,
+      default: '',
+      trim: true
+    },
+    instructor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', alias: 'teacher' },
     thumbnail: { type: String },
     duration: { type: String }, // e.g. "8 weeks"
     isPublished: { type: Boolean, default: false },
+    category: { type: String },
+    level: { type: String },
+    maxStudents: { type: Number },
 
     // ── Status & Schedule ────────────────────────────────────────────────────────
-    status: { type: String, enum: ['draft', 'active', 'completed'], default: 'draft' },
+    status: {
+      type: String,
+      enum: {
+        values: ['draft', 'active', 'completed'],
+        message: 'Status must be: draft, active, or completed'
+      },
+      default: 'draft'
+    },
     startDate: { type: Date },
     endDate: { type: Date },
 
@@ -41,7 +62,7 @@ const courseSchema = new mongoose.Schema(
     ],
 
     // ── Students (enrolled) ──────────────────────────────────────────────────────
-    enrolledStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    enrolledStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', alias: 'students' }],
   },
   { timestamps: true }
 );

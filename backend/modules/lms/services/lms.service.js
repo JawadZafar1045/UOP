@@ -1,4 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
+const pLimit = require('p-limit');
 const Course = require('../models/course.model');
 const Attendance = require('../models/attendance.model');
 const Assignment = require('../models/assignment.model');
@@ -17,33 +18,31 @@ const { logActivity } = require('../../shared/services/activityLogger.service');
 // ── Helper ─────────────────────────────────────────────────────────────────────
 const err = (msg, code = 400) => Object.assign(new Error(msg), { statusCode: code });
 
+const checkOwnership = (course, userId, role) => {
+  if (role === 'teacher' && course.instructor && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to modify this course.', 403);
+  }
+};
+
 // ══════════════════════════════════════════════════════════════════════════════
 // COURSES (existing, preserved)
 // ══════════════════════════════════════════════════════════════════════════════
-const getCourses = async ({ tenantId, userId, role, page = 1, limit = 20 }) => {
-  const skip = (parseInt(page) - 1) * parseInt(limit);
-  
+const getCourses = async (tenantId, userId, role) => {
   const filter = { tenantId };
-  if (role === 'student') {
-    // Students see courses they are enrolled in (any status) 
-    // OR active courses in their tenant.
-    filter.$or = [
-      { enrolledStudents: userId },
-      { status: 'active' }
-    ];
-  } else if (role === 'teacher') {
-    // Teachers only see courses they are assigned to as instructor
-    filter.instructor = userId;
-  }
 
-  const [courses, total] = await Promise.all([
-    Course.find(filter)
-      .populate('instructor', 'name email avatar')
-      .sort({ createdAt: -1 })
-      .skip(skip).limit(parseInt(limit)),
-    Course.countDocuments(filter),
-  ]);
-  return { courses, total, page: parseInt(page), pages: Math.ceil(total / limit) };
+  if (role === 'student') {
+    filter.enrolledStudents = userId;    // only enrolled
+    filter.status = 'active';    // only active courses
+  } else if (role === 'teacher') {
+    filter.instructor = userId;     // only own courses
+  }
+  // admin: no extra filter, sees everything
+
+  return Course.find(filter)
+    .populate('instructor', 'name email')
+    .select('title description status instructor enrolledStudents startDate endDate completionCriteria category thumbnail')
+    .lean()
+    .sort({ createdAt: -1 });
 };
 
 const getCourseById = async (tenantId, courseId, userId, role) => {
@@ -76,7 +75,37 @@ const getCourseById = async (tenantId, courseId, userId, role) => {
   return courseObj;
 };
 
+const unescapeString = (val) => {
+  if (typeof val === 'string') {
+    return val
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#x27;/g, "'")
+      .replace(/&#x2F;/g, '/');
+  }
+  return val;
+};
+
 const createCourse = async (tenantId, data, userId) => {
+  const errors = [];
+  if (!data.title || data.title.trim().length < 3) {
+    errors.push({
+      field: 'title',
+      message: 'Course title is required (min 3 characters)'
+    });
+  }
+  if (errors.length > 0) {
+    const err = new Error('Validation failed');
+    err.statusCode = 400;
+    err.errors = errors;
+    throw err;
+  }
+
+  if (data.title) data.title = unescapeString(data.title);
+  if (data.description) data.description = unescapeString(data.description);
+
   const course = await Course.create({ instructor: userId, ...data, tenantId });
   await logActivity({ userId, tenantId, action: 'CREATE_COURSE', entityType: 'Course', entityId: course._id });
   return course;
@@ -86,10 +115,69 @@ const updateCourse = async (tenantId, courseId, data, userId, userRole) => {
   const filter = { _id: courseId, tenantId };
   if (userRole !== 'admin') filter.instructor = userId;
 
-  const course = await Course.findOneAndUpdate(filter, data, { new: true, runValidators: true });
-  if (!course) throw err('Course not found or you do not have permission to edit it.', 404);
+  const VALID_STATUSES = ['draft', 'active', 'completed'];
+  if (data.status && !VALID_STATUSES.includes(data.status)) {
+    throw new Error(
+      `Invalid status '${data.status}'. ` +
+      `Allowed values: ${VALID_STATUSES.join(', ')}`
+    );
+  }
+
+  if (data.title) data.title = unescapeString(data.title);
+  if (data.description) data.description = unescapeString(data.description);
+
+  const ALLOWED_UPDATE_FIELDS = [
+    'title', 'description', 'startDate', 'endDate',
+    'status', 'completionCriteria', 'category',
+    'level', 'maxStudents', 'thumbnail'
+  ];
+
+  const safeUpdate = {};
+  ALLOWED_UPDATE_FIELDS.forEach(field => {
+    if (data[field] !== undefined) {
+      safeUpdate[field] = data[field];
+    }
+  });
+
+  const updated = await Course.findOneAndUpdate(
+    filter,
+    { $set: safeUpdate },
+    { new: true, runValidators: true }
+  );
+  if (!updated) throw err('Course not found or you do not have permission to edit it.', 404);
   await logActivity({ userId, tenantId, action: 'UPDATE_COURSE', entityType: 'Course', entityId: courseId });
-  return course;
+  return updated;
+};
+
+const saveDraft = async (tenantId, courseId, data, userId) => {
+  const course = await Course.findOne({
+    _id: courseId, tenantId
+  });
+  if (!course) throw new Error('Course not found');
+
+  checkOwnership(course, userId, 'teacher');
+
+  if (data.title) data.title = unescapeString(data.title);
+  if (data.description) data.description = unescapeString(data.description);
+
+  // Only update provided fields, no validation
+  const draftFields = {};
+  if (data.title) draftFields.title = data.title.trim();
+  if (data.description !== undefined)
+    draftFields.description = data.description;
+  if (data.startDate) draftFields.startDate = data.startDate;
+  if (data.endDate) draftFields.endDate = data.endDate;
+  if (data.category) draftFields.category = data.category;
+  if (data.completionCriteria)
+    draftFields.completionCriteria = data.completionCriteria;
+
+  draftFields.status = 'draft'; // always stays draft
+
+  return Course.findOneAndUpdate(
+    { _id: courseId, tenantId },
+    { $set: draftFields },
+    { new: true }
+  );
 };
 
 const deleteCourse = async (tenantId, courseId, userId) => {
@@ -896,23 +984,44 @@ const generateCertificate = async (tenantId, courseId, studentId, issuedBy, role
 };
 
 const generateAllCertificates = async (tenantId, courseId, issuedBy, role) => {
-  const course = await Course.findOne({ _id: courseId, tenantId });
+  // Select both field names to be safe regardless of schema alias
+  const course = await Course.findOne({ _id: courseId, tenantId })
+    .select('+students +enrolledStudents instructor');
   if (!course) throw err('Course not found.', 404);
   if (role !== 'admin' && course.instructor.toString() !== issuedBy.toString()) {
     throw err('You do not have permission to generate certificates for this course.', 403);
   }
 
+  // Critical 2 — alias-safe student list fallback
+  const studentList = course.students || course.enrolledStudents || [];
+  if (studentList.length === 0) {
+    return {
+      generated: [],
+      skipped: [],
+      errors: ['No students enrolled in this course']
+    };
+  }
+
   const generated = [], skipped = [], errors = [];
-  await Promise.all(course.enrolledStudents.map(async studentId => {
-    try {
-      const already = await Certificate.findOne({ tenantId, courseId, studentId });
-      if (already) { skipped.push({ studentId, reason: 'Already exists' }); return; }
-      const elig = await checkEligibility(tenantId, courseId, studentId);
-      if (!elig.eligible) { skipped.push({ studentId, reason: elig.reason }); return; }
-      await generateCertificate(tenantId, courseId, studentId, issuedBy, role);
-      generated.push(studentId);
-    } catch (e) { errors.push({ studentId, error: e.message }); }
-  }));
+
+  // Critical 1 — limit to 3 concurrent Puppeteer browsers, prevents OOM crash
+  const limit = pLimit(3);
+
+  await Promise.all(
+    studentList.map(studentId =>
+      limit(async () => {
+        try {
+          const already = await Certificate.findOne({ tenantId, courseId, studentId });
+          if (already) { skipped.push({ studentId, reason: 'Already exists' }); return; }
+          const elig = await checkEligibility(tenantId, courseId, studentId);
+          if (!elig.eligible) { skipped.push({ studentId, reason: elig.reason }); return; }
+          await generateCertificate(tenantId, courseId, studentId, issuedBy, role);
+          generated.push(studentId);
+        } catch (e) { errors.push({ studentId, error: e.message }); }
+      })
+    )
+  );
+
   return { generated, skipped, errors };
 };
 
@@ -971,6 +1080,7 @@ const getAdminUsers = async (tenantId) => {
   const User = require('../../auth/models/user.model');
   return User.find({ tenantId, role: { $ne: 'admin' } })
     .select('name email role createdAt isActive')
+    .lean()
     .sort({ createdAt: -1 });
 };
 
@@ -1002,11 +1112,11 @@ const deactivateUser = async (tenantId, targetUserId, requesterId) => {
 const getAdminCourses = async (tenantId) => {
   const courses = await Course.find({ tenantId })
     .populate('instructor', 'name email')
+    .lean()
     .sort({ createdAt: -1 });
   return courses.map(c => {
-    const obj = c.toObject();
-    obj.studentCount = (c.enrolledStudents || []).length;
-    return obj;
+    c.studentCount = (c.enrolledStudents || c.students || []).length;
+    return c;
   });
 };
 
@@ -1027,7 +1137,7 @@ const deleteAdminCourse = async (tenantId, courseId) => {
     Attendance.deleteMany({ courseId, tenantId }),
     Assignment.deleteMany({ courseId, tenantId }),
     Quiz.deleteMany({ courseId, tenantId }),
-    QuizQuestion.deleteMany({ quizId: { $in: quizIds } }),
+    QuizQuestion.deleteMany({ quizId: { $in: quizIds }, tenantId }),
     QuizAttempt.deleteMany({ courseId, tenantId }),
     LmsDocument.deleteMany({ courseId, tenantId }),
     Certificate.deleteMany({ courseId, tenantId }),
@@ -1054,7 +1164,7 @@ const revokeCertificate = async (tenantId, certId) => {
 };
 
 module.exports = {
-  getCourses, getCourseById, createCourse, updateCourse, deleteCourse, enrollStudent,
+  getCourses, getCourseById, createCourse, updateCourse, saveDraft, deleteCourse, enrollStudent,
   markAttendance, getCourseAttendance,
   createAssignment, updateAssignment, deleteAssignment, submitAssignment, getCourseAssignments,
   createSession, updateSession, toggleSession, getCourseSessions, getSessionAttendance, overrideAttendance,

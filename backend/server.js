@@ -28,6 +28,11 @@ connectDB().then(() => ensureIndexes());
 
 // ── Core Middleware ────────────────────────────────────────────────────────────
 app.use(helmet());
+const compression = require('compression');
+app.use(compression({
+  level: 6,        // gzip level 6 — good balance of speed vs size
+  threshold: 1024, // only compress responses > 1 KB
+}));
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true,
@@ -92,6 +97,4 @@ server.listen(PORT, () => {
   console.log(`📡 API Base: http://localhost:${PORT}/api`);
 });
 
-module.exports = { app, server };
-
-module.exports = {server,app}
+module.exports = { server, app };
