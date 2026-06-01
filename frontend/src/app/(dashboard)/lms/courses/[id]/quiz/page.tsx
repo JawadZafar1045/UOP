@@ -251,6 +251,19 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
     }
   };
 
+  // Unpublish Quiz Handler
+  const handleUnpublishQuiz = async (quizId: string) => {
+    if (!confirm('Revert this quiz to Draft? Students will no longer be able to take it, but their existing attempts will be preserved.')) return;
+
+    try {
+      await updateQuiz(quizId, { status: 'draft' });
+      alert('Quiz reverted to Draft successfully!');
+      fetchQuizzes(courseId);
+    } catch (err: any) {
+      alert(err?.message || 'Failed to revert quiz');
+    }
+  };
+
   // View Results Handler
   const handleViewResults = async (quiz: any) => {
     setCurrentQuiz(quiz);
@@ -409,9 +422,9 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
               </div>
 
               <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
-                {isTeacherOrAdmin ? (
+                 {isTeacherOrAdmin ? (
                   <div className="flex items-center gap-4">
-                    {quiz.status === 'draft' && (
+                    {quiz.status === 'draft' ? (
                       <>
                         <button
                           onClick={() => {
@@ -440,15 +453,25 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                           </button>
                         )}
                       </>
-                    )}
-                    {(quiz.status === 'published' || quiz.status === 'closed') && (
-                      <button
-                        onClick={() => handleViewResults(quiz)}
-                        className="text-sm font-bold text-purple-600 hover:text-purple-700 flex items-center gap-1.5 transition-colors"
-                      >
-                        <BarChart3 className="w-4 h-4" />
-                        View Results
-                      </button>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => handleUnpublishQuiz(quiz._id)}
+                          className="text-sm font-bold text-amber-600 hover:text-amber-700 flex items-center gap-1.5 transition-colors"
+                        >
+                          <XCircle className="w-4 h-4" />
+                          Revert to Draft
+                        </button>
+                        {(quiz.status === 'published' || quiz.status === 'closed') && (
+                          <button
+                            onClick={() => handleViewResults(quiz)}
+                            className="text-sm font-bold text-purple-600 hover:text-purple-700 flex items-center gap-1.5 transition-colors"
+                          >
+                            <BarChart3 className="w-4 h-4" />
+                            View Results
+                          </button>
+                        )}
+                      </>
                     )}
                   </div>
                 ) : (
@@ -621,9 +644,9 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
       {/* Question Builder Modal */}
       {showQuestionBuilder && currentQuiz && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl w-full max-w-6xl h-[90vh] shadow-xl overflow-hidden flex">
+          <div className="bg-white rounded-2xl w-full max-w-6xl h-[90vh] shadow-xl overflow-hidden flex flex-col md:flex-row">
             {/* Left Side - Questions List */}
-            <div className="w-1/3 border-r border-slate-200 p-6">
+            <div className="w-full md:w-1/3 border-b md:border-b-0 md:border-r border-slate-200 p-6 flex flex-col max-h-[40vh] md:max-h-none overflow-y-auto md:overflow-visible">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-semibold text-slate-900">Questions</h3>
                 <span className="text-sm text-slate-500">{quizQuestions.length} added</span>

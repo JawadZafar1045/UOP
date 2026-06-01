@@ -36,6 +36,11 @@ app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Sanitize inputs to prevent NoSQL Injection and XSS
+const { mongoSanitize, xssSanitize } = require('./modules/shared/middlewares/security.middleware');
+app.use(mongoSanitize);
+app.use(xssSanitize);
+
 // ── Rate Limiter ───────────────────────────────────────────────────────────────
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
@@ -88,3 +93,5 @@ server.listen(PORT, () => {
 });
 
 module.exports = { app, server };
+
+module.exports = {server,app}

@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import { useLmsStore } from '@/store/lmsStore';
 import { useStore } from '@/store/useStore';
-import { FileText, Plus, UploadCloud, XCircle, Calendar, Download, CheckCircle2, AlertCircle, ChevronLeft, ArrowRight, Clock, Edit2 } from 'lucide-react';
+import { FileText, Plus, UploadCloud, XCircle, Calendar, Download, CheckCircle2, AlertCircle, ChevronLeft, ArrowRight, Clock, Edit2, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AssignmentsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -12,7 +12,7 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
   const { 
     assignments, isLoading, error, fetchAssignments, createAssignment, 
     submitAssignment, fetchAssignmentSubmissions, gradeAssignment, 
-    currentAssignmentSubmissions 
+    currentAssignmentSubmissions, deleteAssignment 
   } = useLmsStore();
   const { user } = useStore();
   
@@ -111,6 +111,20 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
     setCreateData({ title: '', description: '', instructions: '', maxMarks: '100', dueDate: '' });
     setMaterialFiles([]);
     setShowCreateModal(true);
+  };
+
+  const handleDeleteAssignment = async (assignmentId: string, title: string) => {
+    if (!window.confirm(`Are you sure you want to delete the assignment "${title}"? This will permanently delete all student submissions and associated materials.`)) {
+      return;
+    }
+    try {
+      await deleteAssignment(assignmentId);
+      alert('Assignment deleted successfully!');
+      fetchAssignments(courseId);
+    } catch (err: any) {
+      console.error(err);
+      alert(err?.message || 'Failed to delete assignment');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -231,13 +245,22 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
                       {assignment.maxMarks} pts
                     </span>
                     {isTeacherOrAdmin && (
-                      <button 
-                        onClick={() => openEditModal(assignment)}
-                        className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                        title="Edit Assignment"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <button 
+                          onClick={() => openEditModal(assignment)}
+                          className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                          title="Edit Assignment"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteAssignment(assignment._id, assignment.title)}
+                          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                          title="Delete Assignment"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -374,9 +397,9 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
               </button>
             </div>
             
-            <div className="flex-1 overflow-hidden flex">
+            <div className="flex-1 overflow-y-auto sm:overflow-hidden flex flex-col sm:flex-row">
               {/* Submission List */}
-              <div className="w-1/2 border-r border-slate-100 overflow-y-auto p-4 space-y-4">
+              <div className="w-full sm:w-1/2 border-b sm:border-b-0 sm:border-r border-slate-100 sm:overflow-y-auto p-4 space-y-4 min-h-[30vh] sm:min-h-0">
                 {currentAssignmentSubmissions?.submissions?.length === 0 ? (
                   <div className="text-center py-12 text-slate-400">No submissions yet.</div>
                 ) : (
@@ -401,7 +424,7 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
               </div>
 
               {/* Grading Panel */}
-              <div className="w-1/2 p-6 bg-slate-50/50 overflow-y-auto">
+              <div className="w-full sm:w-1/2 p-6 bg-slate-50/50 sm:overflow-y-auto">
                 {gradingData.studentId ? (
                   <form onSubmit={handleGrade} className="space-y-6">
                     <h3 className="font-bold text-slate-900 flex items-center gap-2">

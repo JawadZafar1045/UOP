@@ -308,7 +308,7 @@ export default function LoginPage() {
 
             <div className="space-y-2">
               <label className="text-sm font-semibold text-slate-700 ml-1">
-                Workspace Tenant ID
+                College Code
               </label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
@@ -385,7 +385,7 @@ export default function LoginPage() {
                 href="/signup"
                 className="text-blue-600 font-bold hover:text-blue-700 transition-colors"
               >
-                Create a workspace
+                Create new account
               </Link>
             </p>
           </form>

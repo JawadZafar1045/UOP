@@ -8,6 +8,13 @@ const streamifier = require('streamifier');
  * @returns {Promise<{url: string, publicId: string}>}
  */
 const uploadFile = (file, folder = 'uop_uploads') => {
+  try {
+    const { validateUploadedFile } = require('../middlewares/security.middleware');
+    validateUploadedFile(file);
+  } catch (error) {
+    return Promise.reject(error);
+  }
+
   return new Promise((resolve, reject) => {
     const originalName = file.originalname || 'file';
     const extMatch = originalName.match(/\.([^\.]+)$/);

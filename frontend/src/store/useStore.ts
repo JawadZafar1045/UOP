@@ -8,6 +8,9 @@ interface User {
   role: string;
   avatar?: string;
   tenantId?: string;
+  phone?: string;
+  location?: string;
+  bio?: string;
 }
 
 interface AppState {

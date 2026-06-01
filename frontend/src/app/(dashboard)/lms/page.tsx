@@ -14,6 +14,7 @@ import {
   GraduationCap,
   TrendingUp,
   CheckCircle2,
+  ChevronLeft,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -42,6 +43,7 @@ export default function LMSPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
       <div className="space-y-8 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+
         {/* Elevated Hero Header */}
         <div className="relative overflow-hidden bg-white rounded-3xl border border-slate-200/60 shadow-xl shadow-slate-900/5">
           {/* Abstract Background */}
@@ -344,7 +346,7 @@ export default function LMSPage() {
                         {
                           courses.filter(
                             (c) =>
-                              c.status === "active" || c.status === "published",
+                              c.status === "active",
                           ).length
                         }{" "}
                         Published
@@ -513,7 +515,6 @@ export default function LMSPage() {
                       <div className="absolute top-4 right-4 z-20">
                         <span
                           className={`text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-full shadow-lg backdrop-blur-xl border-2 ${
-                            course.status === "published" ||
                             course.status === "active"
                               ? "bg-emerald-500/95 text-white border-emerald-300/50"
                               : "bg-slate-700/95 text-white border-slate-500/50"

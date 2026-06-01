@@ -41,13 +41,45 @@ const getDocuments = async ({ tenantId, role, userId, category, scope, courseId,
   return { documents, total, page, pages: Math.ceil(total / limit) };
 };
 
-const getDocumentById = async (tenantId, docId) => {
+const getDocumentById = async (tenantId, docId, userId, role) => {
   const doc = await Document.findOne({ _id: docId, tenantId }).populate('uploadedBy', 'name email');
   if (!doc) throw Object.assign(new Error('Document not found.'), { statusCode: 404 });
+
+  if (role === 'student') {
+    if (doc.scope === 'course') {
+      const course = await Course.findOne({ _id: doc.courseId, tenantId });
+      if (!course || !course.enrolledStudents.map(String).includes(String(userId))) {
+        throw Object.assign(new Error('Access denied to this document.'), { statusCode: 403 });
+      }
+    } else if (doc.scope === 'student_submission') {
+      if (doc.studentId && doc.studentId.toString() !== userId.toString()) {
+        throw Object.assign(new Error('Access denied to this document.'), { statusCode: 403 });
+      }
+    }
+  } else if (role === 'teacher') {
+    if (doc.scope === 'course') {
+      const course = await Course.findOne({ _id: doc.courseId, tenantId });
+      if (!course || course.instructor.toString() !== userId.toString()) {
+        throw Object.assign(new Error('Access denied to this document.'), { statusCode: 403 });
+      }
+    }
+  }
+
   return doc;
 };
 
-const uploadDocument = async (tenantId, file, metadata, userId) => {
+const uploadDocument = async (tenantId, file, metadata, userId, role) => {
+  if (metadata.courseId) {
+    const course = await Course.findOne({ _id: metadata.courseId, tenantId });
+    if (!course) throw Object.assign(new Error('Course not found.'), { statusCode: 404 });
+    if (role === 'student' && !course.enrolledStudents.map(String).includes(String(userId))) {
+      throw Object.assign(new Error('You are not enrolled in this course.'), { statusCode: 403 });
+    }
+    if (role === 'teacher' && course.instructor.toString() !== userId.toString()) {
+      throw Object.assign(new Error('You do not have permission to upload documents to this course.'), { statusCode: 403 });
+    }
+  }
+
   // Upload to Cloudinary
   const { url, publicId, resourceType } = await uploadFile(file, `documents/${tenantId}`);
 
@@ -75,9 +107,8 @@ const uploadDocument = async (tenantId, file, metadata, userId) => {
   return doc;
 };
 
-const updateLifecycle = async (tenantId, docId, event, userId, note) => {
-  const doc = await Document.findOne({ _id: docId, tenantId });
-  if (!doc) throw Object.assign(new Error('Document not found.'), { statusCode: 404 });
+const updateLifecycle = async (tenantId, docId, event, userId, role, note) => {
+  const doc = await getDocumentById(tenantId, docId, userId, role);
 
   doc.lifecycle = event;
   doc.activities.push({ event, performedBy: userId, note });
@@ -86,10 +117,10 @@ const updateLifecycle = async (tenantId, docId, event, userId, note) => {
   return doc;
 };
 
-const getDocumentPresignedUrl = async (tenantId, docId, userId) => {
-  const doc = await getDocumentById(tenantId, docId);
+const getDocumentPresignedUrl = async (tenantId, docId, userId, role) => {
+  const doc = await getDocumentById(tenantId, docId, userId, role);
   // Track "Viewed" lifecycle event
-  await updateLifecycle(tenantId, docId, 'Viewed', userId, 'Document accessed');
+  await updateLifecycle(tenantId, docId, 'Viewed', userId, role, 'Document accessed');
 
   const cloudinary = require('../../../config/cloudinary');
   const isRaw = doc.fileUrl.includes('/raw/');
@@ -108,9 +139,13 @@ const getDocumentPresignedUrl = async (tenantId, docId, userId) => {
   return { url, fileName: doc.fileName || doc.name || 'document' };
 };
 
-const deleteDocument = async (tenantId, docId, userId) => {
+const deleteDocument = async (tenantId, docId, userId, role) => {
   const doc = await Document.findOne({ _id: docId, tenantId });
   if (!doc) throw Object.assign(new Error('Document not found.'), { statusCode: 404 });
+
+  if (role !== 'admin' && doc.uploadedBy.toString() !== userId.toString()) {
+    throw Object.assign(new Error('You do not have permission to delete this document.'), { statusCode: 403 });
+  }
 
   // Remove from Cloudinary
   await deleteFile(doc.publicId);

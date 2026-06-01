@@ -101,7 +101,7 @@ export default function CourseDocumentsPage({ params }: { params: Promise<{ id: 
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <Link href={`/lms/courses/${courseId}`} className="text-sm text-blue-600 hover:underline mb-2 block">&larr; Back to Course</Link>
+
           <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">Course Documents</h1>
         </div>
       </div>

@@ -66,7 +66,7 @@ export default function DashboardPage() {
   // Derive LMS stats for charts (Admin/Teacher view)
   const lmsStats = useMemo(() => {
     const total = courses.length;
-    const published = courses.filter(c => c.status === 'published' || c.status === 'active').length;
+    const published = courses.filter(c => c.status === 'active').length;
     const draft = courses.filter(c => c.status === 'draft').length;
     const enrolled = courses.reduce((acc, curr) => acc + (curr.enrolledStudents?.length || 0), 0);
     
@@ -80,8 +80,10 @@ export default function DashboardPage() {
       {
         label: 'Enrolled',
         data: courses.slice(0, 6).map(c => c.enrolledStudents?.length || 0),
-        backgroundColor: 'rgba(37, 99, 235, 0.7)',
-        borderRadius: 6,
+        backgroundColor: '#4F46E5', // Beautiful deep indigo
+        hoverBackgroundColor: '#6366F1', // Light indigo on hover
+        borderRadius: 8,
+        borderSkipped: false,
       },
     ],
   };
@@ -92,40 +94,76 @@ export default function DashboardPage() {
       {
         data: [lmsStats.published, lmsStats.draft],
         backgroundColor: ['#10B981', '#F59E0B'],
-        borderWidth: 0,
-        hoverOffset: 4,
+        borderWidth: 4,
+        borderColor: '#ffffff',
+        hoverBorderWidth: 4,
       },
     ],
   };
 
-  const chartOptions = {
+  const chartOptions: any = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
         display: false,
       },
+      tooltip: {
+        backgroundColor: '#1E293B',
+        padding: 12,
+        titleFont: { family: 'Inter, sans-serif', size: 13, weight: 'bold' },
+        bodyFont: { family: 'Inter, sans-serif', size: 12 },
+        cornerRadius: 8,
+        displayColors: false,
+      }
     },
     scales: {
       y: {
         beginAtZero: true,
         grid: {
+          color: '#F1F5F9',
+          lineWidth: 1,
+        },
+        border: {
+          dash: [5, 5],
           display: false,
         },
+        ticks: {
+          precision: 0,
+          stepSize: 1,
+          color: '#94A3B8',
+          font: { family: 'Inter, sans-serif', size: 11, weight: '500' }
+        }
       },
       x: {
         grid: {
           display: false,
         },
+        border: {
+          display: false,
+        },
+        ticks: {
+          color: '#94A3B8',
+          font: { family: 'Inter, sans-serif', size: 11, weight: '500' }
+        }
       },
     },
   };
 
-  const doughnutOptions = {
-    ...chartOptions,
-    cutout: '75%',
+  const doughnutOptions: any = {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '80%',
     plugins: {
       legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1E293B',
+        padding: 12,
+        titleFont: { family: 'Inter, sans-serif', size: 13, weight: 'bold' },
+        bodyFont: { family: 'Inter, sans-serif', size: 12 },
+        cornerRadius: 8,
+        displayColors: false,
+      }
     },
   };
 
@@ -146,7 +184,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Role-Based KPI Section */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {isTeacherOrAdmin ? (
           <>
             <div className="bg-blue-50/50 border border-blue-100 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
@@ -280,7 +318,7 @@ export default function DashboardPage() {
             <div className="mb-8">
               <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2">
                 <PieChart className="w-5 h-5 text-emerald-500" />
-                Content Health
+                Published Courses
               </h3>
               <p className="text-xs text-slate-400 mt-0.5 font-medium uppercase tracking-wider">Publication status ratio</p>
             </div>
@@ -289,7 +327,7 @@ export default function DashboardPage() {
                 <Doughnut data={doughnutData} options={doughnutOptions} />
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none -mt-1">
                   <span className="text-3xl font-bold text-slate-900 leading-none">{lmsStats.published}</span>
-                  <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-tight mt-0.5">Live</span>
+                  <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-tight mt-0.5 padding-0.9rm">Live</span>
                 </div>
               </div>
             </div>
@@ -316,12 +354,12 @@ export default function DashboardPage() {
       {/* Student View — Continue Learning */}
       {!isTeacherOrAdmin && (
         <div className="bg-white border border-slate-200/60 p-8 rounded-3xl shadow-sm">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
             <div>
               <h3 className="font-bold text-slate-900 text-xl tracking-tight">Continue Learning</h3>
               <p className="text-sm text-slate-500 mt-1">Pick up right where you left off</p>
             </div>
-            <Link href="/lms" className="text-sm font-bold text-blue-600 hover:text-blue-700">View All Courses</Link>
+            <Link href="/lms" className="text-sm font-bold text-blue-600 hover:text-blue-700 whitespace-nowrap">View All Courses</Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {courses.slice(0, 4).map((course) => (

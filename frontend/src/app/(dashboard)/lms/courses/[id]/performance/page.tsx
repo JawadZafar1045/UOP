@@ -26,7 +26,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
     if (isTeacherOrAdmin) {
       // Direct API call since it's not strongly typed in store yet
       api.get(`/lms/courses/${courseId}/performance`)
-        .then(res => setClassPerformance(res.data?.data || []))
+        .then(res => setClassPerformance((res as any).data || []))
         .catch(console.error);
     } else {
       fetchMyPerformance(courseId);
@@ -51,7 +51,8 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
     setIsGenerating(true);
     try {
       const res = await api.post(`/lms/courses/${courseId}/certificates/generate-all`);
-      alert(`Generated: ${res.data.data.generated.length}, Skipped: ${res.data.data.skipped.length}`);
+      const data = (res as any).data || {};
+      alert(`Generated: ${data.generated?.length || 0}, Skipped: ${data.skipped?.length || 0}`);
     } catch (err: any) {
       alert(err.response?.data?.message || 'Failed to generate certificates');
     } finally {
@@ -94,7 +95,8 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
 
       {isTeacherOrAdmin ? (
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-          <table className="w-full text-left text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
               <tr>
                 <th className="px-6 py-4 font-medium">Student Name</th>

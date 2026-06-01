@@ -17,16 +17,40 @@ const initializeSocket = (server) => {
   });
 
   // ── Socket Auth Middleware ──────────────────────────────────────────────────
-  io.use((socket, next) => {
-    const token = socket.handshake.auth?.token;
-    if (!token) return next(new Error('Authentication error: No token provided'));
+  io.use(async (socket, next) => {
+    const token = socket.handshake.auth?.token || socket.handshake.headers?.authorization?.split(' ')[1];
+    if (!token) {
+      console.warn('[Socket.io] Connection rejected: No token provided');
+      return next(new Error('Authentication error: No token provided'));
+    }
 
     try {
       const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
-      socket.user = decoded; // Attach user payload to socket
+      
+      // Verify user in Database to prevent access via stale/revoked tokens (Defense-in-Depth)
+      const User = require('../modules/auth/models/user.model');
+      const user = await User.findOne({ _id: decoded.userId, tenantId: decoded.tenantId, isActive: true });
+      if (!user) {
+        console.warn(`[Socket.io] Connection rejected: User ${decoded.userId} not found or inactive`);
+        return next(new Error('Authentication error: User not found or inactive'));
+      }
+
+      // Role Validation
+      const allowedRoles = ['admin', 'teacher', 'student'];
+      if (!allowedRoles.includes(user.role)) {
+        console.warn(`[Socket.io] Connection rejected: Role "${user.role}" is not authorized`);
+        return next(new Error('Authentication error: Unauthorized role'));
+      }
+
+      socket.user = {
+        userId: String(user._id),
+        role: user.role,
+        tenantId: user.tenantId,
+      };
       next();
-    } catch {
-      next(new Error('Authentication error: Invalid token'));
+    } catch (err) {
+      console.error('[Socket.io] Authentication verification failed:', err.message);
+      next(new Error('Authentication error: Invalid or expired token'));
     }
   });
 
@@ -39,10 +63,26 @@ const initializeSocket = (server) => {
     socket.join(`tenant:${tenantId}`);
     socket.join(`user:${userId}`);
 
+    // Packet Middleware: Disconnect unauthorized clients immediately on event attempt
+    socket.use(([event, ...args], next) => {
+      if (!socket.user || !socket.user.userId || !socket.user.tenantId) {
+        console.warn(`[Socket.io Security] Unauthorized packet blocked. Disconnecting socket: ${socket.id}`);
+        socket.disconnect(true);
+        return next(new Error('Unauthorized'));
+      }
+      next();
+    });
+
     // ── Chat Events ──────────────────────────────────────────────────────────
     socket.on('chat:sendMessage', (data) => {
-      // Broadcast to all members in the conversation room
-      io.to(`conversation:${data.conversationId}`).emit('chat:newMessage', {
+      // Validate conversationId payload
+      if (!data || typeof data.conversationId !== 'string' || data.conversationId.includes('..') || data.conversationId.includes('*')) {
+        console.warn(`[Socket.io Security] Invalid chat:sendMessage payload blocked from userId=${userId}`);
+        return;
+      }
+
+      // Broadcast to members in the tenant-isolated conversation room
+      io.to(`tenant:${tenantId}:conversation:${data.conversationId}`).emit('chat:newMessage', {
         ...data,
         senderId: userId,
         timestamp: new Date().toISOString(),
@@ -50,11 +90,18 @@ const initializeSocket = (server) => {
     });
 
     socket.on('chat:joinConversation', (conversationId) => {
-      socket.join(`conversation:${conversationId}`);
+      if (typeof conversationId !== 'string' || conversationId.includes('..') || conversationId.includes('*')) {
+        console.warn(`[Socket.io Security] Invalid chat:joinConversation payload blocked from userId=${userId}`);
+        return;
+      }
+      socket.join(`tenant:${tenantId}:conversation:${conversationId}`);
     });
 
     socket.on('chat:leaveConversation', (conversationId) => {
-      socket.leave(`conversation:${conversationId}`);
+      if (typeof conversationId !== 'string' || conversationId.includes('..') || conversationId.includes('*')) {
+        return;
+      }
+      socket.leave(`tenant:${tenantId}:conversation:${conversationId}`);
     });
 
     socket.on('disconnect', () => {

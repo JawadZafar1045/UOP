@@ -1,25 +1,15 @@
 const multer = require('multer');
+const { validateUploadedFile } = require('../../shared/middlewares/security.middleware');
 
 // Use memory storage so we control upload to S3 manually
 const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
-  const allowed = [
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'image/jpeg', 'image/png', 'image/gif',
-    'text/plain',
-    'video/mp4', 'video/webm', 'video/x-matroska', 'video/quicktime',
-    'application/zip', 'application/x-zip-compressed'
-  ];
-
-  if (allowed.includes(file.mimetype)) {
+  try {
+    validateUploadedFile(file);
     cb(null, true);
-  } else {
-    cb(new Error(`File type ${file.mimetype} is not allowed.`), false);
+  } catch (error) {
+    cb(error, false);
   }
 };
 
