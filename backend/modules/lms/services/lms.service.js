@@ -31,16 +31,16 @@ const getCourses = async (tenantId, userId, role) => {
   const filter = { tenantId };
 
   if (role === 'student') {
-    filter.students = userId;    // only enrolled
+    filter.enrolledStudents = userId;    // only enrolled
     filter.status = 'active';    // only active courses
   } else if (role === 'teacher') {
-    filter.teacher = userId;     // only own courses
+    filter.instructor = userId;     // only own courses
   }
   // admin: no extra filter, sees everything
 
   return Course.find(filter)
-    .populate('teacher', 'name email')
-    .select('title description status teacher students startDate endDate completionCriteria category')
+    .populate('instructor', 'name email')
+    .select('title description status instructor enrolledStudents startDate endDate completionCriteria category thumbnail')
     .lean()
     .sort({ createdAt: -1 });
 };
