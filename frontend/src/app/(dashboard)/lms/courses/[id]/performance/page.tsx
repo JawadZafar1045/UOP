@@ -8,15 +8,54 @@ import Link from 'next/link';
 import api from '@/services/api';
 import { downloadCertificate } from '@/services/lms.service';
 
+interface IssuedCertificate {
+  _id: string;
+  certificateNumber: string;
+}
+
+interface StudentPerformance {
+  student: { _id: string; name: string; email: string };
+  attendancePercent: number;
+  assignmentScore: number;
+  quizScore: number;
+  attendanceCount: number;
+  totalSessions: number;
+  assignmentsCount: number;
+  quizzesCount: number;
+  eligible: boolean;
+  reason: string | null;
+  certificate: IssuedCertificate | null;
+}
+
+interface GenerateAllResult {
+  generated: string[];
+  skipped: { studentId: string; reason: string }[];
+  errors: { studentId: string; error: string }[];
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+}
+
+function getErrorMessage(err: unknown, fallback: string): string {
+  if (typeof err === 'string') return err || fallback;
+  if (err instanceof Error) return err.message || fallback;
+  if (err && typeof err === 'object' && 'message' in err) {
+    return String((err as { message: unknown }).message) || fallback;
+  }
+  return fallback;
+}
+
 export default function PerformancePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const courseId = resolvedParams.id;
   const { currentCourse, myPerformance, isLoading, error, fetchMyPerformance, fetchCourse } = useLmsStore();
   const { user } = useStore();
-  
-  const [classPerformance, setClassPerformance] = useState<any[]>([]);
+
+  const [classPerformance, setClassPerformance] = useState<StudentPerformance[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedStudentPerf, setSelectedStudentPerf] = useState<any>(null);
+  const [selectedStudentPerf, setSelectedStudentPerf] = useState<StudentPerformance | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   const isTeacherOrAdmin = user?.role === 'teacher' || user?.role === 'admin';
@@ -24,9 +63,8 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
   useEffect(() => {
     fetchCourse(courseId);
     if (isTeacherOrAdmin) {
-      // Direct API call since it's not strongly typed in store yet
       api.get(`/lms/courses/${courseId}/performance`)
-        .then(res => setClassPerformance((res as any).data || []))
+        .then(res => setClassPerformance((res as unknown as ApiResponse<StudentPerformance[]>).data || []))
         .catch(console.error);
     } else {
       fetchMyPerformance(courseId);
@@ -39,8 +77,8 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
     try {
       await api.post(`/lms/courses/${courseId}/certificates/generate/${studentId}`);
       alert('Certificate generated successfully!');
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to generate certificate');
+    } catch (err: unknown) {
+      alert(getErrorMessage(err, 'Failed to generate certificate'));
     } finally {
       setIsGenerating(false);
     }
@@ -51,10 +89,10 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
     setIsGenerating(true);
     try {
       const res = await api.post(`/lms/courses/${courseId}/certificates/generate-all`);
-      const data = (res as any).data || {};
+      const data = (res as unknown as ApiResponse<GenerateAllResult>).data || { generated: [], skipped: [] };
       alert(`Generated: ${data.generated?.length || 0}, Skipped: ${data.skipped?.length || 0}`);
-    } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to generate certificates');
+    } catch (err: unknown) {
+      alert(getErrorMessage(err, 'Failed to generate certificates'));
     } finally {
       setIsGenerating(false);
     }
@@ -127,7 +165,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                         <CheckCircle2 className="w-3.5 h-3.5" /> Eligible
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-red-600 bg-red-50 px-2 py-1 rounded text-xs font-medium border border-red-100" title={perf.reason}>
+                      <span className="inline-flex items-center gap-1 text-red-600 bg-red-50 px-2 py-1 rounded text-xs font-medium border border-red-100" title={perf.reason ?? undefined}>
                         <XCircle className="w-3.5 h-3.5" /> Not Eligible
                       </span>
                     )}
@@ -142,7 +180,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                       </button>
                       {perf.certificate ? (
                         <button 
-                          onClick={() => downloadCertificate(perf.certificate._id, `Certificate_${perf.certificate.certificateNumber}.pdf`)}
+                          onClick={() => downloadCertificate(perf.certificate!._id, `Certificate_${perf.certificate!.certificateNumber}.pdf`)}
                           className="text-emerald-600 hover:text-emerald-800 font-medium text-xs border border-emerald-200 px-3 py-1.5 rounded bg-emerald-50 hover:bg-emerald-100 transition-colors"
                         >
                           Download
@@ -169,6 +207,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
               )}
             </tbody>
           </table>
+        </div>
         </div>
       ) : (
         myPerformance && (
