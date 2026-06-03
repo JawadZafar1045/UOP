@@ -167,6 +167,22 @@ export default function DashboardPage() {
     },
   };
 
+  if (isStatsLoading) {
+    return (
+      <div className="space-y-8 max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 animate-pulse">
+        <div className="h-10 w-56 bg-slate-100 rounded-xl" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => <div key={i} className="h-28 bg-slate-100 rounded-2xl" />)}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 h-72 bg-slate-100 rounded-2xl" />
+          <div className="h-72 bg-slate-100 rounded-2xl" />
+        </div>
+        <div className="h-48 bg-slate-100 rounded-2xl" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
       {/* Page Header */}

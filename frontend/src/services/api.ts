@@ -21,6 +21,15 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// ── Token refresh state — shared across all concurrent requests ───────────────
+let isRefreshing = false;
+let failedQueue: { resolve: (token: string) => void; reject: (err: unknown) => void }[] = [];
+
+const processQueue = (error: unknown, token: string | null) => {
+  failedQueue.forEach((p) => (error ? p.reject(error) : p.resolve(token!)));
+  failedQueue = [];
+};
+
 // ── Response interceptor: silent token refresh on 401 ────────────────────────
 api.interceptors.response.use(
   (response) => response.data,
@@ -28,11 +37,25 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // A refresh is already in flight — queue this request until it resolves
+      if (isRefreshing) {
+        return new Promise<string>((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers['Authorization'] = `Bearer ${token}`;
+            return api(originalRequest);
+          })
+          .catch((err) => Promise.reject(err));
+      }
+
       originalRequest._retry = true;
+      isRefreshing = true;
 
       const { refreshToken, setAuth, logout } = useStore.getState();
 
       if (!refreshToken) {
+        isRefreshing = false;
         logout();
         if (typeof window !== 'undefined') window.location.href = '/login';
         return Promise.reject(error.response?.data || error.message);
@@ -51,14 +74,20 @@ api.interceptors.response.use(
         // Persist new tokens in the Zustand store
         setAuth(user, accessToken, newRefreshToken);
 
+        // Unblock all queued requests with the new token
+        processQueue(null, accessToken);
+
         // Retry the original request with the new access token
         originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
         return api(originalRequest);
       } catch (refreshError) {
-        // Refresh itself failed → full logout
+        // Refresh itself failed — reject all queued requests and log out
+        processQueue(refreshError, null);
         logout();
         if (typeof window !== 'undefined') window.location.href = '/login';
         return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
 
