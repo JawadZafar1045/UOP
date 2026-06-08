@@ -27,29 +27,49 @@ const mongoSanitize = (req, res, next) => {
 
 /**
  * Custom XSS Sanitizer
- * Recursively escapes HTML tags in request body strings.
+ *
+ * IMPORTANT: We do NOT HTML-encode stored text (no &amp; replacements).
+ * MongoDB stores raw strings safely. React/Next.js renders raw text safely
+ * via JSX — encoding here causes double-encoding ("&amp;amp;" etc.).
+ *
+ * Instead we STRIP structurally dangerous patterns:
+ *   - <script> blocks and event handlers (onerror=, onclick=, etc.)
+ *   - javascript: pseudo-protocol in attribute values
+ *   - Null bytes and other control characters
+ *
+ * This stops XSS injection without corrupting legitimate text like
+ * "A & B <Test>" which should be stored and returned exactly as-is.
  */
 const xssSanitize = (req, res, next) => {
-  const escapeString = (val) => {
+  const stripDangerous = (val) => {
     if (typeof val === 'string') {
       return val
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#x27;')
-        .replace(/\//g, '&#x2F;');
+        // Strip <script>...</script> blocks (case-insensitive, multiline)
+        .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+        // Strip standalone <script> tags with no closing tag
+        .replace(/<script[^>]*>/gi, '')
+        // Strip </script> orphan tags
+        .replace(/<\/script>/gi, '')
+        // Strip inline event handlers (onclick=, onerror=, onload=, etc.)
+        .replace(/\bon\w+\s*=\s*["'][^"']*["']/gi, '')
+        .replace(/\bon\w+\s*=\s*[^\s>]*/gi, '')
+        // Strip javascript: pseudo-protocol
+        .replace(/javascript\s*:/gi, '')
+        // Strip null bytes
+        .replace(/\x00/g, '');
     }
-    if (val instanceof Object) {
+    if (val !== null && typeof val === 'object') {
       for (const key in val) {
-        val[key] = escapeString(val[key]);
+        if (Object.prototype.hasOwnProperty.call(val, key)) {
+          val[key] = stripDangerous(val[key]);
+        }
       }
     }
     return val;
   };
 
-  if (req.body) req.body = escapeString(req.body);
-  if (req.query) req.query = escapeString(req.query);
+  if (req.body)  req.body  = stripDangerous(req.body);
+  if (req.query) req.query = stripDangerous(req.query);
   next();
 };
 

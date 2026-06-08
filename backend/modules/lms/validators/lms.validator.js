@@ -26,13 +26,11 @@ const createCourseVal = [
     .notEmpty()
     .withMessage('Course title is required')
     .isLength({ max: 100 })
-    .withMessage('Course title cannot exceed 100 characters')
-    .escape(),
+    .withMessage('Course title cannot exceed 100 characters'),
   body('description')
     .trim()
     .notEmpty()
-    .withMessage('Course description is required')
-    .escape(),
+    .withMessage('Course description is required'),
   body('status')
     .optional()
     .isIn(['draft', 'active', 'archived'])
@@ -49,14 +47,12 @@ const updateCourseVal = [
     .notEmpty()
     .withMessage('Course title cannot be empty')
     .isLength({ max: 100 })
-    .withMessage('Course title cannot exceed 100 characters')
-    .escape(),
+    .withMessage('Course title cannot exceed 100 characters'),
   body('description')
     .optional()
     .trim()
     .notEmpty()
-    .withMessage('Course description cannot be empty')
-    .escape(),
+    .withMessage('Course description cannot be empty'),
   body('status')
     .optional()
     .isIn(['draft', 'active', 'archived'])
@@ -76,8 +72,7 @@ const enrollStudentVal = [
   body('studentId')
     .trim()
     .notEmpty()
-    .withMessage('Student identifier (ID or Email) is required')
-    .escape(),
+    .withMessage('Student identifier (ID or Email) is required'),
 ];
 
 const markAttendanceVal = [
@@ -107,8 +102,7 @@ const createAssignmentVal = [
     .notEmpty()
     .withMessage('Assignment title is required')
     .isLength({ max: 100 })
-    .withMessage('Assignment title cannot exceed 100 characters')
-    .escape(),
+    .withMessage('Assignment title cannot exceed 100 characters'),
   body('dueDate')
     .isISO8601()
     .withMessage('Valid due date (ISO 8601 format) is required'),
@@ -128,8 +122,7 @@ const updateAssignmentVal = [
     .optional()
     .trim()
     .notEmpty()
-    .withMessage('Assignment title cannot be empty')
-    .escape(),
+    .withMessage('Assignment title cannot be empty'),
   body('dueDate')
     .optional()
     .isISO8601()
@@ -142,8 +135,7 @@ const submitAssignmentVal = [
     .withMessage('Invalid assignment ID format'),
   body('text')
     .optional()
-    .trim()
-    .escape(),
+    .trim(),
 ];
 
 const createSessionVal = [
@@ -153,8 +145,7 @@ const createSessionVal = [
   body('title')
     .trim()
     .notEmpty()
-    .withMessage('Session title is required')
-    .escape(),
+    .withMessage('Session title is required'),
   body('date')
     .isISO8601()
     .withMessage('Valid session date (ISO 8601 format) is required'),
@@ -174,8 +165,7 @@ const updateSessionVal = [
     .optional()
     .trim()
     .notEmpty()
-    .withMessage('Session title cannot be empty')
-    .escape(),
+    .withMessage('Session title cannot be empty'),
 ];
 
 const toggleSessionVal = [
@@ -250,8 +240,7 @@ const gradeSubmissionVal = [
     .withMessage('Grade score must be a number'),
   body('feedback')
     .optional()
-    .trim()
-    .escape(),
+    .trim(),
 ];
 
 const getAssignmentSubmissionsVal = [
@@ -273,8 +262,7 @@ const createQuizVal = [
   body('title')
     .trim()
     .notEmpty()
-    .withMessage('Quiz title is required')
-    .escape(),
+    .withMessage('Quiz title is required'),
   body('passingScore')
     .isNumeric()
     .withMessage('Passing score must be a number'),
@@ -294,8 +282,7 @@ const updateQuizVal = [
     .optional()
     .trim()
     .notEmpty()
-    .withMessage('Quiz title cannot be empty')
-    .escape(),
+    .withMessage('Quiz title cannot be empty'),
 ];
 
 const addQuizQuestionVal = [
@@ -305,8 +292,7 @@ const addQuizQuestionVal = [
   body('text')
     .trim()
     .notEmpty()
-    .withMessage('Question text is required')
-    .escape(),
+    .withMessage('Question text is required'),
   body('options')
     .isArray({ min: 2 })
     .withMessage('Options must be an array with at least 2 choices'),

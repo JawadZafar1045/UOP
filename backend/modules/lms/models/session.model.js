@@ -11,6 +11,10 @@ const sessionSchema = new mongoose.Schema(
     // ── Attendance window ────────────────────────────────────────────────────────
     attendanceOpenAt:    { type: Date },
     attendanceCloseAt:   { type: Date },
+    // SECURITY: isOpen must ONLY be mutated by the toggleSession service function.
+    // createSession hardcodes this to false. updateSession explicitly excludes it
+    // from its whitelist. Any direct assignment from a request body is a
+    // mass-assignment vulnerability — do not add isOpen to any create/update spread.
     isOpen:              { type: Boolean, default: false },
 
     // ── Material ─────────────────────────────────────────────────────────────────

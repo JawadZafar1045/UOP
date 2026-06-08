@@ -75,18 +75,7 @@ const getCourseById = async (tenantId, courseId, userId, role) => {
   return courseObj;
 };
 
-const unescapeString = (val) => {
-  if (typeof val === 'string') {
-    return val
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"')
-      .replace(/&#x27;/g, "'")
-      .replace(/&#x2F;/g, '/');
-  }
-  return val;
-};
+
 
 const createCourse = async (tenantId, data, userId) => {
   const errors = [];
@@ -102,9 +91,6 @@ const createCourse = async (tenantId, data, userId) => {
     err.errors = errors;
     throw err;
   }
-
-  if (data.title) data.title = unescapeString(data.title);
-  if (data.description) data.description = unescapeString(data.description);
 
   const course = await Course.create({ instructor: userId, ...data, tenantId });
   await logActivity({ userId, tenantId, action: 'CREATE_COURSE', entityType: 'Course', entityId: course._id });
@@ -122,9 +108,6 @@ const updateCourse = async (tenantId, courseId, data, userId, userRole) => {
       `Allowed values: ${VALID_STATUSES.join(', ')}`
     );
   }
-
-  if (data.title) data.title = unescapeString(data.title);
-  if (data.description) data.description = unescapeString(data.description);
 
   const ALLOWED_UPDATE_FIELDS = [
     'title', 'description', 'startDate', 'endDate',
@@ -156,9 +139,6 @@ const saveDraft = async (tenantId, courseId, data, userId) => {
   if (!course) throw new Error('Course not found');
 
   checkOwnership(course, userId, 'teacher');
-
-  if (data.title) data.title = unescapeString(data.title);
-  if (data.description) data.description = unescapeString(data.description);
 
   // Only update provided fields, no validation
   const draftFields = {};
@@ -299,7 +279,23 @@ const createSession = async (tenantId, courseId, data, files, userId, userRole) 
   } else if (data.materialUrl) {
     materials.push({ name: 'Material', url: data.materialUrl, publicId: null });
   }
-  const session = await Session.create({ tenantId, courseId, createdBy: userId, materials, ...data });
+
+  // ── Mass-assignment protection ──────────────────────────────────────────────
+  // Explicit whitelist: never accept isOpen from the request body.
+  // Sessions ALWAYS start closed. Use toggleSession to open/close them.
+  const sessionData = {
+    tenantId,
+    courseId,
+    createdBy: userId,
+    title:               data.title?.trim(),
+    date:                data.date,
+    attendanceOpenAt:    data.attendanceOpenAt  || null,
+    attendanceCloseAt:   data.attendanceCloseAt || null,
+    isOpen:              false, // ALWAYS false on creation — toggleSession controls this
+    materials,
+  };
+
+  const session = await Session.create(sessionData);
   await logActivity({ userId, tenantId, action: 'CREATE_SESSION', entityType: 'Session', entityId: session._id });
   return session;
 };
@@ -311,12 +307,27 @@ const updateSession = async (tenantId, sessionId, data, userId, userRole) => {
   // Check ownership: course must be owned by the instructor
   const course = await Course.findOne({ _id: session.courseId, tenantId });
   if (!course) throw err('Course associated with session not found.', 404);
-  
+
   if (userRole !== 'admin' && course.instructor.toString() !== userId.toString()) {
     throw err('You do not have permission to update this session.', 403);
   }
 
-  const updatedSession = await Session.findOneAndUpdate({ _id: sessionId, tenantId }, data, { new: true, runValidators: true });
+  // ── Mass-assignment protection ──────────────────────────────────────────────
+  // Explicit whitelist: isOpen is intentionally absent.
+  // Attendance state is exclusively controlled by toggleSession.
+  const allowedUpdates = {};
+  if (data.title              !== undefined) allowedUpdates.title              = data.title.trim();
+  if (data.date               !== undefined) allowedUpdates.date               = data.date;
+  if (data.attendanceOpenAt   !== undefined) allowedUpdates.attendanceOpenAt   = data.attendanceOpenAt;
+  if (data.attendanceCloseAt  !== undefined) allowedUpdates.attendanceCloseAt  = data.attendanceCloseAt;
+  if (data.materialUrl        !== undefined) allowedUpdates.materialUrl        = data.materialUrl;
+  if (data.materials          !== undefined) allowedUpdates.materials          = data.materials;
+
+  const updatedSession = await Session.findOneAndUpdate(
+    { _id: sessionId, tenantId },
+    { $set: allowedUpdates },
+    { new: true, runValidators: true }
+  );
   await logActivity({ userId, tenantId, action: 'UPDATE_SESSION', entityType: 'Session', entityId: sessionId });
   return updatedSession;
 };

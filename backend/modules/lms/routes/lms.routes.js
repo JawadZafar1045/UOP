@@ -1,5 +1,6 @@
 const express = require('express');
 const router  = express.Router();
+const rateLimit = require('express-rate-limit');
 const { protect }         = require('../../shared/middlewares/auth.middleware');
 const { authorize }       = require('../../shared/middlewares/rbac.middleware');
 const { tenantIsolation } = require('../../shared/middlewares/tenant.middleware');
@@ -8,6 +9,18 @@ const ctrl   = require('../controllers/lms.controller');
 
 const { validateResult } = require('../../shared/middlewares/validation.middleware');
 const val = require('../validators/lms.validator');
+
+// ── Rate limiter: file signing endpoint ────────────────────────────────────────
+const signLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute window
+  max: 20,             // 20 requests per minute per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Too many signing requests, please try again later'
+  }
+});
 
 // ── Public certificate verification (no auth) ──────────────────────────────────
 router.get('/certificates/verify/:code', val.verifyCertificateVal, validateResult, ctrl.verifyCertificate);
@@ -90,7 +103,7 @@ router.get('/courses/:courseId/certificates',                      val.getCourse
 router.get('/courses/:courseId/certificate-template',  val.getCertificateTemplateVal, validateResult, authorize('admin', 'teacher', 'student'), ctrl.getCertificateTemplate);
 router.post('/courses/:courseId/certificate-template', authorize('admin', 'teacher'), upload.single('logo'), val.saveCertificateTemplateVal, validateResult, ctrl.saveCertificateTemplate);
 
-router.post('/files/sign', val.signFileUrlVal, validateResult, authorize('admin', 'teacher', 'student'), ctrl.signFileUrl);
+router.post('/files/sign', protect, tenantIsolation, signLimiter, val.signFileUrlVal, validateResult, authorize('admin', 'teacher', 'student'), ctrl.signFileUrl);
 
 // ── Admin Routes ───────────────────────────────────────────────────────────────
 router.get('/admin/stats',                          authorize('admin'), ctrl.getAdminStats);

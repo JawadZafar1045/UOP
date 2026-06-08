@@ -2,6 +2,7 @@ const lmsService = require('../services/lms.service');
 const https = require('https');
 const http = require('http');
 const pathMod = require('path');
+const { validateExternalUrl } = require('../../shared/utils/ssrf');
 
 const MIME_MAP = {
   '.pdf': 'application/pdf',
@@ -366,36 +367,64 @@ const getCertificateAccess = async (req, res, next) => {
 
 const signFileUrl = async (req, res, next) => {
   try {
-    let { url: fileUrl } = req.body;
-    if (!fileUrl) return res.status(400).json({ success: false, message: 'URL is required' });
-    
-    // Unescape the URL that was escaped by XSS sanitization middleware
-    fileUrl = fileUrl
+    // ── STEP 1: SSRF Validation ────────────────────────────────────────────────
+    // Unescape the URL that was escaped by XSS sanitization middleware FIRST,
+    // then immediately run SSRF validation before touching it further.
+    let rawUrl = req.body.url || '';
+    rawUrl = rawUrl
       .replace(/&amp;/g, '&')
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
       .replace(/&quot;/g, '"')
       .replace(/&#x27;/g, "'")
       .replace(/&#x2F;/g, '/');
-    
-    let downloadUrl = fileUrl;
-    const parsedPublicId = extractCloudinaryPublicId(fileUrl);
-    
-    if (fileUrl.includes('/raw/') && parsedPublicId) {
+
+    // validateExternalUrl throws with a descriptive message if the URL is
+    // missing, malformed, non-HTTPS, points to an internal host/IP range,
+    // or is not a Cloudinary domain. We NEVER use rawUrl after this point.
+    const safeUrl = validateExternalUrl(rawUrl);
+
+    // ── STEP 2: Build signed download URL (Cloudinary only) ───────────────────
+    let downloadUrl = safeUrl;
+    const parsedPublicId = extractCloudinaryPublicId(safeUrl);
+
+    if (safeUrl.includes('/raw/') && parsedPublicId) {
       const cloudinary = require('../../../config/cloudinary');
       downloadUrl = cloudinary.utils.url(parsedPublicId, {
         resource_type: 'raw',
         sign_url: true,
         secure: true
       });
+      // Signed Cloudinary URLs are generated locally — no outbound request here.
     }
 
-    const urlParts = fileUrl.split('/');
+    const urlParts = safeUrl.split('/');
     const fileName = decodeURIComponent(urlParts[urlParts.length - 1].split('?')[0]) || 'file';
-    
+
+    // ── STEP 3: Proxy with a hard 10-second timeout ───────────────────────────
+    // proxyDownload uses Node's https.get which does not natively support
+    // AbortController; instead we destroy the socket on timeout via the
+    // request object's setTimeout option inside proxyDownload.
+    // The signed URL it receives is always a validated Cloudinary URL.
     proxyDownload(downloadUrl, fileName, res, next);
-  } catch (e) {
-    next(e);
+
+  } catch (error) {
+    // ── STEP 4: Structured error responses — never crash the server ───────────
+    const msg = error.message || '';
+    if (
+      msg.includes('not allowed') ||
+      msg.includes('Invalid URL') ||
+      msg.includes('Malformed') ||
+      msg.includes('Only HTTPS') ||
+      msg.includes('Only Cloudinary') ||
+      msg.includes('URL too long')
+    ) {
+      return res.status(403).json({ success: false, message: msg });
+    }
+    if (msg.includes('timed out') || msg.includes('AbortError')) {
+      return res.status(408).json({ success: false, message: 'Request timed out' });
+    }
+    next(error);
   }
 };
 
