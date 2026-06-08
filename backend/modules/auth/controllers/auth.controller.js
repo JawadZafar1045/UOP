@@ -15,6 +15,12 @@ const loginValidation = [
   body('tenantId').trim().notEmpty().withMessage('Tenant ID is required').escape(),
 ];
 
+const verifyValidation = [
+  body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+  body('code').notEmpty().withMessage('Verification code is required'),
+  body('tenantId').trim().notEmpty().withMessage('Tenant ID is required').escape(),
+];
+
 const registerAdminValidation = [
   body('name').trim().notEmpty().withMessage('Name is required').escape(),
   body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
@@ -96,6 +102,20 @@ const register = async (req, res, next) => {
 };
 
 
+/** POST /api/auth/verify-email */
+const verifyEmail = async (req, res, next) => {
+  try {
+    if (!validate(req, res)) return;
+
+    const { email, code, tenantId } = req.body;
+    await authService.verifyEmail(email, code, tenantId);
+
+    res.json({ success: true, message: 'Email verified successfully. You can now login.' });
+  } catch (err) {
+    next(err);
+  }
+};
+
 /** POST /api/auth/login */
 const login = async (req, res, next) => {
   try {
@@ -175,9 +195,11 @@ const updatePassword = async (req, res, next) => {
 module.exports = {
   registerAdmin,
   register,
+  verifyEmail,
   registerValidation,
   login,
   loginValidation,
+  verifyValidation,
   registerAdminValidation,
   refreshValidation,
   updateProfileValidation,

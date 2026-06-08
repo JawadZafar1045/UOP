@@ -6,6 +6,7 @@ const { validateResult } = require('../../shared/middlewares/validation.middlewa
 const { authLimiter } = require('../../shared/middlewares/security.middleware');
 const {
   registerAdmin, register, registerValidation,
+  verifyEmail, verifyValidation,
   login, loginValidation, registerAdminValidation,
   refreshValidation, updateProfileValidation,
   refresh, logout, getMe, getUsers, updateProfile, updatePassword,
@@ -14,6 +15,7 @@ const {
 // Public routes with strict rate limiting and request validation
 router.post('/register/admin', authLimiter, registerAdminValidation, validateResult, registerAdmin);
 router.post('/register', authLimiter, registerValidation, validateResult, register);
+router.post('/verify-email', authLimiter, verifyValidation, validateResult, verifyEmail);
 router.post('/login', authLimiter, loginValidation, validateResult, login);
 router.post('/refresh', authLimiter, refreshValidation, validateResult, refresh);
 

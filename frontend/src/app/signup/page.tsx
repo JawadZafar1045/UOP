@@ -25,7 +25,7 @@ export default function SignupPage() {
 
     try {
       await api.post("/auth/register", { name, email, password, tenantId, role });
-      router.push("/login?signup=success");
+      router.push(`/verify-email?email=${encodeURIComponent(email)}&tenantId=${encodeURIComponent(tenantId)}`);
     } catch (err: any) {
       const msg = err?.message || err?.response?.data?.message || "Registration failed.";
       setError(msg);

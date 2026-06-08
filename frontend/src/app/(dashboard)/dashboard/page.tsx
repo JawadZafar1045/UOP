@@ -167,6 +167,22 @@ export default function DashboardPage() {
     },
   };
 
+  if (isStatsLoading) {
+    return (
+      <div className="space-y-8 max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 animate-pulse">
+        <div className="h-10 w-56 bg-slate-100 rounded-xl" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => <div key={i} className="h-28 bg-slate-100 rounded-2xl" />)}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 h-72 bg-slate-100 rounded-2xl" />
+          <div className="h-72 bg-slate-100 rounded-2xl" />
+        </div>
+        <div className="h-48 bg-slate-100 rounded-2xl" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
       {/* Page Header */}
@@ -184,7 +200,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Role-Based KPI Section */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {isTeacherOrAdmin ? (
           <>
             <div className="bg-blue-50/50 border border-blue-100 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
@@ -354,12 +370,12 @@ export default function DashboardPage() {
       {/* Student View — Continue Learning */}
       {!isTeacherOrAdmin && (
         <div className="bg-white border border-slate-200/60 p-8 rounded-3xl shadow-sm">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
             <div>
               <h3 className="font-bold text-slate-900 text-xl tracking-tight">Continue Learning</h3>
               <p className="text-sm text-slate-500 mt-1">Pick up right where you left off</p>
             </div>
-            <Link href="/lms" className="text-sm font-bold text-blue-600 hover:text-blue-700">View All Courses</Link>
+            <Link href="/lms" className="text-sm font-bold text-blue-600 hover:text-blue-700 whitespace-nowrap">View All Courses</Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {courses.slice(0, 4).map((course) => (

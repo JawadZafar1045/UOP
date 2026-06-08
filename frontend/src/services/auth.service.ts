@@ -1,5 +1,10 @@
 import api from './api';
 
+export const verifyEmail = async (data: { email: string; code: string; tenantId: string }) => {
+  const res = await api.post('/auth/verify-email', data);
+  return res.data;
+};
+
 export const updateProfile = async (data: { 
   name?: string; 
   avatar?: string;

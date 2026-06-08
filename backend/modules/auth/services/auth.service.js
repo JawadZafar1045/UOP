@@ -1,7 +1,10 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const { Resend } = require('resend');
 const User = require('../models/user.model');
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
  * Generate access + refresh JWT token pair.
@@ -78,7 +81,8 @@ const registerAdmin = async (data, secretKey) => {
     password: data.password,
     tenantId: data.tenantId,
     role: 'admin',
-    isActive: true
+    isActive: true,
+    isVerified: true
   });
 
   const refreshToken = generateRefreshToken(user);
@@ -131,8 +135,63 @@ const registerUser = async ({ tenantId, name, email, password, role }) => {
   });
   if (existing) throw new Error('Email already registered');
 
-  const user = await User.create({ tenantId, name, email: normalizedEmail, password, role });
+  const verificationCode = crypto.randomInt(100000, 999999).toString();
+  const verificationCodeExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+
+  const user = await User.create({ 
+    tenantId, 
+    name, 
+    email: normalizedEmail, 
+    password, 
+    role,
+    isVerified: false,
+    verificationCode,
+    verificationCodeExpires
+  });
+
+  try {
+    if (process.env.RESEND_API_KEY) {
+      await resend.emails.send({
+        from: 'UOP Space <onboarding@resend.dev>', // or your verified domain
+        to: normalizedEmail,
+        subject: 'Verify your UOP Space account',
+        html: `<p>Hello ${name},</p><p>Your verification code is: <strong>${verificationCode}</strong></p><p>This code will expire in 15 minutes.</p>`
+      });
+    } else {
+      console.log(`[DEV MODE] Verification code for ${normalizedEmail} is ${verificationCode}`);
+    }
+  } catch (err) {
+    console.error('Error sending verification email:', err);
+    // Don't fail the registration if email fails, but it might be a good idea depending on requirements.
+  }
+
   return user;
+};
+
+/**
+ * Verify Email with OTP
+ */
+const verifyEmail = async (email, code, tenantId) => {
+  const normalizedEmail = email ? email.toLowerCase().trim() : '';
+  const user = await User.findOne({ tenantId, email: normalizedEmail });
+
+  if (!user) throw Object.assign(new Error('User not found.'), { statusCode: 404 });
+  if (user.isVerified) throw Object.assign(new Error('Email already verified.'), { statusCode: 400 });
+
+  if (user.verificationCode !== code) {
+    throw Object.assign(new Error('Invalid verification code.'), { statusCode: 400 });
+  }
+
+  if (new Date() > user.verificationCodeExpires) {
+    throw Object.assign(new Error('Verification code has expired. Please request a new one.'), { statusCode: 400 });
+  }
+
+  user.isVerified = true;
+  user.verificationCode = undefined;
+  user.verificationCodeExpires = undefined;
+  await user.save();
+
+  return true;
 };
 
 /**
@@ -143,6 +202,7 @@ const loginUser = async ({ tenantId, email, password }) => {
   const user = await User.findOne({ tenantId, email: normalizedEmail }).select('+password');
   if (!user) throw Object.assign(new Error('Invalid credentials.'), { statusCode: 401 });
   if (!user.isActive) throw Object.assign(new Error('Account is deactivated.'), { statusCode: 403 });
+  if (!user.isVerified) throw Object.assign(new Error('Please verify your email before logging in.'), { statusCode: 403 });
 
   const isMatch = await user.comparePassword(password);
   if (!isMatch) throw Object.assign(new Error('Invalid credentials.'), { statusCode: 401 });
@@ -279,4 +339,4 @@ const updatePassword = async (userId, currentPwd, newPwd) => {
   return user;
 };
 
-module.exports = { registerAdmin, registerUser, loginUser, refreshAccessToken, logoutUser, getTenantUsers, generateTokens, updateUser, updatePassword };
+module.exports = { registerAdmin, registerUser, verifyEmail, loginUser, refreshAccessToken, logoutUser, getTenantUsers, generateTokens, updateUser, updatePassword };

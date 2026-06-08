@@ -114,6 +114,12 @@ export default function NewCoursePage() {
   const handlePublish = async () => {
   setError('');
 
+  if (!formData.description.trim()) {
+    setError('Course description is required');
+    setStep(1);
+    return;
+  }
+
   // Validate dates
   if (
     formData.endDate &&
@@ -369,8 +375,8 @@ export default function NewCoursePage() {
                     className={inputCls} placeholder="e.g. Introduction to Advanced Mathematics" />
                 </div>
                 <div>
-                  <label className={lbl}>Description</label>
-                  <textarea rows={3} value={formData.description}
+                  <label className={lbl}>Description <span className="text-red-400">*</span></label>
+                  <textarea required rows={3} value={formData.description}
                     onChange={e => set('description', e.target.value)}
                     className={inputCls + ' resize-none'} placeholder="What will students learn? Describe key outcomes..." />
                   <p className="text-[11px] text-slate-400 mt-1">A clear description improves discoverability</p>

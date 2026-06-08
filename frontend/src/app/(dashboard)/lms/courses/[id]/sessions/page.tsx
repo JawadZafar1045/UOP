@@ -242,6 +242,7 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
               <tr>
@@ -325,6 +326,7 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 

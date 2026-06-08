@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useStore } from "../../store/useStore";
@@ -10,11 +11,20 @@ const navItems = [
   { name: "Documents", href: "/documents", icon: "📁" },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const user = useStore(state => state.user);
   const logout = useStore(state => state.logout);
+
+  useEffect(() => {
+    onClose();
+  }, [pathname]);
 
   const handleLogout = () => {
     logout();
@@ -22,12 +32,22 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-[260px] bg-white border-r border-slate-200 h-screen fixed top-0 left-0 flex flex-col shadow-sm z-20">
-      <div className="h-16 flex items-center px-6 border-b border-slate-100">
-        <div className="flex items-center gap-2">
+    <aside className={`w-[260px] bg-white border-r border-slate-200 h-screen fixed top-0 left-0 flex flex-col shadow-sm z-40 transition-transform duration-300 lg:translate-x-0 ${
+      isOpen ? "translate-x-0" : "-translate-x-full"
+    }`}>
+      <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100">
+        <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-90 transition-opacity cursor-pointer">
           <div className="w-8 h-8 bg-blue-600 rounded-md flex items-center justify-center text-white font-bold">U</div>
           <span className="font-semibold text-slate-800 tracking-tight text-lg">UOP Space</span>
-        </div>
+        </Link>
+        <button
+          onClick={onClose}
+          className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg lg:hidden"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
       
       <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">

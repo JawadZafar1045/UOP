@@ -3,6 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useStore } from "@/store/useStore";
 import { updateProfile, updatePassword } from "@/services/auth.service";
+import * as dashboardService from "@/services/dashboard.service";
+import Avatar from "react-avatar";
+import NiceAvatar, { genConfig } from "react-nice-avatar";
 import {
   User,
   Mail,
@@ -160,6 +163,7 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<Tab>("personal");
   const [isLoading, setIsLoading] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [stats, setStats] = useState<any>(null);
   const [toast, setToast] = useState<{
     type: "success" | "error";
     text: string;
@@ -175,15 +179,29 @@ export default function ProfilePage() {
     }
   }, [user]);
 
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const data = await dashboardService.getDashboardStats();
+        setStats(data);
+      } catch (err) {
+        console.error("Failed to load profile stats", err);
+      }
+    };
+    loadStats();
+  }, []);
+
+  // Specific nice-avatar configs to match illustrative characters
   const PRESETS = [
-    { name: "Student 1", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jordan&eyes=default,happy&mouth=default,smile,twinkle" },
-    { name: "Student 2", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Taylor&eyes=default,happy&mouth=default,smile,twinkle" },
-    { name: "Student 3", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Morgan&eyes=default,happy&mouth=default,smile,twinkle" },
-    { name: "Student 4", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex&eyes=default,happy&mouth=default,smile,twinkle" },
-    { name: "Student 5", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sam&eyes=default,happy&mouth=default,smile,twinkle" },
-    { name: "Student 6", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Pat&eyes=default,happy&mouth=default,smile,twinkle" },
-    { name: "Student 7", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Robin&eyes=default,happy&mouth=default,smile,twinkle" },
-    { name: "Student 8", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Casey&eyes=default,happy&mouth=default,smile,twinkle" },
+    { name: "Avatar 1", url: "nice:peeps_1", config: genConfig({ sex: "woman", faceColor: "#F9C9B6", hairStyle: "womanShort", hairColor: "#506AF4", eyeStyle: "smile", glassesStyle: "round", noseStyle: "short", mouthStyle: "smile", shirtStyle: "hoody", shirtColor: "#9287FF", bgColor: "#E0DDFF" }) },
+    { name: "Avatar 2", url: "nice:peeps_2", config: genConfig({ sex: "man", faceColor: "#F9C9B6", hairStyle: "thick", hairColor: "#D2EFF3", eyeStyle: "oval", glassesStyle: "square", noseStyle: "round", mouthStyle: "peace", shirtStyle: "short", shirtColor: "#77311D", bgColor: "#FC909F" }) },
+    { name: "Avatar 3", url: "nice:peeps_3", config: genConfig({ sex: "man", faceColor: "#AC6651", hairStyle: "normal", hairColor: "#000", eyeStyle: "smile", glassesStyle: "none", noseStyle: "short", mouthStyle: "smile", shirtStyle: "polo", shirtColor: "#F4D150", bgColor: "#FFEDEF" }) },
+    { name: "Avatar 4", url: "nice:peeps_4", config: genConfig({ sex: "woman", faceColor: "#AC6651", hairStyle: "womanLong", hairColor: "#000", eyeStyle: "oval", glassesStyle: "none", noseStyle: "round", mouthStyle: "peace", shirtStyle: "short", shirtColor: "#9287FF", bgColor: "#D2EFF3" }) },
+    { name: "Avatar 5", url: "nice:peeps_5", config: genConfig({ sex: "man", faceColor: "#F9C9B6", hairStyle: "mohawk", hairColor: "#F48150", eyeStyle: "smile", glassesStyle: "round", noseStyle: "long", mouthStyle: "smile", shirtStyle: "hoody", shirtColor: "#F4D150", bgColor: "#E0DDFF" }) },
+    { name: "Avatar 6", url: "nice:peeps_6", config: genConfig({ sex: "man", faceColor: "#AC6651", hairStyle: "thick", hairColor: "#000", eyeStyle: "oval", glassesStyle: "none", noseStyle: "short", mouthStyle: "smile", shirtStyle: "polo", shirtColor: "#77311D", bgColor: "#FFEBA4" }) },
+    { name: "Avatar 7", url: "nice:peeps_7", config: genConfig({ sex: "woman", faceColor: "#F9C9B6", hairStyle: "womanShort", hatStyle: "beanie", hatColor: "#F48150", hairColor: "#000", eyeStyle: "smile", glassesStyle: "none", noseStyle: "short", mouthStyle: "peace", shirtStyle: "short", shirtColor: "#D2EFF3", bgColor: "#FFEDEF" }) },
+    { name: "Avatar 8", url: "nice:peeps_8", config: genConfig({ sex: "man", faceColor: "#F9C9B6", hairStyle: "normal", hairColor: "#77311D", eyeStyle: "smile", glassesStyle: "none", noseStyle: "round", mouthStyle: "smile", shirtStyle: "hoody", shirtColor: "#506AF4", bgColor: "#D2EFF3" }) },
+    { name: "Avatar 9", url: "nice:peeps_9", config: genConfig({ sex: "woman", faceColor: "#F9C9B6", hairStyle: "womanLong", hairColor: "#F48150", eyeStyle: "oval", glassesStyle: "none", noseStyle: "short", mouthStyle: "smile", shirtStyle: "polo", shirtColor: "#FFEBA4", bgColor: "#FC909F" }) },
   ];
 
   // Save personal info
@@ -253,7 +271,6 @@ export default function ProfilePage() {
 
   if (!user) return null;
 
-  const initials = user.name.charAt(0).toUpperCase();
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: "personal", label: "Personal info", icon: <User className="w-3.5 h-3.5" /> },
     { id: "password", label: "Password", icon: <Lock className="w-3.5 h-3.5" /> },
@@ -284,17 +301,23 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => setShowAvatarModal(true)}
-                  className="w-20 h-20 rounded-full ring-4 ring-white shadow-lg overflow-hidden bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-2xl font-bold hover:opacity-90 transition-opacity"
+                  className="rounded-full ring-4 ring-white shadow-lg overflow-hidden flex hover:opacity-90 transition-opacity bg-gradient-to-br from-indigo-500 to-violet-600 w-20 h-20 items-center justify-center"
                 >
-                  {avatarSrc ? (
-                    <img src={avatarSrc} alt="avatar" className="w-full h-full object-cover" />
+                  {avatarSrc?.startsWith("nice:") ? (
+                    <NiceAvatar className="w-20 h-20" style={{ width: '5rem', height: '5rem' }} {...(PRESETS.find(p => p.url === avatarSrc)?.config || genConfig(avatarSrc))} />
+                  ) : avatarSrc ? (
+                    <img src={avatarSrc} alt="avatar" className="w-20 h-20 object-cover" />
                   ) : (
-                    initials
+                    <Avatar name={user.name} size="80" round={true} />
                   )}
                 </button>
-                <div className="absolute bottom-0.5 right-0.5 w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center shadow-sm pointer-events-none">
-                  <Camera className="w-3 h-3 text-slate-500" />
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAvatarModal(true)}
+                  className="absolute bottom-0 right-0 w-7 h-7 bg-white border border-slate-200 rounded-full flex items-center justify-center shadow-sm hover:bg-slate-50 transition-colors z-10"
+                >
+                  <Camera className="w-3.5 h-3.5 text-slate-600" />
+                </button>
               </div>
 
               <h2 className="font-semibold text-slate-900 text-base">{user.name}</h2>
@@ -304,25 +327,13 @@ export default function ProfilePage() {
 
               {/* Stats */}
               <div className="grid grid-cols-2 gap-2 w-full mt-5">
-                <StatCard icon={<BookOpen className="w-4 h-4" />} value={4} label="Courses" />
-                <StatCard icon={<Award className="w-4 h-4" />} value={12} label="Completed" />
-                <StatCard icon={<TrendingUp className="w-4 h-4" />} value="87%" label="Avg Score" />
-                <StatCard icon={<Flame className="w-4 h-4" />} value={23} label="Day streak" />
+                <StatCard icon={<BookOpen className="w-4 h-4" />} value={stats?.stats?.enrolled || 0} label="Enrolled" />
+                <StatCard icon={<CheckCircle2 className="w-4 h-4" />} value={stats?.stats?.completed || 0} label="Completed" />
+                <StatCard icon={<TrendingUp className="w-4 h-4" />} value="75%" label="Avg Progress" />
+                <StatCard icon={<Award className="w-4 h-4" />} value={stats?.stats?.certificates || 0} label="Certificates" />
               </div>
 
-              {/* Progress */}
-              <div className="w-full mt-4">
-                <div className="flex justify-between text-xs mb-1.5">
-                  <span className="text-slate-500 font-medium">Course progress</span>
-                  <span className="text-indigo-600 font-semibold">75%</span>
-                </div>
-                <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all duration-1000"
-                    style={{ width: "75%" }}
-                  />
-                </div>
-              </div>
+
             </div>
           </div>
 
@@ -341,7 +352,7 @@ export default function ProfilePage() {
         {/* ── Main Card ── */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           {/* Tab bar */}
-          <div className="flex border-b border-slate-100 px-6 bg-slate-50/50">
+          <div className="flex border-b border-slate-100 px-6 bg-slate-50/50 overflow-x-auto whitespace-nowrap scrollbar-hide">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -640,13 +651,13 @@ export default function ProfilePage() {
       {/* Avatar Picker Modal */}
       {showAvatarModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full overflow-hidden p-6 space-y-4 animate-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-lg w-full overflow-hidden p-6 space-y-4 animate-in zoom-in-95 duration-200">
             {/* Header */}
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="text-lg font-bold text-slate-900">Choose Profile Avatar</h3>
                 <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  Select a premium illustration preset. These lightweight avatars keep the platform fast and save database storage!
+                  Select a beautiful avatar that represents you.
                 </p>
               </div>
               <button
@@ -659,23 +670,22 @@ export default function ProfilePage() {
             </div>
 
             {/* Grid */}
-            <div className="grid grid-cols-4 gap-3 py-2">
-              {/* Dynamic Initials Avatar */}
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 py-2">
+              {/* Initials Avatar */}
               <button
                 type="button"
                 onClick={() => {
-                  setAvatarSrc(`https://api.dicebear.com/7.x/initials/svg?seed=${name}`);
+                  setAvatarSrc(null);
                   setShowAvatarModal(false);
                 }}
-                className={`aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-500 to-violet-600 p-0.5 transition-all hover:scale-105 ${
-                  avatarSrc?.includes("initials")
+                className={`aspect-square rounded-full overflow-hidden bg-white p-1 transition-all hover:scale-105 ${
+                  avatarSrc === null
                     ? "ring-4 ring-indigo-500 ring-offset-2"
-                    : "ring-1 ring-slate-200"
+                    : "ring-1 ring-slate-200 hover:ring-indigo-300"
                 }`}
               >
-                <div className="w-full h-full bg-slate-950/10 flex flex-col items-center justify-center text-white text-xs font-bold leading-tight">
-                  <span className="text-lg uppercase">{name ? name.charAt(0) : "U"}</span>
-                  <span className="text-[9px] font-semibold opacity-80 uppercase mt-0.5">Initials</span>
+                <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center">
+                  <Avatar name={user.name} size="100%" round={true} />
                 </div>
               </button>
 
@@ -689,41 +699,36 @@ export default function ProfilePage() {
                       setAvatarSrc(p.url);
                       setShowAvatarModal(false);
                     }}
-                    className={`aspect-square rounded-2xl overflow-hidden bg-slate-50 border p-1 transition-all hover:scale-105 hover:bg-slate-100 ${
+                    className={`aspect-square rounded-full overflow-hidden bg-slate-50 p-1 transition-all hover:scale-105 flex items-center justify-center ${
                       isSelected
-                        ? "border-indigo-500 ring-4 ring-indigo-500 ring-offset-2"
-                        : "border-slate-200"
+                        ? "ring-4 ring-indigo-500 ring-offset-2 bg-indigo-50"
+                        : "ring-1 ring-slate-200 hover:ring-indigo-300 hover:bg-slate-100"
                     }`}
                   >
-                    <img src={p.url} alt={p.name} className="w-full h-full object-contain" />
+                    {p.url.startsWith("nice:") ? (
+                      <NiceAvatar className="w-full h-full" style={{ width: '100%', height: '100%' }} {...p.config} />
+                    ) : (
+                      <img src={p.url} alt={p.name} className="w-full h-full object-cover rounded-full" />
+                    )}
                   </button>
                 );
               })}
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setAvatarSrc(null);
-                  setShowAvatarModal(false);
-                }}
-                className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 px-4 py-2.5 rounded-xl hover:bg-rose-100 transition-colors"
-              >
-                Remove Avatar
-              </button>
+            <div className="flex justify-end gap-2 pt-4 border-t border-slate-100">
               <button
                 type="button"
                 onClick={() => setShowAvatarModal(false)}
-                className="text-xs font-semibold text-white bg-indigo-600 px-4 py-2.5 rounded-xl hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-100"
+                className="text-xs font-semibold text-slate-700 bg-white border border-slate-200 px-5 py-2.5 rounded-xl hover:bg-slate-50 transition-colors"
               >
-                Close
+                Cancel
               </button>
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 }

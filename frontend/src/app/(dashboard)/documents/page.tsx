@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { getDocuments, uploadDocument, deleteDocument, downloadDocument } from "@/services/document.service";
 import { useLmsStore } from "@/store/lmsStore";
 import { useStore } from "@/store/useStore";
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 
 export default function DocumentsPage() {
   const [documents, setDocuments] = useState<any[]>([]);
@@ -97,7 +99,9 @@ export default function DocumentsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+
+
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">LMS Document Center</h1>
           <p className="text-sm text-slate-500 mt-1">Manage global institute files, course materials, and student submissions.</p>
@@ -117,7 +121,7 @@ export default function DocumentsPage() {
 
       {/* Tabs Navigation & Filters */}
       <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-200 gap-4">
-        <div className="flex gap-8">
+        <div className="flex gap-8 overflow-x-auto w-full whitespace-nowrap scrollbar-hide pb-2">
           {[
             { id: 'all', label: 'All Documents' },
             { id: 'institute', label: 'Institute Global' },

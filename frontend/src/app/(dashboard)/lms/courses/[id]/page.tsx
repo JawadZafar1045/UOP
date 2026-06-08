@@ -40,6 +40,7 @@ import {
   UserPlus,
   XCircle,
   ArrowRight,
+  ChevronLeft,
 } from "lucide-react";
 import Link from "next/link";
 import * as lmsService from "@/services/lms.service";
@@ -249,7 +250,18 @@ export default function CourseOverviewPage({
   }
 
   return (
+    <>
+    <div className="flex items-center mb-6">
+      <Link
+        href="/lms"
+        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all group active:scale-[0.98] shadow-blue-500/20"
+      >
+        <ChevronLeft className="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" />
+        Back to Courses
+      </Link>
+    </div>
     <div className="space-y-8">
+    
       {/* Abstract Hero Section */}
       <div className="relative w-full min-h-80 rounded-2xl overflow-hidden bg-white border border-slate-200">
         {/* Abstract background patterns */}
@@ -499,7 +511,7 @@ export default function CourseOverviewPage({
             Course Statistics
           </p>
 
-          <div className="grid grid-cols-4 gap-3 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
             <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
               <p className="text-2xl font-bold text-blue-600">
                 {currentCourse.enrolledStudents?.length || 0}
@@ -770,5 +782,6 @@ export default function CourseOverviewPage({
         </div>
       )}
     </div>
+    </>
   );
 }
