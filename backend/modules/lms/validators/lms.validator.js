@@ -263,9 +263,10 @@ const createQuizVal = [
     .trim()
     .notEmpty()
     .withMessage('Quiz title is required'),
-  body('passingScore')
+  body('passMark')
+    .optional()
     .isNumeric()
-    .withMessage('Passing score must be a number'),
+    .withMessage('Pass mark must be a number'),
 ];
 
 const getCourseQuizzesVal = [
@@ -283,20 +284,24 @@ const updateQuizVal = [
     .trim()
     .notEmpty()
     .withMessage('Quiz title cannot be empty'),
+  body('passMark')
+    .optional()
+    .isNumeric()
+    .withMessage('Pass mark must be a number'),
 ];
 
 const addQuizQuestionVal = [
   param('id')
     .custom(isObjectId)
     .withMessage('Invalid quiz ID format'),
-  body('text')
+  body('question')
     .trim()
     .notEmpty()
     .withMessage('Question text is required'),
   body('options')
     .isArray({ min: 2 })
     .withMessage('Options must be an array with at least 2 choices'),
-  body('correctOption')
+  body('correctIndex')
     .isInt({ min: 0 })
     .withMessage('Correct option must be a valid option index'),
 ];
@@ -305,6 +310,19 @@ const updateQuizQuestionVal = [
   param('id')
     .custom(isObjectId)
     .withMessage('Invalid question ID format'),
+  body('question')
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage('Question text cannot be empty'),
+  body('options')
+    .optional()
+    .isArray({ min: 2 })
+    .withMessage('Options must be an array with at least 2 choices'),
+  body('correctIndex')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage('Correct option must be a valid option index'),
 ];
 
 const publishQuizVal = [

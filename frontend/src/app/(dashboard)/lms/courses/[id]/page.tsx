@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend,
   Filler,
+  DoughnutController,
 } from "chart.js";
 
 // Register all ChartJS components immediately
@@ -24,6 +25,7 @@ if (typeof window !== "undefined") {
     Tooltip,
     Legend,
     Filler,
+    DoughnutController,
   );
 }
 

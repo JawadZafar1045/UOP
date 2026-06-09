@@ -15,6 +15,8 @@ import {
   Title,
   Tooltip,
   Legend,
+  BarController,
+  DoughnutController,
 } from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import Link from 'next/link';
@@ -29,7 +31,9 @@ ChartJS.register(
   ArcElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  BarController,
+  DoughnutController
 );
 
 export default function DashboardPage() {

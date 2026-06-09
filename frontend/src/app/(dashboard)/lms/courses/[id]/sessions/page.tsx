@@ -8,9 +8,9 @@ import Link from 'next/link';
 import api from '@/services/api'; // Assuming you have api exported, or I'll just use the service directly.
 import * as lmsService from '@/services/lms.service';
 import { Doughnut } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, DoughnutController } from 'chart.js';
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend, DoughnutController);
 
 export default function SessionsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
