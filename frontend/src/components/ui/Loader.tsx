@@ -24,8 +24,7 @@ export default function Loader({ size = "md", text, fullScreen = false }: Loader
   const content = (
     <div className="flex flex-col items-center justify-center gap-3">
       <div className="relative">
-        <div className={`absolute inset-0 rounded-full blur-md opacity-40 bg-blue-500 animate-pulse ${sizeClasses[size]}`}></div>
-        <Loader2 className={`animate-spin text-blue-600 relative z-10 ${sizeClasses[size]}`} />
+        <Loader2 className={`animate-spin text-blue-600 ${sizeClasses[size]}`} />
       </div>
       {text && (
         <p className={`font-medium text-slate-500 animate-pulse ${textClasses[size]}`}>

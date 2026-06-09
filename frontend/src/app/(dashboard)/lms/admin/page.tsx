@@ -9,6 +9,7 @@ import {
   CheckCircle, XCircle, Trash2, Eye, MoreVertical, Search,
   BarChart3, TrendingUp, UserCheck, UserX
 } from "lucide-react";
+import Loader from "@/components/ui/Loader";
 import * as lmsService from "@/services/lms.service";
 
 type Tab = "overview" | "users" | "courses" | "certificates";
@@ -41,6 +42,7 @@ export default function AdminDashboardPage() {
     type: "deactivate" | "deleteCourse" | "revokeCert";
     id: string; label: string;
   }>(null);
+  const [isConfirming, setIsConfirming] = useState(false);
 
   useEffect(() => {
     if (!user || user.role !== "admin") return;
@@ -89,6 +91,7 @@ export default function AdminDashboardPage() {
   const handleConfirm = async () => {
     if (!confirmAction) return;
     const { type, id } = confirmAction;
+    setIsConfirming(true);
     try {
       if (type === "deactivate") {
         await lmsService.deactivateUser(id);
@@ -103,6 +106,7 @@ export default function AdminDashboardPage() {
     } catch (e: any) {
       alert(e?.message || "Action failed.");
     } finally {
+      setIsConfirming(false);
       setConfirmAction(null);
     }
   };
@@ -192,7 +196,7 @@ export default function AdminDashboardPage() {
             <span className="text-xs text-slate-400 font-medium">{filteredUsers.length} users</span>
           </div>
           {loading ? (
-            <div className="p-8 text-center text-slate-400">Loading users...</div>
+            <div className="p-8 flex justify-center"><Loader size="md" text="Loading users..." /></div>
           ) : filteredUsers.length === 0 ? (
             <div className="p-8 text-center text-slate-400">No users found.</div>
           ) : (
@@ -268,7 +272,7 @@ export default function AdminDashboardPage() {
             <span className="text-xs text-slate-400 font-medium">{filteredCourses.length} courses</span>
           </div>
           {loading ? (
-            <div className="p-8 text-center text-slate-400">Loading courses...</div>
+            <div className="p-8 flex justify-center"><Loader size="md" text="Loading courses..." /></div>
           ) : filteredCourses.length === 0 ? (
             <div className="p-8 text-center text-slate-400">No courses found.</div>
           ) : (
@@ -327,7 +331,7 @@ export default function AdminDashboardPage() {
             <span className="text-xs text-slate-400 font-medium">{certs.length} certificates issued</span>
           </div>
           {loading ? (
-            <div className="p-8 text-center text-slate-400">Loading certificates...</div>
+            <div className="p-8 flex justify-center"><Loader size="md" text="Loading certificates..." /></div>
           ) : certs.length === 0 ? (
             <div className="p-8 text-center text-slate-400">No certificates issued yet.</div>
           ) : (
@@ -400,9 +404,9 @@ export default function AdminDashboardPage() {
                 className="flex-1 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">
                 Cancel
               </button>
-              <button onClick={handleConfirm}
-                className="flex-1 py-2.5 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors">
-                Confirm
+              <button onClick={handleConfirm} disabled={isConfirming}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors disabled:opacity-50">
+                {isConfirming ? <><Loader size="sm" /> Confirming...</> : 'Confirm'}
               </button>
             </div>
           </div>
