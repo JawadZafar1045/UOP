@@ -8,7 +8,8 @@ const errorHandler = (err, req, res, next) => {
   // Mongoose validation error
   if (err.name === 'ValidationError') {
     const errors = Object.values(err.errors).map((e) => e.message);
-    return res.status(400).json({ success: false, message: 'Validation Error', errors });
+    const primaryMessage = errors[0] || 'cannot allow empty value';
+    return res.status(400).json({ success: false, message: primaryMessage, errors });
   }
 
   // Mongoose duplicate key error

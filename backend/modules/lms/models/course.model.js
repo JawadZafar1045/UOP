@@ -46,11 +46,11 @@ const courseSchema = new mongoose.Schema(
     // ── Curriculum ───────────────────────────────────────────────────────────────
     modules: [
       {
-        title: { type: String, required: true },
+        title: { type: String, required: [true, 'cannot allow empty value'] },
         order: { type: Number, default: 0 },
         lessons: [
           {
-            title: { type: String, required: true },
+            title: { type: String, required: [true, 'cannot allow empty value'] },
             contentType: { type: String, enum: ['video', 'pdf', 'text', 'quiz'], default: 'text' },
             contentUrl: { type: String },
             content: { type: String },
