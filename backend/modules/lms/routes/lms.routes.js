@@ -1,8 +1,8 @@
 const express = require('express');
 const router  = express.Router();
 const rateLimit = require('express-rate-limit');
-const { protect }         = require('../../shared/middlewares/auth.middleware');
-const { authorize }       = require('../../shared/middlewares/rbac.middleware');
+const { protect } = require('../../shared/middlewares/auth.middleware');
+const { authorize } = require('../../shared/middlewares/rbac.middleware');
 const { tenantIsolation } = require('../../shared/middlewares/tenant.middleware');
 const { upload } = require('../../documents/middlewares/upload.middleware');
 const ctrl   = require('../controllers/lms.controller');
