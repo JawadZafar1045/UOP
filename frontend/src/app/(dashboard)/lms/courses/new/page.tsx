@@ -163,9 +163,12 @@ export default function NewCoursePage() {
   sessionDuration: formData.sessionDuration,
 
   // FIX HERE
-  modules: formData.modules.map((module) => ({
-    title: module,
-  })),
+  modules: formData.modules
+    .map((module) => module.trim())
+    .filter(Boolean)
+    .map((module) => ({
+      title: module,
+    })),
 
   resourceLink: formData.resourceLink,
   studentNotes: formData.studentNotes,

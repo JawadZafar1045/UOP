@@ -92,6 +92,20 @@ const createCourse = async (tenantId, data, userId) => {
     throw err;
   }
 
+  // Sanitize modules if they exist in the incoming data
+  if (data.modules && Array.isArray(data.modules)) {
+    data.modules = data.modules
+      .map(m => {
+        if (typeof m === 'string') {
+          return { title: m.trim() };
+        } else if (m && typeof m.title === 'string') {
+          return { ...m, title: m.title.trim() };
+        }
+        return m;
+      })
+      .filter(m => m && m.title);
+  }
+
   const course = await Course.create({ instructor: userId, ...data, tenantId });
   await logActivity({ userId, tenantId, action: 'CREATE_COURSE', entityType: 'Course', entityId: course._id });
   return course;
