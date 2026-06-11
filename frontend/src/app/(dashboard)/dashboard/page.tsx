@@ -22,6 +22,7 @@ import { Bar, Doughnut } from 'react-chartjs-2';
 import Link from 'next/link';
 import * as dashboardService from '@/services/dashboard.service';
 import { useStore } from "@/store/useStore";
+import Loader from "@/components/ui/Loader";
 
 // Register Chart.js components
 ChartJS.register(
@@ -173,16 +174,8 @@ export default function DashboardPage() {
 
   if (isStatsLoading) {
     return (
-      <div className="space-y-8 max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 animate-pulse">
-        <div className="h-10 w-56 bg-slate-100 rounded-xl" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => <div key={i} className="h-28 bg-slate-100 rounded-2xl" />)}
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 h-72 bg-slate-100 rounded-2xl" />
-          <div className="h-72 bg-slate-100 rounded-2xl" />
-        </div>
-        <div className="h-48 bg-slate-100 rounded-2xl" />
+      <div className="min-h-[400px] flex items-center justify-center">
+        <Loader size="lg" text="Loading dashboard..." />
       </div>
     );
   }
@@ -342,31 +335,40 @@ export default function DashboardPage() {
               </h3>
               <p className="text-xs text-slate-400 mt-0.5 font-medium uppercase tracking-wider">Publication status ratio</p>
             </div>
-            <div className="h-[240px] flex items-center justify-center">
-              <div className="w-full max-w-[200px] relative">
-                <Doughnut data={doughnutData} options={doughnutOptions} />
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none -mt-1">
-                  <span className="text-3xl font-bold text-slate-900 leading-none">{lmsStats.published}</span>
-                  <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-tight mt-0.5 padding-0.9rm">Live</span>
-                </div>
+            {lmsStats.total === 0 ? (
+              <div className="h-[240px] flex flex-col items-center justify-center text-center gap-3">
+                <PieChart className="w-10 h-10 text-slate-200" />
+                <p className="text-sm font-medium text-slate-400">No courses created yet</p>
               </div>
-            </div>
-            <div className="mt-8 space-y-3">
-              <div className="flex items-center justify-between p-3 bg-emerald-50/50 rounded-xl border border-emerald-100">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                  <span className="text-xs font-bold text-slate-700">Published</span>
+            ) : (
+              <>
+                <div className="h-[240px] flex items-center justify-center">
+                  <div className="w-full max-w-[200px] relative">
+                    <Doughnut data={doughnutData} options={doughnutOptions} />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none -mt-1">
+                      <span className="text-3xl font-bold text-slate-900 leading-none">{lmsStats.published}</span>
+                      <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-tight mt-0.5">Live</span>
+                    </div>
+                  </div>
                 </div>
-                <span className="text-sm font-bold text-emerald-700">{Math.round((lmsStats.published / (lmsStats.total || 1)) * 100)}%</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-amber-50/50 rounded-xl border border-amber-100">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-amber-500" />
-                  <span className="text-xs font-bold text-slate-700">In Draft</span>
+                <div className="mt-8 space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-emerald-50/50 rounded-xl border border-emerald-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                      <span className="text-xs font-bold text-slate-700">Published</span>
+                    </div>
+                    <span className="text-sm font-bold text-emerald-700">{Math.round((lmsStats.published / lmsStats.total) * 100)}%</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-amber-50/50 rounded-xl border border-amber-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-amber-500" />
+                      <span className="text-xs font-bold text-slate-700">In Draft</span>
+                    </div>
+                    <span className="text-sm font-bold text-amber-700">{Math.round((lmsStats.draft / lmsStats.total) * 100)}%</span>
+                  </div>
                 </div>
-                <span className="text-sm font-bold text-amber-700">{Math.round((lmsStats.draft / (lmsStats.total || 1)) * 100)}%</span>
-              </div>
-            </div>
+              </>
+            )}
           </div>
         </div>
       )}

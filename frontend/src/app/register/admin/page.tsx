@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import api from "@/services/api";
 import { Shield, User, Mail, Lock, Building2, Key, ArrowRight, CheckCircle2 } from "lucide-react";
+import Loader from "@/components/ui/Loader";
 
 export default function AdminRegisterPage() {
   const router = useRouter();
@@ -126,7 +127,7 @@ export default function AdminRegisterPage() {
               <div className="pt-2">
                 <button type="submit" disabled={loading}
                   className="w-full flex justify-center items-center gap-2 py-3.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-900/30 disabled:opacity-50 group">
-                  {loading ? "Registering..." : (
+                  {loading ? <><Loader size="sm" /> Registering...</> : (
                     <><span>Register Institution</span><ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>
                   )}
                 </button>

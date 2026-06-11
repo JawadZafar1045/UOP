@@ -6,6 +6,7 @@ import { useStore } from "@/store/useStore";
 import * as lmsService from "@/services/lms.service";
 import Link from "next/link";
 import { ChevronLeft, Save, Image as ImageIcon, CheckCircle } from "lucide-react";
+import Loader from "@/components/ui/Loader";
 export default function CertificateTemplatePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const courseId = resolvedParams.id;
@@ -105,7 +106,7 @@ export default function CertificateTemplatePage({ params }: { params: Promise<{ 
     }
   };
 
-  if (loading) return <div className="p-8 text-center text-slate-500">Loading designer...</div>;
+  if (loading) return <div className="min-h-[400px] flex items-center justify-center"><Loader size="lg" text="Loading designer..." /></div>;
 
   // Compute CSS for preview
   let fontFamily = "Georgia, serif";
@@ -130,6 +131,10 @@ export default function CertificateTemplatePage({ params }: { params: Promise<{ 
       {/* LEFT - CONTROLS (40%) */}
       <div className="w-full lg:w-2/5 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
         <div className="p-5 border-b border-slate-100 bg-slate-50 flex flex-col gap-4">
+          <Link href={`/lms/courses/${courseId}`} className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all group active:scale-[0.98] shadow-blue-500/20 w-fit">
+            <ChevronLeft className="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" />
+            Back to Course
+          </Link>
           <div className="flex items-center justify-between">
             <h2 className="font-bold text-slate-800">Certificate Designer</h2>
           </div>

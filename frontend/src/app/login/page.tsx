@@ -198,6 +198,7 @@ import { useState } from "react";
 import Link from "next/link";
 import api from "@/services/api";
 import { Mail, Lock, ArrowRight, ShieldCheck } from "lucide-react";
+import Loader from "@/components/ui/Loader";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -371,7 +372,7 @@ export default function LoginPage() {
               className="w-full flex justify-center items-center gap-2 py-4 px-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 disabled:opacity-50 disabled:shadow-none group"
             >
               {loading ? (
-                <>Signing in...</>
+                <><Loader size="sm" /> Signing in...</>
               ) : (
                 <>
                   Sign in to UOP{" "}

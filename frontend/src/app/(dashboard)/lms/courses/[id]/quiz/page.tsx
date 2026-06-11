@@ -8,6 +8,7 @@ import {
   Eye, Settings, BarChart3, Edit, Trash2, ToggleLeft, ToggleRight,
   ChevronLeft, ChevronRight, Award, CheckCircle2, AlertCircle
 } from 'lucide-react';
+import Loader from '@/components/ui/Loader';
 import Link from 'next/link';
 import * as lmsService from '@/services/lms.service';
 
@@ -36,6 +37,9 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
   const [editQuizId, setEditQuizId] = useState<string | null>(null);
   const [isEditingQuestion, setIsEditingQuestion] = useState(false);
   const [editQuestionId, setEditQuestionId] = useState<string | null>(null);
+  const [publishingQuizId, setPublishingQuizId] = useState<string | null>(null);
+  const [unpublishingQuizId, setUnpublishingQuizId] = useState<string | null>(null);
+  const [loadingResultsId, setLoadingResultsId] = useState<string | null>(null);
   const { updateQuiz } = useLmsStore();
 
   // Data states
@@ -242,37 +246,43 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
   // Publish Quiz Handler
   const handlePublishQuiz = async (quizId: string) => {
     if (!confirm('Publish this quiz? Students will be able to take it.')) return;
-
+    setPublishingQuizId(quizId);
     try {
       await lmsService.publishQuiz(quizId);
       fetchQuizzes(courseId);
     } catch (err: any) {
       alert(err?.message || 'Failed to publish quiz');
+    } finally {
+      setPublishingQuizId(null);
     }
   };
 
   // Unpublish Quiz Handler
   const handleUnpublishQuiz = async (quizId: string) => {
     if (!confirm('Revert this quiz to Draft? Students will no longer be able to take it, but their existing attempts will be preserved.')) return;
-
+    setUnpublishingQuizId(quizId);
     try {
       await updateQuiz(quizId, { status: 'draft' });
-      alert('Quiz reverted to Draft successfully!');
       fetchQuizzes(courseId);
     } catch (err: any) {
       alert(err?.message || 'Failed to revert quiz');
+    } finally {
+      setUnpublishingQuizId(null);
     }
   };
 
   // View Results Handler
   const handleViewResults = async (quiz: any) => {
     setCurrentQuiz(quiz);
+    setLoadingResultsId(quiz._id);
     try {
       const results = await lmsService.getQuizResults(quiz._id);
       setQuizResults(results);
       setShowResults(true);
     } catch (err: any) {
       alert(err?.message || 'Failed to load results');
+    } finally {
+      setLoadingResultsId(null);
     }
   };
 
@@ -330,11 +340,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
   };
 
   if (isLoading && quizzes.length === 0) {
-    return <div className="p-8 text-center text-slate-500 animate-pulse">Loading quizzes...</div>;
-  }
-
-  if (isLoading && quizzes.length === 0) {
-    return <div className="p-8 text-center text-slate-500 animate-pulse">Loading quizzes...</div>;
+    return <div className="p-8 flex justify-center"><Loader size="md" text="Loading quizzes..." /></div>;
   }
 
   return (
@@ -446,10 +452,10 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                         {(quiz.questionCount || 0) > 0 && (
                           <button
                             onClick={() => handlePublishQuiz(quiz._id)}
-                            className="text-sm font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1.5 transition-colors"
+                            disabled={publishingQuizId === quiz._id}
+                            className="text-sm font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1.5 transition-colors disabled:opacity-50"
                           >
-                            <CheckCircle2 className="w-4 h-4" />
-                            Publish
+                            {publishingQuizId === quiz._id ? <><Loader size="sm" /> Publishing...</> : <><CheckCircle2 className="w-4 h-4" /> Publish</>}
                           </button>
                         )}
                       </>
@@ -457,18 +463,18 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                       <>
                         <button
                           onClick={() => handleUnpublishQuiz(quiz._id)}
-                          className="text-sm font-bold text-amber-600 hover:text-amber-700 flex items-center gap-1.5 transition-colors"
+                          disabled={unpublishingQuizId === quiz._id}
+                          className="text-sm font-bold text-amber-600 hover:text-amber-700 flex items-center gap-1.5 transition-colors disabled:opacity-50"
                         >
-                          <XCircle className="w-4 h-4" />
-                          Revert to Draft
+                          {unpublishingQuizId === quiz._id ? <><Loader size="sm" /> Reverting...</> : <><XCircle className="w-4 h-4" /> Revert to Draft</>}
                         </button>
                         {(quiz.status === 'published' || quiz.status === 'closed') && (
                           <button
                             onClick={() => handleViewResults(quiz)}
-                            className="text-sm font-bold text-purple-600 hover:text-purple-700 flex items-center gap-1.5 transition-colors"
+                            disabled={loadingResultsId === quiz._id}
+                            className="text-sm font-bold text-purple-600 hover:text-purple-700 flex items-center gap-1.5 transition-colors disabled:opacity-50"
                           >
-                            <BarChart3 className="w-4 h-4" />
-                            View Results
+                            {loadingResultsId === quiz._id ? <><Loader size="sm" /> Loading...</> : <><BarChart3 className="w-4 h-4" /> View Results</>}
                           </button>
                         )}
                       </>
@@ -631,9 +637,9 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-blue-600 text-sm font-medium text-white rounded-lg shadow-sm hover:bg-blue-700 disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-sm font-medium text-white rounded-lg shadow-sm hover:bg-blue-700 disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Saving...' : (isEditingQuiz ? 'Update Quiz' : 'Create Quiz')}
+                  {isSubmitting ? <><Loader size="sm" />{isEditingQuiz ? 'Updating...' : 'Creating...'}</> : (isEditingQuiz ? 'Update Quiz' : 'Create Quiz')}
                 </button>
               </div>
             </form>
@@ -825,9 +831,9 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-blue-700 disabled:opacity-50"
+                    className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-blue-700 disabled:opacity-50"
                   >
-                    {isSubmitting ? 'Saving...' : (isEditingQuestion ? 'Update Question' : 'Add Question')}
+                    {isSubmitting ? <><Loader size="sm" />{isEditingQuestion ? 'Updating...' : 'Adding...'}</> : (isEditingQuestion ? 'Update Question' : 'Add Question')}
                   </button>
                 </div>
               </form>
@@ -941,7 +947,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                 <div className="p-5 border-t border-slate-100 flex justify-end gap-3">
                   <button onClick={() => setShowQuizPlayer(false)} className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800">Cancel</button>
                   <button onClick={handleBeginAttempt} disabled={isSubmitting} className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 disabled:opacity-60 shadow-md transition-all">
-                    <Play className="w-4 h-4" />{isSubmitting ? 'Starting...' : 'Begin Attempt'}
+                    {isSubmitting ? <><Loader size="sm" /> Starting...</> : <><Play className="w-4 h-4" /> Begin Attempt</>}
                   </button>
                 </div>
               </>
@@ -1012,7 +1018,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                     ) : (
                       <button onClick={handleSubmitQuiz} disabled={isSubmitting}
                         className="flex items-center gap-1.5 px-5 py-2 bg-emerald-600 text-white text-sm font-bold rounded-lg hover:bg-emerald-700 disabled:opacity-60 shadow-sm">
-                        <CheckCircle2 className="w-4 h-4" />{isSubmitting ? 'Submitting...' : 'Submit Quiz'}
+                        {isSubmitting ? <><Loader size="sm" /> Submitting...</> : <><CheckCircle2 className="w-4 h-4" /> Submit Quiz</>}
                       </button>
                     )}
                   </div>

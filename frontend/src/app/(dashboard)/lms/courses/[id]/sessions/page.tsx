@@ -4,6 +4,7 @@ import { useEffect, useState, use } from 'react';
 import { useLmsStore } from '@/store/lmsStore';
 import { useStore } from '@/store/useStore';
 import { Calendar, Plus, CheckCircle2, XCircle, Clock, Users, Download, FileText, ChevronLeft, PieChart as PieIcon, Edit2 } from 'lucide-react';
+import Loader from '@/components/ui/Loader';
 import Link from 'next/link';
 import api from '@/services/api'; // Assuming you have api exported, or I'll just use the service directly.
 import * as lmsService from '@/services/lms.service';
@@ -23,6 +24,7 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
   const [materialFiles, setMaterialFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMarking, setIsMarking] = useState<string | null>(null);
+  const [isToggling, setIsToggling] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editSessionId, setEditSessionId] = useState<string | null>(null);
   const { updateSession } = useLmsStore();
@@ -123,7 +125,12 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
   };
 
   const handleToggle = async (sessionId: string) => {
-    await toggleSession(sessionId);
+    setIsToggling(sessionId);
+    try {
+      await toggleSession(sessionId);
+    } finally {
+      setIsToggling(null);
+    }
   };
 
   const handleMarkPresent = async (sessionId: string) => {
@@ -164,7 +171,7 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
   };
 
   if (isLoading && sessions.length === 0) {
-    return <div className="p-8 text-center text-slate-500 animate-pulse">Loading sessions...</div>;
+    return <div className="p-8 flex justify-center"><Loader size="md" text="Loading sessions..." /></div>;
   }
 
   return (
@@ -217,11 +224,20 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
             </div>
             
             <div className="relative w-32 h-32 mt-6 sm:mt-0">
-              <Doughnut data={attDoughnutData} options={attDoughnutOptions} />
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none -mt-1">
-                <span className="text-xl font-bold text-indigo-900 leading-none">{attendanceSummary.percentage}%</span>
-                <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-tighter mt-1">Attended</span>
-              </div>
+              {attendanceSummary.total === 0 ? (
+                <div className="w-32 h-32 rounded-full border-4 border-slate-100 flex flex-col items-center justify-center text-center">
+                  <span className="text-xl font-bold text-slate-300 leading-none">—</span>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter mt-1">No data</span>
+                </div>
+              ) : (
+                <>
+                  <Doughnut data={attDoughnutData} options={attDoughnutOptions} />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none -mt-1">
+                    <span className="text-xl font-bold text-indigo-900 leading-none">{attendanceSummary.percentage}%</span>
+                    <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-tighter mt-1">Attended</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
           
@@ -292,8 +308,14 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
                           <button onClick={() => openEditModal(session)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Edit Session">
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
-                          <button onClick={() => handleToggle(session._id)} className="text-blue-600 hover:text-blue-800 font-medium text-xs">
-                            {session.isOpen ? 'Close Attendance' : 'Open Attendance'}
+                          <button
+                            onClick={() => handleToggle(session._id)}
+                            disabled={isToggling === session._id}
+                            className="flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium text-xs disabled:opacity-50"
+                          >
+                            {isToggling === session._id
+                              ? <><Loader size="sm" /> Updating...</>
+                              : session.isOpen ? 'Close Attendance' : 'Open Attendance'}
                           </button>
                         </div>
                         <button onClick={() => handleViewAttendance(session._id, session.title)} className="text-emerald-600 hover:text-emerald-800 font-medium text-[11px] flex items-center gap-1">
@@ -312,12 +334,12 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
                               : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
                         }`}
                       >
-                        {isMarking === session._id 
-                          ? 'Marking...' 
-                          : session.isAttended 
-                            ? 'Present' 
-                            : session.isOpen 
-                              ? 'Mark Present' 
+                        {isMarking === session._id
+                          ? <span className="flex items-center gap-1"><Loader size="sm" /> Marking...</span>
+                          : session.isAttended
+                            ? 'Present'
+                            : session.isOpen
+                              ? 'Mark Present'
                               : 'Closed'}
                       </button>
                     )}
@@ -360,8 +382,8 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
               </div>
               <div className="pt-4 flex justify-end gap-3">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800">Cancel</button>
-                <button type="submit" disabled={isSubmitting} className="px-4 py-2 bg-blue-600 text-sm font-medium text-white rounded-lg shadow-sm hover:bg-blue-700 disabled:opacity-50">
-                  {isSubmitting ? (isEditing ? 'Updating...' : 'Creating...') : (isEditing ? 'Update Session' : 'Create Session')}
+                <button type="submit" disabled={isSubmitting} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-sm font-medium text-white rounded-lg shadow-sm hover:bg-blue-700 disabled:opacity-50">
+                  {isSubmitting ? <><Loader size="sm" />{isEditing ? 'Updating...' : 'Creating...'}</> : (isEditing ? 'Update Session' : 'Create Session')}
                 </button>
               </div>
             </form>

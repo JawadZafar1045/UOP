@@ -5,6 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import api from "@/services/api";
 import { UserPlus, Mail, Lock, User, ArrowRight, CheckCircle2, Building2 } from "lucide-react";
+import Loader from "@/components/ui/Loader";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -164,7 +165,7 @@ export default function SignupPage() {
 
             <button type="submit" disabled={loading}
               className="w-full flex justify-center items-center gap-2 py-4 px-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 disabled:opacity-50 disabled:shadow-none group">
-              {loading ? "Creating Account..." : (
+              {loading ? <><Loader size="sm" /> Creating Account...</> : (
                 <><span>Create Account</span><ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>
               )}
             </button>
