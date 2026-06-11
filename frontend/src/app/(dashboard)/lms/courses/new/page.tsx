@@ -9,6 +9,7 @@ import {
   Rocket, Eye, Lightbulb, LayoutList, Paperclip, Clock,
   CalendarCheck, Pencil, HelpCircle, X
 } from 'lucide-react';
+import Loader from '@/components/ui/Loader';
 import Link from 'next/link';
 import api from '@/services/api';
 
@@ -725,8 +726,7 @@ export default function NewCoursePage() {
         ) : (
           <button type="button" onClick={handlePublish} disabled={isSubmitting}
             className="inline-flex items-center gap-1.5 px-5 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors">
-            <Rocket className="w-4 h-4" />
-            {isSubmitting ? 'Publishing...' : 'Publish course'}
+            {isSubmitting ? <><Loader size="sm" /> Publishing...</> : <><Rocket className="w-4 h-4" /> Publish course</>}
           </button>
         )}
       </div>

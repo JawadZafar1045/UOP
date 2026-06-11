@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useLmsStore } from '@/store/lmsStore';
 import { useStore } from '@/store/useStore';
 import { Award, Download, Share2, Calendar, FileBadge, ChevronLeft } from 'lucide-react';
+import Loader from '@/components/ui/Loader';
 import Link from 'next/link';
 import api from '@/services/api';
 import { downloadCertificate } from '@/services/lms.service';
@@ -84,7 +85,7 @@ export default function CertificatesPage() {
   };
 
   if (isLoading && !isInstructor) {
-    return <div className="p-8 text-center text-slate-500 animate-pulse">Loading certificates...</div>;
+    return <div className="p-8 flex justify-center"><Loader size="md" text="Loading certificates..." /></div>;
   }
 
   return (
@@ -116,13 +117,12 @@ export default function CertificatesPage() {
                 <option key={c._id} value={c._id}>{c.title}</option>
               ))}
             </select>
-            <button 
+            <button
               onClick={handleGenerateAll}
               disabled={!selectedCourseId || isGenerating}
               className="flex items-center gap-2 px-5 py-2 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 transition-all disabled:opacity-50 active:scale-[0.98]"
             >
-              <FileBadge className="w-4 h-4" />
-              Generate All Eligible
+              {isGenerating ? <><Loader size="sm" /> Generating...</> : <><FileBadge className="w-4 h-4" /> Generate All Eligible</>}
             </button>
           </div>
         )}
@@ -144,7 +144,7 @@ export default function CertificatesPage() {
             <p className="text-slate-500 max-w-sm">Choose a course from the dropdown above to view issued certificates and generate new ones for eligible students.</p>
           </div>
         ) : isFetchingCourseCerts ? (
-          <div className="text-center py-20 text-slate-500">Loading course certificates...</div>
+          <div className="py-20 flex justify-center"><Loader size="md" text="Loading course certificates..." /></div>
         ) : courseCertificates.length === 0 ? (
           <div className="bg-white border border-slate-200 rounded-3xl p-20 flex flex-col items-center justify-center text-center">
             <p className="text-slate-500 mb-6">No certificates have been issued for this course yet.</p>
@@ -181,12 +181,12 @@ export default function CertificatesPage() {
                       {new Date(cert.issuedAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 text-right space-x-3">
-                      <button 
+                      <button
                         onClick={() => handleDownload(cert._id, cert.certificateNumber)}
                         disabled={isDownloading === cert._id}
-                        className="text-blue-600 font-bold hover:underline disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 text-blue-600 font-bold hover:underline disabled:opacity-50"
                       >
-                        {isDownloading === cert._id ? 'Downloading...' : 'View & Download'}
+                        {isDownloading === cert._id ? <><Loader size="sm" /> Downloading...</> : 'View & Download'}
                       </button>
                       <button 
                         onClick={() => handleCopyLink(cert.verificationCode)}
@@ -252,13 +252,12 @@ export default function CertificatesPage() {
                   </div>
                   
                   <div className="flex items-center gap-3">
-                    <button 
+                    <button
                       onClick={() => handleDownload(cert._id, cert.certificateNumber)}
                       disabled={isDownloading === cert._id}
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 shadow-md shadow-blue-500/10 transition-all active:scale-[0.98] disabled:opacity-50"
                     >
-                      <Download className="w-4 h-4" />
-                      {isDownloading === cert._id ? 'Processing...' : 'Download'}
+                      {isDownloading === cert._id ? <><Loader size="sm" /> Processing...</> : <><Download className="w-4 h-4" /> Download</>}
                     </button>
                     <button 
                       onClick={() => handleCopyLink(cert.verificationCode)}

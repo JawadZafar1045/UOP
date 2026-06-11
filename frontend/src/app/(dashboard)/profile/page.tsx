@@ -26,6 +26,7 @@ import {
   Flame,
   X,
 } from "lucide-react";
+import Loader from "@/components/ui/Loader";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Tab = "personal" | "password" | "notifications";
@@ -162,6 +163,7 @@ export default function ProfilePage() {
 
   const [activeTab, setActiveTab] = useState<Tab>("personal");
   const [isLoading, setIsLoading] = useState(false);
+  const [statsLoading, setStatsLoading] = useState(true);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [stats, setStats] = useState<any>(null);
   const [toast, setToast] = useState<{
@@ -186,6 +188,8 @@ export default function ProfilePage() {
         setStats(data);
       } catch (err) {
         console.error("Failed to load profile stats", err);
+      } finally {
+        setStatsLoading(false);
       }
     };
     loadStats();
@@ -276,6 +280,14 @@ export default function ProfilePage() {
     { id: "password", label: "Password", icon: <Lock className="w-3.5 h-3.5" /> },
     { id: "notifications", label: "Notifications", icon: <Bell className="w-3.5 h-3.5" /> },
   ];
+
+  if (statsLoading) {
+    return (
+      <div className="min-h-[400px] flex items-center justify-center">
+        <Loader size="lg" text="Loading profile..." />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500 pb-10">

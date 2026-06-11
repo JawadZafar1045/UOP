@@ -4,6 +4,7 @@ import { useEffect, useState, use } from 'react';
 import { useLmsStore } from '@/store/lmsStore';
 import { useStore } from '@/store/useStore';
 import { Award, CheckCircle2, XCircle, FileBadge, Clock, ChevronLeft, Download } from 'lucide-react';
+import Loader from '@/components/ui/Loader';
 import Link from 'next/link';
 import api from '@/services/api';
 import { downloadCertificate } from '@/services/lms.service';
@@ -55,6 +56,8 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
 
   const [classPerformance, setClassPerformance] = useState<StudentPerformance[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generatingStudentId, setGeneratingStudentId] = useState<string | null>(null);
+  const [downloadingCertId, setDownloadingCertId] = useState<string | null>(null);
   const [selectedStudentPerf, setSelectedStudentPerf] = useState<StudentPerformance | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
@@ -74,6 +77,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
   const handleGenerateCertificate = async (studentId: string) => {
     if (!confirm('Are you sure you want to generate a certificate for this student?')) return;
     setIsGenerating(true);
+    setGeneratingStudentId(studentId);
     try {
       await api.post(`/lms/courses/${courseId}/certificates/generate/${studentId}`);
       alert('Certificate generated successfully!');
@@ -81,6 +85,18 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
       alert(getErrorMessage(err, 'Failed to generate certificate'));
     } finally {
       setIsGenerating(false);
+      setGeneratingStudentId(null);
+    }
+  };
+
+  const handleDownloadCert = async (certId: string, certNumber: string) => {
+    setDownloadingCertId(certId);
+    try {
+      await downloadCertificate(certId, `Certificate_${certNumber}.pdf`);
+    } catch (err: unknown) {
+      alert(getErrorMessage(err, 'Failed to download certificate'));
+    } finally {
+      setDownloadingCertId(null);
     }
   };
 
@@ -99,7 +115,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
   };
 
   if (isLoading) {
-    return <div className="p-8 text-center text-slate-500 animate-pulse">Loading performance data...</div>;
+    return <div className="p-8 flex justify-center"><Loader size="md" text="Loading performance data..." /></div>;
   }
 
   const criteria = currentCourse?.completionCriteria || { minAttendancePercent: 75, minAssignmentScore: 60, minQuizScore: 60 };
@@ -113,13 +129,12 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
             Back to Course
           </Link>
           {isTeacherOrAdmin && (
-            <button 
+            <button
               onClick={handleGenerateAll}
               disabled={isGenerating}
               className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-sm font-bold text-white rounded-xl shadow-md hover:bg-indigo-700 transition-all disabled:opacity-50 active:scale-[0.98] shadow-indigo-500/20"
             >
-              <FileBadge className="w-4 h-4" />
-              Generate All Eligible
+              {isGenerating ? <><Loader size="sm" /> Generating...</> : <><FileBadge className="w-4 h-4" /> Generate All Eligible</>}
             </button>
           )}
         </div>
@@ -179,20 +194,21 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                         Details
                       </button>
                       {perf.certificate ? (
-                        <button 
-                          onClick={() => downloadCertificate(perf.certificate!._id, `Certificate_${perf.certificate!.certificateNumber}.pdf`)}
-                          className="text-emerald-600 hover:text-emerald-800 font-medium text-xs border border-emerald-200 px-3 py-1.5 rounded bg-emerald-50 hover:bg-emerald-100 transition-colors"
+                        <button
+                          onClick={() => handleDownloadCert(perf.certificate!._id, perf.certificate!.certificateNumber)}
+                          disabled={downloadingCertId === perf.certificate._id}
+                          className="inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-800 font-medium text-xs border border-emerald-200 px-3 py-1.5 rounded bg-emerald-50 hover:bg-emerald-100 transition-colors disabled:opacity-50"
                         >
-                          Download
+                          {downloadingCertId === perf.certificate._id ? <><Loader size="sm" /> Downloading...</> : 'Download'}
                         </button>
                       ) : (
                         perf.eligible && (
-                          <button 
+                          <button
                             onClick={() => handleGenerateCertificate(perf.student._id)}
-                            disabled={isGenerating}
-                            className="text-indigo-600 hover:text-indigo-800 font-medium text-xs border border-indigo-200 px-3 py-1.5 rounded bg-indigo-50 hover:bg-indigo-100 transition-colors disabled:opacity-50"
+                            disabled={generatingStudentId === perf.student._id}
+                            className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-medium text-xs border border-indigo-200 px-3 py-1.5 rounded bg-indigo-50 hover:bg-indigo-100 transition-colors disabled:opacity-50"
                           >
-                            Generate Cert
+                            {generatingStudentId === perf.student._id ? <><Loader size="sm" /> Generating...</> : 'Generate Cert'}
                           </button>
                         )
                       )}

@@ -48,6 +48,7 @@ import Link from "next/link";
 import * as lmsService from "@/services/lms.service";
 import { useRef } from "react";
 import { Edit2, Settings } from "lucide-react";
+import Loader from "@/components/ui/Loader";
 
 export default function CourseOverviewPage({
   params,
@@ -151,9 +152,9 @@ export default function CourseOverviewPage({
           datasets: [
             {
               data: [
-                currentCourse.stats?.sessions || 1,
-                currentCourse.stats?.assignments || 1,
-                currentCourse.stats?.quizzes || 1,
+                currentCourse.stats?.sessions || 0,
+                currentCourse.stats?.assignments || 0,
+                currentCourse.stats?.quizzes || 0,
               ],
               backgroundColor: ["#3b82f6", "#10b981", "#f59e0b"],
               borderColor: "#ffffff",
@@ -190,13 +191,8 @@ export default function CourseOverviewPage({
 
   if (isLoading) {
     return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-80 bg-slate-100 rounded-2xl"></div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-24 bg-slate-100 rounded-xl"></div>
-          ))}
-        </div>
+      <div className="min-h-[400px] flex items-center justify-center">
+        <Loader size="lg" text="Loading course..." />
       </div>
     );
   }
@@ -495,16 +491,19 @@ export default function CourseOverviewPage({
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-6">
             Content Distribution
           </p>
-          <div
-            style={{
-              height: "240px",
-              position: "relative",
-              width: "100%",
-              flex: 1,
-            }}
-          >
-            <canvas ref={doughnutChartRef} width="300" height="240"></canvas>
-          </div>
+          {(currentCourse.stats?.sessions || 0) + (currentCourse.stats?.assignments || 0) + (currentCourse.stats?.quizzes || 0) === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-center gap-3 min-h-[200px]">
+              <div className="w-16 h-16 rounded-full border-4 border-dashed border-slate-200 flex items-center justify-center">
+                <BookOpen className="w-7 h-7 text-slate-300" />
+              </div>
+              <p className="text-sm font-medium text-slate-400">No content added yet</p>
+              <p className="text-xs text-slate-300">Sessions, assignments and quizzes will appear here</p>
+            </div>
+          ) : (
+            <div style={{ height: "240px", position: "relative", width: "100%", flex: 1 }}>
+              <canvas ref={doughnutChartRef} width="300" height="240"></canvas>
+            </div>
+          )}
         </div>
 
         {/* Quick Stats - 2 columns */}
@@ -725,7 +724,7 @@ export default function CourseOverviewPage({
                   disabled={isUpdating}
                   className="px-6 py-2.5 bg-blue-600 text-sm font-semibold text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-md"
                 >
-                  {isUpdating ? "Saving..." : "Save Changes"}
+                  {isUpdating ? <><Loader size="sm" /> Saving...</> : "Save Changes"}
                 </button>
               </div>
             </form>
@@ -776,7 +775,7 @@ export default function CourseOverviewPage({
                   disabled={isEnrolling}
                   className="px-5 py-2.5 bg-blue-600 text-sm font-semibold text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
                 >
-                  {isEnrolling ? "Enrolling..." : "Enroll"}
+                  {isEnrolling ? <><Loader size="sm" /> Enrolling...</> : "Enroll"}
                 </button>
               </div>
             </form>

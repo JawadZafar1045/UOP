@@ -92,7 +92,7 @@ function VerifyEmailForm() {
           disabled={loading || code.length !== 6}
           className="w-full flex justify-center items-center gap-2 py-4 px-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 disabled:opacity-50 disabled:shadow-none group"
         >
-          {loading ? "Verifying..." : (
+          {loading ? <><Loader size="sm" /> Verifying...</> : (
             <><span>Verify Email</span><ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>
           )}
         </button>

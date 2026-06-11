@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLmsStore } from "@/store/lmsStore";
 import { useStore } from "@/store/useStore";
 import {
@@ -17,10 +17,12 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import Link from "next/link";
+import Loader from "@/components/ui/Loader";
 
 export default function LMSPage() {
   const { courses, isLoading, error, fetchCourses } = useLmsStore();
   const { user } = useStore();
+  const [publishingId, setPublishingId] = useState<string | null>(null);
 
   const isTeacherOrAdmin = user?.role === "teacher" || user?.role === "admin";
 
@@ -49,11 +51,14 @@ export default function LMSPage() {
     e.preventDefault();
     e.stopPropagation();
     if (!confirm("Publish this course? It will become visible to students.")) return;
+    setPublishingId(courseId);
     try {
       const { updateCourse } = useLmsStore.getState();
       await updateCourse(courseId, { status: "active" });
     } catch (err) {
       console.error(err);
+    } finally {
+      setPublishingId(null);
     }
   };
 
@@ -412,23 +417,8 @@ export default function LMSPage() {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="bg-white rounded-2xl border border-slate-200/60 overflow-hidden animate-pulse shadow-sm"
-              >
-                <div className="h-52 bg-gradient-to-br from-slate-100 to-slate-50"></div>
-                <div className="p-6 space-y-4">
-                  <div className="h-3 bg-slate-200 rounded-full w-1/4"></div>
-                  <div className="h-6 bg-slate-200 rounded-lg w-3/4"></div>
-                  <div className="space-y-2">
-                    <div className="h-4 bg-slate-100 rounded-lg w-full"></div>
-                    <div className="h-4 bg-slate-100 rounded-lg w-5/6"></div>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="min-h-[400px] flex items-center justify-center">
+            <Loader size="lg" text="Loading courses..." />
           </div>
         ) : error ? (
           <div className="bg-gradient-to-br from-red-50 to-rose-50 border border-red-100 p-12 rounded-3xl flex flex-col items-center justify-center text-center shadow-lg">
@@ -601,10 +591,12 @@ export default function LMSPage() {
                           {isTeacherOrAdmin && course.status === "draft" && (
                             <button
                               onClick={(e) => handlePublishCourse(e, course._id)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-lg border border-emerald-100 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all active:scale-[0.95]"
+                              disabled={publishingId === course._id}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-lg border border-emerald-100 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all active:scale-[0.95] disabled:opacity-50"
                             >
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              Publish
+                              {publishingId === course._id
+                                ? <><Loader size="sm" /> Publishing...</>
+                                : <><CheckCircle2 className="w-3.5 h-3.5" /> Publish</>}
                             </button>
                           )}
                           <div className="flex items-center gap-1.5 text-blue-600 font-bold text-sm group/btn">

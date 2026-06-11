@@ -6,11 +6,14 @@ import { useLmsStore } from "@/store/lmsStore";
 import { useStore } from "@/store/useStore";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import Loader from "@/components/ui/Loader";
 
 export default function DocumentsPage() {
   const [documents, setDocuments] = useState<any[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadSubmitting, setIsUploadSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   
   // Upload Form State
   const [file, setFile] = useState<File | null>(null);
@@ -52,6 +55,7 @@ export default function DocumentsPage() {
       formData.append("courseId", selectedCourse);
     }
 
+    setIsUploadSubmitting(true);
     try {
       await uploadDocument(formData);
       setIsUploading(false);
@@ -61,16 +65,21 @@ export default function DocumentsPage() {
     } catch (err) {
       console.error(err);
       alert("Failed to upload document.");
+    } finally {
+      setIsUploadSubmitting(false);
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure?")) return;
+    setDeletingId(id);
     try {
       await deleteDocument(id);
       loadDocuments();
     } catch (err) {
       console.error(err);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -224,7 +233,9 @@ export default function DocumentsPage() {
             </div>
 
             <div className="flex gap-3 pt-2">
-              <button type="submit" className="px-6 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all">Start Upload</button>
+              <button type="submit" disabled={isUploadSubmitting} className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all disabled:opacity-50">
+                {isUploadSubmitting ? <><Loader size="sm" /> Uploading...</> : 'Start Upload'}
+              </button>
               <button type="button" onClick={() => setIsUploading(false)} className="px-6 py-2.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200 transition-all">Cancel</button>
             </div>
           </form>
@@ -310,11 +321,12 @@ export default function DocumentsPage() {
                         Download
                       </button>
                       {user?.role !== "student" && (
-                        <button 
-                          onClick={() => handleDelete(doc._id)} 
-                          className="px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                        <button
+                          onClick={() => handleDelete(doc._id)}
+                          disabled={deletingId === doc._id}
+                          className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
                         >
-                          Delete
+                          {deletingId === doc._id ? <><Loader size="sm" /> Deleting...</> : 'Delete'}
                         </button>
                       )}
                     </td>
