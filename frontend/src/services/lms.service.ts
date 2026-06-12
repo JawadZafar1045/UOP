@@ -188,6 +188,11 @@ export const getCourseQuizzes = async (courseId: string) => {
   return res.data?.data ?? res.data;
 };
 
+export const getQuizQuestions = async (quizId: string) => {
+  const res = await api.get(`/lms/quizzes/${quizId}/questions`);
+  return res.data?.data ?? res.data;
+};
+
 export const createQuiz = async (courseId: string, data: any) => {
   const res = await api.post(`/lms/courses/${courseId}/quizzes`, data);
   return res.data?.data ?? res.data;

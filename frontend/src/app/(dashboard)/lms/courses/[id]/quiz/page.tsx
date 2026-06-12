@@ -127,8 +127,8 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
       } else {
         const newQuiz = await lmsService.createQuiz(courseId, data);
         setShowCreateModal(false);
-        // Auto-open question builder for the new quiz
         setCurrentQuiz(newQuiz);
+        setQuizQuestions([]);
         setShowQuestionBuilder(true);
       }
       
@@ -220,7 +220,10 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
       });
       setIsEditingQuestion(false);
       setEditQuestionId(null);
-      // Refresh question list logic here if needed
+      
+      const updatedQuestions = await lmsService.getQuizQuestions(currentQuiz._id);
+      setQuizQuestions(updatedQuestions || []);
+      fetchQuizzes(courseId);
     } catch (err: any) {
       alert(err?.message || 'Failed to save question');
     } finally {
@@ -433,8 +436,12 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                     {quiz.status === 'draft' ? (
                       <>
                         <button
-                          onClick={() => {
+                          onClick={async () => {
                             setCurrentQuiz(quiz);
+                            try {
+                               const questions = await lmsService.getQuizQuestions(quiz._id);
+                               setQuizQuestions(questions || []);
+                            } catch (e) { console.error(e); }
                             setShowQuestionBuilder(true);
                           }}
                           className="text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1.5 transition-colors"

@@ -4,6 +4,19 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useStore } from "../../store/useStore";
+import NiceAvatar, { genConfig } from "react-nice-avatar";
+
+const PRESETS = [
+  { name: "Avatar 1", url: "nice:peeps_1", config: genConfig({ sex: "woman", faceColor: "#F9C9B6", hairStyle: "womanShort", hairColor: "#506AF4", eyeStyle: "smile", glassesStyle: "round", noseStyle: "short", mouthStyle: "smile", shirtStyle: "hoody", shirtColor: "#9287FF", bgColor: "#E0DDFF" }) },
+  { name: "Avatar 2", url: "nice:peeps_2", config: genConfig({ sex: "man", faceColor: "#F9C9B6", hairStyle: "thick", hairColor: "#D2EFF3", eyeStyle: "oval", glassesStyle: "square", noseStyle: "round", mouthStyle: "peace", shirtStyle: "short", shirtColor: "#77311D", bgColor: "#FC909F" }) },
+  { name: "Avatar 3", url: "nice:peeps_3", config: genConfig({ sex: "man", faceColor: "#AC6651", hairStyle: "normal", hairColor: "#000", eyeStyle: "smile", glassesStyle: "none", noseStyle: "short", mouthStyle: "smile", shirtStyle: "polo", shirtColor: "#F4D150", bgColor: "#FFEDEF" }) },
+  { name: "Avatar 4", url: "nice:peeps_4", config: genConfig({ sex: "woman", faceColor: "#AC6651", hairStyle: "womanLong", hairColor: "#000", eyeStyle: "oval", glassesStyle: "none", noseStyle: "round", mouthStyle: "peace", shirtStyle: "short", shirtColor: "#9287FF", bgColor: "#D2EFF3" }) },
+  { name: "Avatar 5", url: "nice:peeps_5", config: genConfig({ sex: "man", faceColor: "#F9C9B6", hairStyle: "mohawk", hairColor: "#F48150", eyeStyle: "smile", glassesStyle: "round", noseStyle: "long", mouthStyle: "smile", shirtStyle: "hoody", shirtColor: "#F4D150", bgColor: "#E0DDFF" }) },
+  { name: "Avatar 6", url: "nice:peeps_6", config: genConfig({ sex: "man", faceColor: "#AC6651", hairStyle: "thick", hairColor: "#000", eyeStyle: "oval", glassesStyle: "none", noseStyle: "short", mouthStyle: "smile", shirtStyle: "polo", shirtColor: "#77311D", bgColor: "#FFEBA4" }) },
+  { name: "Avatar 7", url: "nice:peeps_7", config: genConfig({ sex: "woman", faceColor: "#F9C9B6", hairStyle: "womanShort", hatStyle: "beanie", hatColor: "#F48150", hairColor: "#000", eyeStyle: "smile", glassesStyle: "none", noseStyle: "short", mouthStyle: "peace", shirtStyle: "short", shirtColor: "#D2EFF3", bgColor: "#FFEDEF" }) },
+  { name: "Avatar 8", url: "nice:peeps_8", config: genConfig({ sex: "man", faceColor: "#F9C9B6", hairStyle: "normal", hairColor: "#77311D", eyeStyle: "smile", glassesStyle: "none", noseStyle: "round", mouthStyle: "smile", shirtStyle: "hoody", shirtColor: "#506AF4", bgColor: "#D2EFF3" }) },
+  { name: "Avatar 9", url: "nice:peeps_9", config: genConfig({ sex: "woman", faceColor: "#F9C9B6", hairStyle: "womanLong", hairColor: "#F48150", eyeStyle: "oval", glassesStyle: "none", noseStyle: "short", mouthStyle: "smile", shirtStyle: "polo", shirtColor: "#FFEBA4", bgColor: "#FC909F" }) },
+];
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: "📊" },
@@ -111,10 +124,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
         <Link href="/profile" className="flex items-center gap-3 group flex-1 min-w-0">
-          {user?.avatar ? (
-            <img src={user.avatar} alt="avatar" className="w-9 h-9 rounded-full object-cover border border-slate-300 group-hover:border-blue-300 transition-colors" />
+          {user?.avatar?.startsWith('nice:') ? (
+            <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-300 group-hover:border-blue-300 transition-colors flex-shrink-0 flex items-center justify-center bg-slate-50">
+              <NiceAvatar style={{ width: '100%', height: '100%' }} {...(PRESETS.find(p => p.url === user.avatar)?.config || genConfig(user.avatar))} />
+            </div>
+          ) : user?.avatar ? (
+            <img src={user.avatar} alt="avatar" className="w-9 h-9 rounded-full object-cover border border-slate-300 group-hover:border-blue-300 transition-colors flex-shrink-0" />
           ) : (
-            <div className="w-9 h-9 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center text-slate-600 font-semibold text-sm group-hover:border-blue-300 group-hover:bg-blue-50 transition-colors">
+            <div className="w-9 h-9 flex-shrink-0 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center text-slate-600 font-semibold text-sm group-hover:border-blue-300 group-hover:bg-blue-50 transition-colors">
               {user?.name?.charAt(0) || 'U'}
             </div>
           )}

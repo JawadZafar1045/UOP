@@ -82,6 +82,7 @@ router.get('/assignments/:id/submissions/mine',             val.getMySubmissionV
 router.post('/courses/:courseId/quizzes',     val.createQuizVal, validateResult, authorize('admin', 'teacher'),                                  ctrl.createQuiz);
 router.get('/courses/:courseId/quizzes',      val.getCourseQuizzesVal, validateResult, authorize('admin', 'teacher', 'student'),                       ctrl.getCourseQuizzes);
 router.patch('/quizzes/:id',                  val.updateQuizVal, validateResult, authorize('admin', 'teacher'),                                  ctrl.updateQuiz);
+router.get('/quizzes/:id/questions',          val.getQuizResultsVal, validateResult, authorize('admin', 'teacher'),                                  ctrl.getQuizQuestions);
 router.post('/quizzes/:id/questions',         val.addQuizQuestionVal, validateResult, authorize('admin', 'teacher'),                                  ctrl.addQuizQuestion);
 router.patch('/questions/:id',                val.updateQuizQuestionVal, validateResult, authorize('admin', 'teacher'),                                  ctrl.updateQuizQuestion);
 router.patch('/quizzes/:id/publish',          val.publishQuizVal, validateResult, authorize('admin', 'teacher'),                                  ctrl.publishQuiz);

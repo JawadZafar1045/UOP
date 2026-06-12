@@ -696,6 +696,20 @@ const addQuizQuestion = async (tenantId, quizId, questionData, userId, role) => 
   return QuizQuestion.create({ tenantId, quizId, ...questionData });
 };
 
+const getQuizQuestions = async (tenantId, quizId, userId, role) => {
+  const quiz = await Quiz.findOne({ _id: quizId, tenantId });
+  if (!quiz) throw err('Quiz not found.', 404);
+
+  const course = await Course.findOne({ _id: quiz.courseId, tenantId });
+  if (!course) throw err('Course associated with quiz not found.', 404);
+
+  if (role !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to view questions for this quiz.', 403);
+  }
+
+  return QuizQuestion.find({ quizId, tenantId }).sort({ createdAt: 1 });
+};
+
 const updateQuiz = async (tenantId, quizId, data, userId, userRole) => {
   const quiz = await Quiz.findOne({ _id: quizId, tenantId });
   if (!quiz) throw err('Quiz not found.', 404);
@@ -1196,7 +1210,7 @@ module.exports = {
   markSelfAttendance, getMyAttendanceSummary,
   uploadCourseDocument, getCourseDocuments, deleteCourseDocument, getLmsDocumentById, getCourseDocumentAccess,
   gradeSubmission, getAssignmentSubmissions, getMySubmission,
-  createQuiz, updateQuiz, addQuizQuestion, updateQuizQuestion, publishQuiz, getCourseQuizzes, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
+  createQuiz, getCourseQuizzes, addQuizQuestion, getQuizQuestions, updateQuiz, updateQuizQuestion, publishQuiz, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
   getCoursePerformance, getMyPerformance, checkEligibility, generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate, getCertificateById,
   getCertificateTemplate, saveCertificateTemplate,
   getAdminStats, getAdminUsers, updateUserRole, deactivateUser, getAdminCourses, deleteAdminCourse, getAdminCertificates, revokeCertificate,

@@ -263,6 +263,7 @@ const getMySubmission         = async (req, res, next) => { try { res.json({ suc
 // ── Quizzes ────────────────────────────────────────────────────────────────────
 const createQuiz        = async (req, res, next) => { try { const q = await lmsService.createQuiz(req.tenantId, req.params.courseId, req.body, req.user._id, req.user.role); res.status(201).json({ success: true, data: q }); } catch (e) { next(e); } };
 const getCourseQuizzes  = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getCourseQuizzes(req.tenantId, req.params.courseId, req.user.role, req.user._id) }); } catch (e) { next(e); } };
+const getQuizQuestions  = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getQuizQuestions(req.tenantId, req.params.id, req.user._id, req.user.role) }); } catch (e) { next(e); } };
 const addQuizQuestion   = async (req, res, next) => { try { const q = await lmsService.addQuizQuestion(req.tenantId, req.params.id, req.body, req.user._id, req.user.role); res.status(201).json({ success: true, data: q }); } catch (e) { next(e); } };
 const updateQuiz         = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.updateQuiz(req.tenantId, req.params.id, req.body, req.user._id, req.user.role) }); } catch (e) { next(e); } };
 const updateQuizQuestion = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.updateQuizQuestion(req.tenantId, req.params.id, req.body, req.user._id, req.user.role) }); } catch (e) { next(e); } };
@@ -508,7 +509,7 @@ module.exports = {
   markSelfAttendance, getMyAttendanceSummary,
   uploadCourseDocument, getCourseDocuments, deleteCourseDocument, getCourseDocumentAccess,
   gradeSubmission, getAssignmentSubmissions, getMySubmission,
-  createQuiz, updateQuiz, getCourseQuizzes, addQuizQuestion, updateQuizQuestion, publishQuiz, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
+  createQuiz, updateQuiz, getCourseQuizzes, addQuizQuestion, getQuizQuestions, updateQuizQuestion, publishQuiz, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
   getCoursePerformance, getMyPerformance,
   generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate, getCertificatePdfPublic, getCertificateAccess, signFileUrl,
   getAdminStats, getAdminUsers, updateUserRole, deactivateUser, getAdminCourses, deleteAdminCourse, getAdminCertificates, revokeCertificate,

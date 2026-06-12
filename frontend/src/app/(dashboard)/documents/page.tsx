@@ -313,22 +313,24 @@ export default function DocumentsPage() {
                     <td className="px-6 py-5 text-slate-500 font-medium">
                       {new Date(doc.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                     </td>
-                    <td className="px-6 py-5 text-right space-x-2">
-                      <button 
-                        onClick={() => handleView(doc._id, doc.title || 'document')} 
-                        className="px-3 py-1.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-lg transition-all"
-                      >
-                        Download
-                      </button>
-                      {user?.role !== "student" && (
-                        <button
-                          onClick={() => handleDelete(doc._id)}
-                          disabled={deletingId === doc._id}
-                          className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
+                    <td className="px-6 py-5">
+                      <div className="flex items-center justify-end gap-2">
+                        <button 
+                          onClick={() => handleView(doc._id, doc.title || 'document')} 
+                          className="px-3 py-1.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-lg transition-all"
                         >
-                          {deletingId === doc._id ? <><Loader size="sm" /> Deleting...</> : 'Delete'}
+                          Download
                         </button>
-                      )}
+                        {user?.role !== "student" && (
+                          <button
+                            onClick={() => handleDelete(doc._id)}
+                            disabled={deletingId === doc._id}
+                            className="flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
+                          >
+                            {deletingId === doc._id ? <><Loader size="sm" /> Deleting...</> : 'Delete'}
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
