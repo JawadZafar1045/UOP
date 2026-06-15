@@ -39,7 +39,7 @@ export default function AdminDashboardPage() {
 
   // Confirm dialogs
   const [confirmAction, setConfirmAction] = useState<null | {
-    type: "deactivate" | "deleteCourse" | "revokeCert";
+    type: "deactivate" | "deleteCourse" | "revokeCert" | "approveUser" | "deleteUser";
     id: string; label: string;
   }>(null);
   const [isConfirming, setIsConfirming] = useState(false);
@@ -96,6 +96,12 @@ export default function AdminDashboardPage() {
       if (type === "deactivate") {
         await lmsService.deactivateUser(id);
         setUsers(prev => prev.map(u => u._id === id ? { ...u, isActive: false } : u));
+      } else if (type === "deleteUser") {
+        await lmsService.deleteUser(id);
+        setUsers(prev => prev.filter(u => u._id !== id));
+      } else if (type === "approveUser") {
+        await lmsService.approveUser(id);
+        setUsers(prev => prev.map(u => u._id === id ? { ...u, isApproved: true } : u));
       } else if (type === "deleteCourse") {
         await lmsService.deleteAdminCourse(id);
         setCourses(prev => prev.filter(c => c._id !== id));
@@ -222,19 +228,21 @@ export default function AdminDashboardPage() {
                       </td>
                       <td className="px-5 py-4 text-slate-500">{u.email}</td>
                       <td className="px-5 py-4">
-                        <select value={u.role}
-                          onChange={e => handleRoleChange(u._id, e.target.value)}
-                          disabled={!u.isActive}
-                          className="text-xs font-semibold border border-slate-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-50 disabled:cursor-not-allowed">
-                          <option value="student">Student</option>
-                          <option value="teacher">Teacher</option>
-                        </select>
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold border ${u.role === 'admin' ? 'bg-purple-50 text-purple-700 border-purple-200' : u.role === 'teacher' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-slate-50 text-slate-700 border-slate-200'}`}>
+                          {u.role ? u.role.charAt(0).toUpperCase() + u.role.slice(1) : 'Unknown'}
+                        </span>
                       </td>
                       <td className="px-5 py-4">
                         {u.isActive ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-100">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />Active
-                          </span>
+                          u.isApproved === false ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-700 text-xs font-bold rounded-full border border-amber-100">
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />Pending Approval
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-100">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />Active
+                            </span>
+                          )
                         ) : (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 text-slate-500 text-xs font-bold rounded-full border border-slate-200">
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />Inactive
@@ -243,12 +251,24 @@ export default function AdminDashboardPage() {
                       </td>
                       <td className="px-5 py-4 text-slate-400 text-xs">{new Date(u.createdAt).toLocaleDateString()}</td>
                       <td className="px-5 py-4">
-                        {u.isActive && (
-                          <button onClick={() => setConfirmAction({ type: "deactivate", id: u._id, label: u.name })}
+                        <div className="flex items-center gap-2">
+                          {u.isActive && u.isApproved !== false && (
+                            <button onClick={() => setConfirmAction({ type: "deactivate", id: u._id, label: u.name })}
+                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 rounded-lg transition-colors">
+                              <UserX className="w-3.5 h-3.5" />Deactivate
+                            </button>
+                          )}
+                          {(u.role === 'teacher' || u.role === 'student') && u.isApproved === false && (
+                            <button onClick={() => setConfirmAction({ type: "approveUser", id: u._id, label: u.name })}
+                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 rounded-lg transition-colors">
+                              <UserCheck className="w-3.5 h-3.5" />Approve
+                            </button>
+                          )}
+                          <button onClick={() => setConfirmAction({ type: "deleteUser", id: u._id, label: u.name })}
                             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 rounded-lg transition-colors">
-                            <UserX className="w-3.5 h-3.5" />Deactivate
+                            <Trash2 className="w-3.5 h-3.5" />Delete
                           </button>
-                        )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -396,6 +416,8 @@ export default function AdminDashboardPage() {
             <h3 className="text-lg font-bold text-slate-900 text-center mb-2">Confirm Action</h3>
             <p className="text-sm text-slate-500 text-center mb-6">
               {confirmAction.type === "deactivate" && `Deactivate ${confirmAction.label}? They will lose access.`}
+              {confirmAction.type === "deleteUser" && `Delete ${confirmAction.label}? This will permanently remove them from the system.`}
+              {confirmAction.type === "approveUser" && `Approve ${confirmAction.label}? They will be notified via email and granted access.`}
               {confirmAction.type === "deleteCourse" && `Delete "${confirmAction.label}"? This will permanently delete all sessions, assignments, quizzes, attendance records and certificates for this course.`}
               {confirmAction.type === "revokeCert" && `Revoke ${confirmAction.label}? This cannot be undone. The verification page will show it as revoked.`}
             </p>
@@ -405,7 +427,9 @@ export default function AdminDashboardPage() {
                 Cancel
               </button>
               <button onClick={handleConfirm} disabled={isConfirming}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors disabled:opacity-50">
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-white rounded-xl transition-colors disabled:opacity-50 ${
+                  confirmAction.type === "approveUser" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-red-600 hover:bg-red-700"
+                }`}>
                 {isConfirming ? <><Loader size="sm" /> Confirming...</> : 'Confirm'}
               </button>
             </div>
