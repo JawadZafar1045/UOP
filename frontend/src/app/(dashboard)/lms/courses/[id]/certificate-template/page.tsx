@@ -325,7 +325,7 @@ export default function CertificateTemplatePage({ params }: { params: Promise<{ 
                 </div>
                 
                 <div style={{ position: 'absolute', bottom: 20, left: 40, right: 40, display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#888', fontFamily: 'sans-serif' }}>
-                  <div>Certificate ID: UOP-2026-00001</div>
+                  <div>Certificate ID: CS-ZONE-2026-00001</div>
                   <div>Verify: /verify/example-uuid</div>
                 </div>
 

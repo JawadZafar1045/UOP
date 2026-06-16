@@ -43,7 +43,7 @@ export const useStore = create<AppState>()(
         })),
     }),
     {
-      name: 'uop-storage',
+      name: 'cszone-storage',
     }
   )
 );

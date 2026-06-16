@@ -67,7 +67,7 @@ export default function AdminRegisterPage() {
           </div>
           <h2 className="text-4xl font-bold mb-6 tracking-tight">Institution Registration</h2>
           <p className="text-xl text-blue-100/90 leading-relaxed mb-12">
-            Create your college admin account to set up and manage your institution on UOP Space.
+            Create your college admin account to set up and manage your institution on CS ZONE LMS Space.
           </p>
           <div className="grid grid-cols-2 gap-6 text-left">
             {[
@@ -94,8 +94,8 @@ export default function AdminRegisterPage() {
           <div className="flex flex-col items-center mb-10">
             <Link href="/" className="mb-6">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-200">U</div>
-                <span className="font-extrabold text-2xl text-slate-900 tracking-tight">UOP Space</span>
+                <img src="/Logo-WithOut-BG.png" alt="CS ZONE LMS Logo" className="h-10 w-auto object-contain" />
+                <span className="font-extrabold text-2xl text-slate-900 tracking-tight">CS ZONE LMS Space</span>
               </div>
             </Link>
             <h1 className="text-3xl font-bold text-slate-900">Institution Registration</h1>
