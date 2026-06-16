@@ -79,14 +79,14 @@ const getCourseById = async (tenantId, courseId, userId, role) => {
 
 const createCourse = async (tenantId, data, userId) => {
   const errors = [];
-  if (!data.title || data.title.trim().length < 3) {
+  if (!data.title || data.title.trim().length < 2) {
     errors.push({
       field: 'title',
-      message: 'Course title is required (min 3 characters)'
+      message: 'Course title is required (min 2 characters)'
     });
   }
   if (errors.length > 0) {
-    const err = new Error('Validation failed');
+    const err = new Error(errors[0].message || 'Validation failed');
     err.statusCode = 400;
     err.errors = errors;
     throw err;
@@ -206,6 +206,27 @@ const enrollStudent = async (tenantId, courseId, studentIdentifier, userId) => {
   await course.save();
   await logActivity({ userId, tenantId, action: 'ENROLL_STUDENT', entityType: 'Course', entityId: courseId, meta: { studentId: student._id } });
   return course;
+};
+
+const unenrollStudent = async (tenantId, courseId, studentId, userId) => {
+  const course = await Course.findOne({ _id: courseId, tenantId });
+  if (!course) throw err('Course not found.', 404);
+
+  if (!course.enrolledStudents.map(String).includes(String(studentId))) {
+    throw err('Student not enrolled in this course.', 400);
+  }
+
+  course.enrolledStudents = course.enrolledStudents.filter(id => String(id) !== String(studentId));
+  await course.save();
+  await logActivity({ userId, tenantId, action: 'UNENROLL_STUDENT', entityType: 'Course', entityId: courseId, meta: { studentId } });
+  return course;
+};
+
+const getTenantStudents = async (tenantId) => {
+  const User = require('../../auth/models/user.model');
+  return User.find({ tenantId, role: 'student', isActive: true, isApproved: true })
+    .select('name email _id avatar')
+    .lean();
 };
 
 // ── Legacy attendance ──────────────────────────────────────────────────────────
@@ -1118,7 +1139,7 @@ const getAdminStats = async (tenantId) => {
 const getAdminUsers = async (tenantId) => {
   const User = require('../../auth/models/user.model');
   return User.find({ tenantId, role: { $ne: 'admin' } })
-    .select('name email role createdAt isActive')
+    .select('name email role createdAt isActive isApproved')
     .lean()
     .sort({ createdAt: -1 });
 };
@@ -1145,6 +1166,47 @@ const deactivateUser = async (tenantId, targetUserId, requesterId) => {
     { new: true }
   ).select('name email role isActive createdAt');
   if (!user) throw err('User not found.', 404);
+  return user;
+};
+
+const deleteUser = async (tenantId, targetUserId, requesterId) => {
+  if (targetUserId === requesterId) throw err('Cannot delete your own account', 400);
+  const User = require('../../auth/models/user.model');
+  const user = await User.findOneAndDelete({ _id: targetUserId, tenantId });
+  if (!user) throw err('User not found.', 404);
+  
+  // Optionally delete related data like Attendance, Assignments, etc., but deleting from User is typically enough for "extra data" unless cascading is strict.
+  return { success: true, message: 'User deleted permanently.' };
+};
+
+const approveUser = async (tenantId, targetUserId) => {
+  const User = require('../../auth/models/user.model');
+  const user = await User.findOneAndUpdate(
+    { _id: targetUserId, tenantId },
+    { isApproved: true },
+    { new: true }
+  ).select('name email role isApproved isActive createdAt');
+  if (!user) throw err('User not found.', 404);
+  
+  // Send email
+  try {
+    const { Resend } = require('resend');
+    if (process.env.RESEND_API_KEY) {
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      await resend.emails.send({
+        from: 'UOP Space <onboarding@resend.dev>',
+        to: user.email,
+        subject: 'Your Account Has Been Approved',
+        html: `<p>Hello ${user.name},</p><p>Your account has been approved by the admin. You can now log in to the UOP Space platform.</p>`
+      });
+    } else {
+      console.log(`[DEV MODE] Approval email for ${user.email} would be sent here.`);
+    }
+  } catch (emailErr) {
+    console.error('Error sending approval email:', emailErr);
+    // don't throw, let the approval succeed
+  }
+  
   return user;
 };
 
@@ -1203,7 +1265,7 @@ const revokeCertificate = async (tenantId, certId) => {
 };
 
 module.exports = {
-  getCourses, getCourseById, createCourse, updateCourse, saveDraft, deleteCourse, enrollStudent,
+  getCourses, getCourseById, createCourse, updateCourse, saveDraft, deleteCourse, enrollStudent, unenrollStudent, getTenantStudents,
   markAttendance, getCourseAttendance,
   createAssignment, updateAssignment, deleteAssignment, submitAssignment, getCourseAssignments,
   createSession, updateSession, toggleSession, getCourseSessions, getSessionAttendance, overrideAttendance,
@@ -1213,5 +1275,5 @@ module.exports = {
   createQuiz, getCourseQuizzes, addQuizQuestion, getQuizQuestions, updateQuiz, updateQuizQuestion, publishQuiz, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
   getCoursePerformance, getMyPerformance, checkEligibility, generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate, getCertificateById,
   getCertificateTemplate, saveCertificateTemplate,
-  getAdminStats, getAdminUsers, updateUserRole, deactivateUser, getAdminCourses, deleteAdminCourse, getAdminCertificates, revokeCertificate,
+  getAdminStats, getAdminUsers, updateUserRole, deactivateUser, deleteUser, approveUser, getAdminCourses, deleteAdminCourse, getAdminCertificates, revokeCertificate,
 };

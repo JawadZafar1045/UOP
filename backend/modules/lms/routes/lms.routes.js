@@ -41,8 +41,10 @@ router.patch('/courses/:id',    val.updateCourseVal, validateResult, authorize('
 router.patch('/courses/:id/draft', authorize('admin', 'teacher'), ctrl.saveDraft);
 router.delete('/courses/:id', val.deleteCourseVal, validateResult, authorize('admin'),                             ctrl.deleteCourse);
 
-// ── Enrollment ─────────────────────────────────────────────────────────────────
+// ── Enrollment & Students ──────────────────────────────────────────────────────
+router.get('/students', authorize('admin', 'teacher'), ctrl.getTenantStudents);
 router.post('/courses/:id/enroll', val.enrollStudentVal, validateResult, authorize('admin', 'teacher'), ctrl.enrollStudent);
+router.delete('/courses/:id/enroll/:studentId', val.unenrollStudentVal, validateResult, authorize('admin', 'teacher'), ctrl.unenrollStudent);
 
 // ── Legacy Attendance ──────────────────────────────────────────────────────────
 router.post('/attendance',              val.markAttendanceVal, validateResult, authorize('admin', 'teacher'),                  ctrl.markAttendance);
@@ -109,8 +111,10 @@ router.post('/files/sign', protect, tenantIsolation, signLimiter, val.signFileUr
 // ── Admin Routes ───────────────────────────────────────────────────────────────
 router.get('/admin/stats',                          authorize('admin'), ctrl.getAdminStats);
 router.get('/admin/users',                          authorize('admin'), ctrl.getAdminUsers);
+router.patch('/admin/users/:id/approve',            val.deleteCourseVal, validateResult, authorize('admin'), ctrl.approveUser);
 router.patch('/admin/users/:id/role',               val.deleteCourseVal, validateResult, authorize('admin'), ctrl.updateUserRole); // reuse deleteCourseVal since it just checks param.id
 router.delete('/admin/users/:id',                   val.deleteCourseVal, validateResult, authorize('admin'), ctrl.deactivateUser);
+router.delete('/admin/users/:id/hard',              val.deleteCourseVal, validateResult, authorize('admin'), ctrl.deleteUser);
 router.get('/admin/courses',                        authorize('admin'), ctrl.getAdminCourses);
 router.delete('/admin/courses/:id',                 val.deleteCourseVal, validateResult, authorize('admin'), ctrl.deleteAdminCourse);
 router.get('/admin/certificates',                   authorize('admin'), ctrl.getAdminCertificates);

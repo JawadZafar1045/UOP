@@ -210,6 +210,21 @@ const enrollStudent = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
+const unenrollStudent = async (req, res, next) => {
+  try {
+    const course = await lmsService.unenrollStudent(req.tenantId, req.params.id, req.params.studentId, req.user._id);
+    res.json({ success: true, message: 'Student removed from course.', data: course });
+  } catch (e) { next(e); }
+};
+
+const getTenantStudents = async (req, res, next) => {
+  try {
+    const students = await lmsService.getTenantStudents(req.tenantId);
+    res.json({ success: true, data: students });
+  } catch (e) { next(e); }
+};
+
+
 // ── Legacy Attendance ──────────────────────────────────────────────────────────
 const markAttendance      = async (req, res, next) => { try { const a = await lmsService.markAttendance(req.tenantId, req.body, req.user._id); res.status(201).json({ success: true, data: a }); } catch (e) { next(e); } };
 const getCourseAttendance = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getCourseAttendance(req.tenantId, req.params.id) }); } catch (e) { next(e); } };
@@ -473,6 +488,20 @@ const deactivateUser = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
+const deleteUser = async (req, res, next) => {
+  try {
+    const data = await lmsService.deleteUser(req.tenantId, req.params.id, req.user._id.toString());
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const approveUser = async (req, res, next) => {
+  try {
+    const data = await lmsService.approveUser(req.tenantId, req.params.id);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
 const getAdminCourses = async (req, res, next) => {
   try {
     const data = await lmsService.getAdminCourses(req.tenantId);
@@ -502,7 +531,7 @@ const revokeCertificate = async (req, res, next) => {
 };
 
 module.exports = {
-  getCourses, getCourse, createCourse, updateCourse, saveDraft, deleteCourse, enrollStudent,
+  getCourses, getCourse, createCourse, updateCourse, saveDraft, deleteCourse, enrollStudent, unenrollStudent, getTenantStudents,
   markAttendance, getCourseAttendance,
   createAssignment, updateAssignment, deleteAssignment, submitAssignment, getCourseAssignments,
   createSession, updateSession, getCourseSessions, toggleSession, getSessionAttendance, overrideAttendance,
@@ -512,6 +541,6 @@ module.exports = {
   createQuiz, updateQuiz, getCourseQuizzes, addQuizQuestion, getQuizQuestions, updateQuizQuestion, publishQuiz, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
   getCoursePerformance, getMyPerformance,
   generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate, getCertificatePdfPublic, getCertificateAccess, signFileUrl,
-  getAdminStats, getAdminUsers, updateUserRole, deactivateUser, getAdminCourses, deleteAdminCourse, getAdminCertificates, revokeCertificate,
+  getAdminStats, getAdminUsers, updateUserRole, deactivateUser, deleteUser, approveUser, getAdminCourses, deleteAdminCourse, getAdminCertificates, revokeCertificate,
   getCertificateTemplate, saveCertificateTemplate
 };

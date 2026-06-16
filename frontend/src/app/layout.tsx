@@ -7,8 +7,8 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Unified Operations Platform',
-  description: 'CRM, LMS, HRMS, and more.',
+  title: 'CS ZONE LMS',
+  description: 'Learning Management System.',
 };
 
 export default function RootLayout({

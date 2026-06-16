@@ -133,7 +133,7 @@ const registerUser = async ({ tenantId, name, email, password, role }) => {
   const existing = await User.findOne({
     email: normalizedEmail, tenantId
   });
-  if (existing) throw new Error('Email already registered');
+  if (existing) throw Object.assign(new Error('Email already registered.'), { statusCode: 400 });
 
   const verificationCode = crypto.randomInt(100000, 999999).toString();
   const verificationCodeExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
@@ -145,6 +145,7 @@ const registerUser = async ({ tenantId, name, email, password, role }) => {
     password, 
     role,
     isVerified: false,
+    isApproved: (role === 'teacher' || role === 'student') ? false : true,
     verificationCode,
     verificationCodeExpires
   });
@@ -202,6 +203,7 @@ const loginUser = async ({ tenantId, email, password }) => {
   const user = await User.findOne({ tenantId, email: normalizedEmail }).select('+password');
   if (!user) throw Object.assign(new Error('Invalid credentials.'), { statusCode: 401 });
   if (!user.isActive) throw Object.assign(new Error('Account is deactivated.'), { statusCode: 403 });
+  if ((user.role === 'teacher' || user.role === 'student') && !user.isApproved) throw Object.assign(new Error('Your registration request is pending admin approval. You can login once the admin approves it.'), { statusCode: 403 });
   if (!user.isVerified) throw Object.assign(new Error('Please verify your email before logging in.'), { statusCode: 403 });
 
   const isMatch = await user.comparePassword(password);

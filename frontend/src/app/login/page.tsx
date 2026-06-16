@@ -197,7 +197,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
 import api from "@/services/api";
-import { Mail, Lock, ArrowRight, ShieldCheck } from "lucide-react";
+import { Mail, Lock, ArrowRight, ShieldCheck, CheckCircle2 } from "lucide-react";
 import Loader from "@/components/ui/Loader";
 
 export default function LoginPage() {
@@ -247,30 +247,24 @@ export default function LoginPage() {
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-400 rounded-full blur-3xl" />
         </div>
 
-        <div className="relative z-10 max-w-lg text-white">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm font-medium mb-8 border border-white/20">
-            <ShieldCheck className="w-4 h-4" />
-            Secure Enterprise Login
-          </div>
-          <h2 className="text-4xl font-bold mb-6 tracking-tight">
-            Your entire business, Unified.
-          </h2>
-          <p className="text-xl text-blue-100/90 leading-relaxed mb-8">
-            Access your CRM, LMS, and communication tools in one secure
-            environment. Seamless operations start here.
+        <div className="relative z-10 max-w-lg text-white text-center">
+          <h2 className="text-4xl font-bold mb-6 tracking-tight">Join your college platform</h2>
+          <p className="text-xl text-blue-100/90 leading-relaxed mb-12">
+            Access your learning materials, courses, and progress — all in one place.
           </p>
-          <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-6 text-left">
             {[
-              "Unified CRM & Lead Tracking",
-              "Powerful Learning Management",
-              "Real-time Team Communication",
-              "Centralized Employee Directory",
-            ].map((text, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-white">
-                  <ShieldCheck className="w-3 h-3" />
+              { title: "Live Sessions", desc: "Join real-time classes" },
+              { title: "Assignments", desc: "Submit & track work" },
+              { title: "Quizzes", desc: "Test your knowledge" },
+              { title: "Certificates", desc: "Earn on completion" }
+            ].map((item, i) => (
+              <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-4 backdrop-blur-sm">
+                <div className="flex items-center gap-2 mb-1">
+                  <CheckCircle2 className="w-4 h-4 text-blue-300" />
+                  <span className="font-bold text-white text-sm">{item.title}</span>
                 </div>
-                <span className="text-blue-50 font-medium">{text}</span>
+                <p className="text-xs text-blue-200/70">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -283,11 +277,9 @@ export default function LoginPage() {
           <div className="flex flex-col items-center mb-10">
             <Link href="/" className="mb-8">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-200">
-                  U
-                </div>
+                <img src="/Logo-WithOut-BG.png" alt="CS ZONE LMS Logo" className="h-10 w-auto object-contain" />
                 <span className="font-extrabold text-2xl text-slate-900 tracking-tight">
-                  UOP
+                  CS ZONE LMS
                 </span>
               </div>
             </Link>
@@ -375,7 +367,7 @@ export default function LoginPage() {
                 <><Loader size="sm" /> Signing in...</>
               ) : (
                 <>
-                  Sign in to UOP{" "}
+                  Sign in to CS ZONE LMS{" "}
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </>
               )}

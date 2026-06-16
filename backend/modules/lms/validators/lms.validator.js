@@ -75,6 +75,16 @@ const enrollStudentVal = [
     .withMessage('Student identifier (ID or Email) is required'),
 ];
 
+const unenrollStudentVal = [
+  param('id')
+    .custom(isObjectId)
+    .withMessage('Invalid course ID format'),
+  param('studentId')
+    .trim()
+    .notEmpty()
+    .withMessage('Student identifier is required'),
+];
+
 const markAttendanceVal = [
   body('courseId')
     .custom(isObjectId)
@@ -425,6 +435,7 @@ module.exports = {
   updateCourseVal,
   deleteCourseVal,
   enrollStudentVal,
+  unenrollStudentVal,
   markAttendanceVal,
   getCourseAttendanceVal,
   createAssignmentVal,

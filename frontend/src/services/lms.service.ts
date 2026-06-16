@@ -34,6 +34,16 @@ export const enrollStudent = async (courseId: string, studentId: string) => {
   return res.data?.data ?? res.data;
 };
 
+export const unenrollStudent = async (courseId: string, studentId: string) => {
+  const res = await api.delete(`/lms/courses/${courseId}/enroll/${studentId}`);
+  return res.data?.data ?? res.data;
+};
+
+export const getTenantStudents = async () => {
+  const res = await api.get('/lms/students');
+  return res.data?.data ?? res.data;
+};
+
 // ── Sessions & Attendance ──────────────────────────────────────────────────────
 
 export const getCourseSessions = async (courseId: string) => {
@@ -318,6 +328,16 @@ export const updateUserRole = async (id: string, role: string) => {
 
 export const deactivateUser = async (id: string) => {
   const res = await api.delete(`/lms/admin/users/${id}`);
+  return res.data?.data ?? res.data;
+};
+
+export const deleteUser = async (id: string) => {
+  const res = await api.delete(`/lms/admin/users/${id}/hard`);
+  return res.data?.data ?? res.data;
+};
+
+export const approveUser = async (id: string) => {
+  const res = await api.patch(`/lms/admin/users/${id}/approve`);
   return res.data?.data ?? res.data;
 };
 

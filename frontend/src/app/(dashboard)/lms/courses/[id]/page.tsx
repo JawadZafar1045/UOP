@@ -63,6 +63,9 @@ export default function CourseOverviewPage({
   const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [studentEmail, setStudentEmail] = useState("");
   const [isEnrolling, setIsEnrolling] = useState(false);
+  const [tenantStudents, setTenantStudents] = useState<any[]>([]);
+  const [isLoadingStudents, setIsLoadingStudents] = useState(false);
+  const [togglingStudentId, setTogglingStudentId] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [editFormData, setEditFormData] = useState({
@@ -100,6 +103,38 @@ export default function CourseOverviewPage({
     }
   };
 
+  const loadTenantStudents = async () => {
+    setIsLoadingStudents(true);
+    try {
+      const data = await lmsService.getTenantStudents();
+      setTenantStudents(data);
+    } catch (err: any) {
+      console.error('Failed to load tenant students:', err);
+    } finally {
+      setIsLoadingStudents(false);
+    }
+  };
+
+  const handleToggleEnrollment = async (studentId: string, isEnrolled: boolean) => {
+    setTogglingStudentId(studentId);
+    try {
+      if (isEnrolled) {
+        await lmsService.unenrollStudent(courseId, studentId);
+      } else {
+        await lmsService.enrollStudent(courseId, studentId);
+      }
+      await fetchCourse(courseId);
+    } catch (err: any) {
+      alert(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Failed to update enrollment",
+      );
+    } finally {
+      setTogglingStudentId(null);
+    }
+  };
+
   const handleUpdateCourse = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsUpdating(true);
@@ -132,6 +167,12 @@ export default function CourseOverviewPage({
   useEffect(() => {
     fetchCourse(courseId);
   }, [courseId, fetchCourse]);
+
+  useEffect(() => {
+    if (showEnrollModal) {
+      loadTenantStudents();
+    }
+  }, [showEnrollModal]);
 
   // Doughnut Chart for content distribution
   useEffect(() => {
@@ -735,9 +776,12 @@ export default function CourseOverviewPage({
       {/* Enroll Modal */}
       {showEnrollModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-white">Enroll Student</h2>
+          <div className="bg-white rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex justify-between items-center shrink-0">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Manage Course Students
+              </h2>
               <button
                 onClick={() => setShowEnrollModal(false)}
                 className="text-white/80 hover:text-white"
@@ -745,40 +789,99 @@ export default function CourseOverviewPage({
                 <XCircle className="w-6 h-6" />
               </button>
             </div>
-            <form onSubmit={handleEnroll} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-900 mb-2">
-                  Student Email *
-                </label>
-                <input
-                  required
-                  type="email"
-                  value={studentEmail}
-                  onChange={(e) => setStudentEmail(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
-                  placeholder="name@example.com"
-                />
-                <p className="text-xs text-slate-600 mt-2">
-                  Enter the registered email address of the student.
-                </p>
+
+            <div className="flex flex-col md:flex-row h-full overflow-hidden">
+              {/* Left Side: Enroll by Email */}
+              <div className="w-full md:w-1/3 p-6 border-b md:border-b-0 md:border-r border-slate-200 bg-slate-50 shrink-0">
+                <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                  <UserPlus className="w-4 h-4 text-blue-600" />
+                  Quick Enroll
+                </h3>
+                <form onSubmit={handleEnroll} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
+                      Student Email *
+                    </label>
+                    <input
+                      required
+                      type="email"
+                      value={studentEmail}
+                      onChange={(e) => setStudentEmail(e.target.value)}
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all bg-white"
+                      placeholder="name@example.com"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isEnrolling}
+                    className="w-full py-2 bg-blue-600 text-sm font-semibold text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm flex justify-center items-center gap-2"
+                  >
+                    {isEnrolling ? <><Loader size="sm" /> Enrolling...</> : "Enroll via Email"}
+                  </button>
+                </form>
               </div>
-              <div className="pt-4 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowEnrollModal(false)}
-                  className="px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isEnrolling}
-                  className="px-5 py-2.5 bg-blue-600 text-sm font-semibold text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                >
-                  {isEnrolling ? <><Loader size="sm" /> Enrolling...</> : "Enroll"}
-                </button>
+
+              {/* Right Side: Student List */}
+              <div className="w-full md:w-2/3 p-6 flex flex-col overflow-hidden">
+                <h3 className="font-semibold text-slate-800 mb-1">Registered Students</h3>
+                <p className="text-xs text-slate-500 mb-4">Students registered in {user?.tenantId || 'this college'}</p>
+
+                <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+                  {isLoadingStudents ? (
+                    <div className="flex justify-center items-center h-32">
+                      <Loader size="md" text="Loading students..." />
+                    </div>
+                  ) : tenantStudents.length === 0 ? (
+                    <div className="text-center py-8 text-slate-500 text-sm">
+                      No students found in this college.
+                    </div>
+                  ) : (
+                    tenantStudents.map((student) => {
+                      const isEnrolled = currentCourse?.enrolledStudents?.some((id: any) => 
+                        id === student._id || id?._id === student._id || (typeof id === 'string' && id === student._id)
+                      );
+                      const isToggling = togglingStudentId === student._id;
+
+                      return (
+                        <div key={student._id} className={`flex items-center justify-between p-3 rounded-xl border transition-all ${isEnrolled ? 'bg-blue-50/50 border-blue-100' : 'bg-white border-slate-200 hover:border-slate-300'}`}>
+                          <div className="flex items-center gap-3 overflow-hidden">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${isEnrolled ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>
+                              {student.name?.charAt(0) || student.email?.charAt(0)}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-semibold text-sm text-slate-900 truncate">
+                                {student.name || "Unnamed Student"}
+                              </p>
+                              <p className="text-xs text-slate-500 truncate">
+                                {student.email}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <button
+                            onClick={() => handleToggleEnrollment(student._id, !!isEnrolled)}
+                            disabled={isToggling}
+                            className={`ml-3 shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                              isEnrolled
+                                ? 'bg-rose-100 text-rose-700 hover:bg-rose-200'
+                                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                            } disabled:opacity-50`}
+                          >
+                            {isToggling ? (
+                              <Loader size="sm" />
+                            ) : isEnrolled ? (
+                              "Remove"
+                            ) : (
+                              "Enroll"
+                            )}
+                          </button>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}
