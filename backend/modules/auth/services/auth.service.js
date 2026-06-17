@@ -153,7 +153,7 @@ const registerUser = async ({ tenantId, name, email, password, role }) => {
   try {
     if (process.env.RESEND_API_KEY) {
       await resend.emails.send({
-        from: 'UOP Space <onboarding@resend.dev>', // or your verified domain
+        from: `UOP LMS <${process.env.RESEND_FROM_EMAIL}>`, // or your verified domain
         to: normalizedEmail,
         subject: 'Verify your UOP Space account',
         html: `<p>Hello ${name},</p><p>Your verification code is: <strong>${verificationCode}</strong></p><p>This code will expire in 15 minutes.</p>`

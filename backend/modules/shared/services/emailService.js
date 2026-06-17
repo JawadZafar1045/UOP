@@ -18,7 +18,7 @@ const transporter = nodemailer.createTransport({
 const sendEmail = async (to, subject, text, html) => {
   try {
     const mailOptions = {
-      from: `"Unified Operations Platform" <${process.env.EMAIL_USER}>`,
+      from: `UOP LMS <${process.env.RESEND_FROM_EMAIL}>`,
       to,
       subject,
       text,
