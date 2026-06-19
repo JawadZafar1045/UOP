@@ -10,14 +10,11 @@ const connectDB = require('./config/database');
 const { initializeSocket } = require('./config/socket');
 const errorHandler = require('./modules/shared/middlewares/errorHandler');
 
-// ── Route Imports ──────────────────────────────────────────────────────────────
 const authRoutes = require('./modules/auth/routes/auth.routes');
-const crmRoutes = require('./modules/crm/routes/crm.routes');
 const lmsRoutes = require('./modules/lms/routes/lms.routes');
-const employeeRoutes = require('./modules/employee/routes/employee.routes');
 const documentRoutes = require('./modules/documents/routes/document.routes');
-const communicationRoutes = require('./modules/communication/routes/communication.routes');
 const dashboardRoutes = require('./modules/shared/routes/dashboard.routes');
+const notificationRoutes = require('./modules/notification/routes/notification.routes');
 
 const app = express();
 const server = http.createServer(app);
@@ -26,10 +23,16 @@ const server = http.createServer(app);
 initializeSocket(server);
 
 // ── Connect to MongoDB ─────────────────────────────────────────────────────────
-connectDB();
+const { ensureIndexes } = require('./modules/lms/utils/ensureIndexes');
+connectDB().then(() => ensureIndexes());
 
 // ── Core Middleware ────────────────────────────────────────────────────────────
 app.use(helmet());
+const compression = require('compression');
+app.use(compression({
+  level: 6,        // gzip level 6 — good balance of speed vs size
+  threshold: 1024, // only compress responses > 1 KB
+}));
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true,
@@ -37,6 +40,11 @@ app.use(cors({
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Sanitize inputs to prevent NoSQL Injection and XSS
+const { mongoSanitize, xssSanitize } = require('./modules/shared/middlewares/security.middleware');
+app.use(mongoSanitize);
+app.use(xssSanitize);
 
 // ── Rate Limiter ───────────────────────────────────────────────────────────────
 const limiter = rateLimit({
@@ -61,12 +69,10 @@ apiRouter.get('/health', (req, res) => {
 
 // Module Routes
 apiRouter.use('/auth', authRoutes);
-apiRouter.use('/crm', crmRoutes);
 apiRouter.use('/lms', lmsRoutes);
-apiRouter.use('/employees', employeeRoutes);
 apiRouter.use('/documents', documentRoutes);
-apiRouter.use('/communication', communicationRoutes);
 apiRouter.use('/dashboard', dashboardRoutes);
+apiRouter.use('/notifications', notificationRoutes);
 
 // Mount API Router
 app.use('/api', apiRouter);
@@ -91,4 +97,4 @@ server.listen(PORT, () => {
   console.log(`📡 API Base: http://localhost:${PORT}/api`);
 });
 
-module.exports = { app, server };
+module.exports = { server, app };

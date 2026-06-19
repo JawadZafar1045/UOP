@@ -2,20 +2,28 @@ const express = require('express');
 const router = express.Router();
 const { protect } = require('../../shared/middlewares/auth.middleware');
 const { authorize } = require('../../shared/middlewares/rbac.middleware');
+const { validateResult } = require('../../shared/middlewares/validation.middleware');
+const { authLimiter } = require('../../shared/middlewares/security.middleware');
 const {
-  register, registerValidation,
-  login, loginValidation,
-  refresh, logout, getMe, getUsers,
+  registerAdmin, register, registerValidation,
+  verifyEmail, verifyValidation,
+  login, loginValidation, registerAdminValidation,
+  refreshValidation, updateProfileValidation,
+  refresh, logout, getMe, getUsers, updateProfile, updatePassword,
 } = require('../controllers/auth.controller');
 
-// Public routes
-router.post('/register', registerValidation, register);
-router.post('/login', loginValidation, login);
-router.post('/refresh', refresh);
+// Public routes with strict rate limiting and request validation
+router.post('/register/admin', authLimiter, registerAdminValidation, validateResult, registerAdmin);
+router.post('/register', authLimiter, registerValidation, validateResult, register);
+router.post('/verify-email', authLimiter, verifyValidation, validateResult, verifyEmail);
+router.post('/login', authLimiter, loginValidation, validateResult, login);
+router.post('/refresh', authLimiter, refreshValidation, validateResult, refresh);
 
 // Protected routes
 router.post('/logout', protect, logout);
 router.get('/me', protect, getMe);
-router.get('/users', protect, authorize('admin', 'hr'), getUsers);
+router.patch('/profile', protect, updateProfileValidation, validateResult, updateProfile);
+router.patch('/password', protect, updatePassword);
+router.get('/users', protect, authorize('admin'), getUsers);
 
 module.exports = router;

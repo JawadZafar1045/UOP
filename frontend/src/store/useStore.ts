@@ -8,15 +8,20 @@ interface User {
   role: string;
   avatar?: string;
   tenantId?: string;
+  phone?: string;
+  location?: string;
+  bio?: string;
 }
 
 interface AppState {
   user: User | null;
   accessToken: string | null;
+  refreshToken: string | null;
   notifications: any[];
-  setAuth: (user: User, token: string) => void;
+  setAuth: (user: User, accessToken: string, refreshToken: string) => void;
   logout: () => void;
   addNotification: (note: any) => void;
+  updateUser: (data: Partial<User>) => void;
 }
 
 export const useStore = create<AppState>()(
@@ -24,13 +29,21 @@ export const useStore = create<AppState>()(
     (set) => ({
       user: null,
       accessToken: null,
+      refreshToken: null,
       notifications: [],
-      setAuth: (user, token) => set({ user, accessToken: token }),
-      logout: () => set({ user: null, accessToken: null, notifications: [] }),
-      addNotification: (note) => set((state) => ({ notifications: [note, ...state.notifications] })),
+      setAuth: (user, accessToken, refreshToken) =>
+        set({ user, accessToken, refreshToken }),
+      logout: () =>
+        set({ user: null, accessToken: null, refreshToken: null, notifications: [] }),
+      addNotification: (note) =>
+        set((state) => ({ notifications: [note, ...state.notifications] })),
+      updateUser: (data) =>
+        set((state) => ({ 
+          user: state.user ? { ...state.user, ...data } : null 
+        })),
     }),
     {
-      name: 'uop-storage',
+      name: 'cszone-storage',
     }
   )
 );

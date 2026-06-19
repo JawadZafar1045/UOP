@@ -9,13 +9,19 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: [true, 'Password is required'], minlength: 6, select: false },
     role: {
       type: String,
-      enum: ['admin', 'hr', 'teacher', 'sales', 'student'],
+      enum: ['admin', 'teacher', 'student'],
       default: 'student',
     },
     avatar:       { type: String },
     phone:        { type: String },
+    location:     { type: String },
+    bio:          { type: String },
     isActive:     { type: Boolean, default: true },
-    refreshToken: { type: String, select: false }, // Store hashed refresh token
+    isApproved:   { type: Boolean, default: true },
+    isVerified:   { type: Boolean, default: false },
+    verificationCode: { type: String },
+    verificationCodeExpires: { type: Date },
+    refreshToken: { type: String, default: null }, // Store hashed refresh token
     lastLogin:    { type: Date },
   },
   { timestamps: true }

@@ -1,3 +1,5 @@
+
+
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
@@ -5,8 +7,11 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Unified Operations Platform',
-  description: 'CRM, LMS, HRMS, and more.',
+  title: 'CS ZONE LMS',
+  description: 'Learning Management System.',
+  icons: {
+    icon: '/Logo-WithOut-BG.png',
+  },
 };
 
 export default function RootLayout({

@@ -8,15 +8,30 @@ const streamifier = require('streamifier');
  * @returns {Promise<{url: string, publicId: string}>}
  */
 const uploadFile = (file, folder = 'uop_uploads') => {
+  try {
+    const { validateUploadedFile } = require('../middlewares/security.middleware');
+    validateUploadedFile(file);
+  } catch (error) {
+    return Promise.reject(error);
+  }
+
   return new Promise((resolve, reject) => {
-    // We treat all uploads as raw/auto, or use auto for pdf/images
-    const isImage = file.mimetype.startsWith('image/');
+    const originalName = file.originalname || 'file';
+    const extMatch = originalName.match(/\.([^\.]+)$/);
+    const ext = extMatch ? extMatch[1] : '';
+    const safeName = (extMatch ? originalName.replace(`.${ext}`, '') : originalName).replace(/[^a-zA-Z0-9]/g, '_');
     
+    const isImageOrVideo = file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/') || file.mimetype === 'application/pdf';
+    const uniqueId = `${safeName}_${Date.now()}`;
+    
+    // For raw files (not images, videos, or PDFs), Cloudinary requires the extension in the public_id
+    const publicId = (!isImageOrVideo && ext) ? `${uniqueId}.${ext}` : uniqueId;
+
     const stream = cloudinary.uploader.upload_stream(
       {
         folder,
-        resource_type: isImage ? 'image' : 'raw', // Cloudinary treats PDFs and docs as 'raw' usually
-        use_filename: true,
+        resource_type: isImageOrVideo ? 'auto' : 'raw',
+        public_id: publicId,
       },
       (error, result) => {
         if (error) {
@@ -26,6 +41,7 @@ const uploadFile = (file, folder = 'uop_uploads') => {
         resolve({
           url: result.secure_url,
           publicId: result.public_id,
+          resourceType: result.resource_type,
         });
       }
     );
