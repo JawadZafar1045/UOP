@@ -20,6 +20,10 @@ const protect = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'User no longer exists.' });
     }
 
+    if (user.isActive === false) {
+      return res.status(401).json({ success: false, message: 'Account deactivated.' });
+    }
+
     // Attach user + tenantId to request for downstream use
     req.user = user;
     req.tenantId = user.tenantId;

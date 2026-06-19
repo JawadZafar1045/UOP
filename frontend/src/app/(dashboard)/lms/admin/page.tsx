@@ -39,7 +39,7 @@ export default function AdminDashboardPage() {
 
   // Confirm dialogs
   const [confirmAction, setConfirmAction] = useState<null | {
-    type: "deactivate" | "deleteCourse" | "revokeCert" | "approveUser" | "deleteUser";
+    type: "deactivate" | "activate" | "deleteCourse" | "revokeCert" | "approveUser" | "deleteUser";
     id: string; label: string;
   }>(null);
   const [isConfirming, setIsConfirming] = useState(false);
@@ -96,6 +96,9 @@ export default function AdminDashboardPage() {
       if (type === "deactivate") {
         await lmsService.deactivateUser(id);
         setUsers(prev => prev.map(u => u._id === id ? { ...u, isActive: false } : u));
+      } else if (type === "activate") {
+        await lmsService.activateUser(id);
+        setUsers(prev => prev.map(u => u._id === id ? { ...u, isActive: true } : u));
       } else if (type === "deleteUser") {
         await lmsService.deleteUser(id);
         setUsers(prev => prev.filter(u => u._id !== id));
@@ -258,6 +261,12 @@ export default function AdminDashboardPage() {
                               <UserX className="w-3.5 h-3.5" />Deactivate
                             </button>
                           )}
+                          {!u.isActive && u.isApproved !== false && (
+                            <button onClick={() => setConfirmAction({ type: "activate", id: u._id, label: u.name })}
+                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 rounded-lg transition-colors">
+                              <UserCheck className="w-3.5 h-3.5" />Activate
+                            </button>
+                          )}
                           {(u.role === 'teacher' || u.role === 'student') && u.isApproved === false && (
                             <button onClick={() => setConfirmAction({ type: "approveUser", id: u._id, label: u.name })}
                               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 rounded-lg transition-colors">
@@ -416,6 +425,7 @@ export default function AdminDashboardPage() {
             <h3 className="text-lg font-bold text-slate-900 text-center mb-2">Confirm Action</h3>
             <p className="text-sm text-slate-500 text-center mb-6">
               {confirmAction.type === "deactivate" && `Deactivate ${confirmAction.label}? They will lose access.`}
+              {confirmAction.type === "activate" && `Activate ${confirmAction.label}? They will regain access.`}
               {confirmAction.type === "deleteUser" && `Delete ${confirmAction.label}? This will permanently remove them from the system.`}
               {confirmAction.type === "approveUser" && `Approve ${confirmAction.label}? They will be notified via email and granted access.`}
               {confirmAction.type === "deleteCourse" && `Delete "${confirmAction.label}"? This will permanently delete all sessions, assignments, quizzes, attendance records and certificates for this course.`}
@@ -428,7 +438,7 @@ export default function AdminDashboardPage() {
               </button>
               <button onClick={handleConfirm} disabled={isConfirming}
                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-white rounded-xl transition-colors disabled:opacity-50 ${
-                  confirmAction.type === "approveUser" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-red-600 hover:bg-red-700"
+                  confirmAction.type === "approveUser" || confirmAction.type === "activate" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-red-600 hover:bg-red-700"
                 }`}>
                 {isConfirming ? <><Loader size="sm" /> Confirming...</> : 'Confirm'}
               </button>

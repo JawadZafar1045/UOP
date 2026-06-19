@@ -331,6 +331,11 @@ export const deactivateUser = async (id: string) => {
   return res.data?.data ?? res.data;
 };
 
+export const activateUser = async (id: string) => {
+  const res = await api.patch(`/lms/admin/users/${id}/activate`);
+  return res.data?.data ?? res.data;
+};
+
 export const deleteUser = async (id: string) => {
   const res = await api.delete(`/lms/admin/users/${id}/hard`);
   return res.data?.data ?? res.data;

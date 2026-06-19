@@ -9,6 +9,9 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'CS ZONE LMS',
   description: 'Learning Management System.',
+  icons: {
+    icon: '/Logo-WithOut-BG.png',
+  },
 };
 
 export default function RootLayout({
