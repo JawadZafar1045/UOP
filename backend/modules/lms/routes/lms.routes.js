@@ -114,6 +114,7 @@ router.get('/admin/users',                          authorize('admin'), ctrl.get
 router.patch('/admin/users/:id/approve',            val.deleteCourseVal, validateResult, authorize('admin'), ctrl.approveUser);
 router.patch('/admin/users/:id/role',               val.deleteCourseVal, validateResult, authorize('admin'), ctrl.updateUserRole); // reuse deleteCourseVal since it just checks param.id
 router.delete('/admin/users/:id',                   val.deleteCourseVal, validateResult, authorize('admin'), ctrl.deactivateUser);
+router.patch('/admin/users/:id/activate',           val.deleteCourseVal, validateResult, authorize('admin'), ctrl.activateUser);
 router.delete('/admin/users/:id/hard',              val.deleteCourseVal, validateResult, authorize('admin'), ctrl.deleteUser);
 router.get('/admin/courses',                        authorize('admin'), ctrl.getAdminCourses);
 router.delete('/admin/courses/:id',                 val.deleteCourseVal, validateResult, authorize('admin'), ctrl.deleteAdminCourse);

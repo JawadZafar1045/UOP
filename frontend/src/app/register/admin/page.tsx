@@ -93,9 +93,8 @@ export default function AdminRegisterPage() {
         <div className="w-full max-w-md py-12">
           <div className="flex flex-col items-center mb-10">
             <Link href="/" className="mb-6">
-              <div className="flex items-center gap-2">
-                <img src="/Logo-WithOut-BG.png" alt="CS ZONE LMS Logo" className="h-10 w-auto object-contain" />
-                <span className="font-extrabold text-2xl text-slate-900 tracking-tight">CS ZONE LMS Space</span>
+              <div className="flex justify-center">
+                <img src="/Logo-WithOut-BG.png" alt="CS ZONE LMS Logo" className="h-24 w-auto object-contain drop-shadow-md" />
               </div>
             </Link>
             <h1 className="text-3xl font-bold text-slate-900">Institution Registration</h1>

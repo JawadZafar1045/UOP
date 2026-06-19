@@ -36,7 +36,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     const socket = io(
       process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000',
-      { auth: { token: accessToken } }   // read token directly from Zustand store
+      { 
+        auth: { token: accessToken },
+        transports: ['websocket'] // Force websocket to prevent polling 400 Bad Request behind Nginx/Proxies
+      }
     );
 
     socket.on('notification', (notif) => {

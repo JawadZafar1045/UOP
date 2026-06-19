@@ -1169,6 +1169,18 @@ const deactivateUser = async (tenantId, targetUserId, requesterId) => {
   return user;
 };
 
+const activateUser = async (tenantId, targetUserId, requesterId) => {
+  if (targetUserId === requesterId) throw err('Cannot activate your own account', 400);
+  const User = require('../../auth/models/user.model');
+  const user = await User.findOneAndUpdate(
+    { _id: targetUserId, tenantId },
+    { isActive: true },
+    { new: true }
+  ).select('name email role isActive createdAt');
+  if (!user) throw err('User not found.', 404);
+  return user;
+};
+
 const deleteUser = async (tenantId, targetUserId, requesterId) => {
   if (targetUserId === requesterId) throw err('Cannot delete your own account', 400);
   const User = require('../../auth/models/user.model');
@@ -1275,5 +1287,5 @@ module.exports = {
   createQuiz, getCourseQuizzes, addQuizQuestion, getQuizQuestions, updateQuiz, updateQuizQuestion, publishQuiz, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
   getCoursePerformance, getMyPerformance, checkEligibility, generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate, getCertificateById,
   getCertificateTemplate, saveCertificateTemplate,
-  getAdminStats, getAdminUsers, updateUserRole, deactivateUser, deleteUser, approveUser, getAdminCourses, deleteAdminCourse, getAdminCertificates, revokeCertificate,
+  getAdminStats, getAdminUsers, updateUserRole, deactivateUser, activateUser, deleteUser, approveUser, getAdminCourses, deleteAdminCourse, getAdminCertificates, revokeCertificate,
 };

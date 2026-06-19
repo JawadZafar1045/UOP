@@ -488,6 +488,13 @@ const deactivateUser = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
+const activateUser = async (req, res, next) => {
+  try {
+    const data = await lmsService.activateUser(req.tenantId, req.params.id, req.user._id.toString());
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
 const deleteUser = async (req, res, next) => {
   try {
     const data = await lmsService.deleteUser(req.tenantId, req.params.id, req.user._id.toString());
@@ -541,6 +548,6 @@ module.exports = {
   createQuiz, updateQuiz, getCourseQuizzes, addQuizQuestion, getQuizQuestions, updateQuizQuestion, publishQuiz, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
   getCoursePerformance, getMyPerformance,
   generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate, getCertificatePdfPublic, getCertificateAccess, signFileUrl,
-  getAdminStats, getAdminUsers, updateUserRole, deactivateUser, deleteUser, approveUser, getAdminCourses, deleteAdminCourse, getAdminCertificates, revokeCertificate,
+  getAdminStats, getAdminUsers, updateUserRole, deactivateUser, activateUser, deleteUser, approveUser, getAdminCourses, deleteAdminCourse, getAdminCertificates, revokeCertificate,
   getCertificateTemplate, saveCertificateTemplate
 };
