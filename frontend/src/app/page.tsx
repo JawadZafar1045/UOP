@@ -54,7 +54,7 @@ export default function LandingPage() {
 
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const mailtoSubject = encodeURIComponent(contactForm.subject || 'CS ZONE LMS Contact Inquiry');
+    const mailtoSubject = encodeURIComponent(contactForm.subject || 'LMS ACROTYX Contact Inquiry');
     const mailtoBody = encodeURIComponent(
       `Name: ${contactForm.name}\n` +
       `Email: ${contactForm.email}\n` +
@@ -84,7 +84,7 @@ export default function LandingPage() {
             className="flex items-center cursor-pointer bg-transparent border-0 p-0 outline-none hover:opacity-85 transition-opacity"
             aria-label="Scroll to top"
           >
-            <img src="/Logo-WithOut-BG.png" alt="CS ZONE LMS Logo" className="h-8 md:h-10 w-auto object-contain" />
+            <img src="/notbg.png" alt="Logo" className="h-8 md:h-10 w-auto object-contain" />
           </button>
           <div className="hidden md:block h-4 w-[1px] bg-slate-200"></div>
           <div className="flex items-center gap-5 md:gap-6">
@@ -130,7 +130,7 @@ export default function LandingPage() {
             <div className="relative z-10 w-full max-w-4xl mx-auto px-6 pt-16 pb-10 md:pt-20 md:pb-14 flex flex-col items-center text-center">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-[11px] md:text-sm font-medium mb-6 border border-white/30">
                 <span className="flex h-1.5 w-1.5 rounded-full bg-blue-400 animate-pulse"></span>
-                CS ZONE LMS is live
+                LMS ACROTYX is live
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-6 leading-[1.15]">
                 Empower your learning, courses, and education <span className="text-blue-400">in one place</span>
@@ -156,7 +156,27 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Branding / Partners Section */}
+        <section className="w-full bg-slate-50 pt-4 pb-16 border-b border-slate-200/50">
+          <div className="max-w-5xl mx-auto px-6 text-center">
+            <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-10">LMS ACROTYX is proudly supported by</p>
+            <div className="flex flex-col md:flex-row items-center justify-center gap-16 md:gap-28">
+              
+              <div className="flex flex-col items-center gap-3 group cursor-default">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-300">Powered By</span>
+                <img src="/cszone-logo.png" alt="CS Zone Logo" className="h-14 w-auto object-contain grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500 group-hover:scale-105 group-hover:drop-shadow-md" />
+              </div>
 
+              <div className="hidden md:block w-px h-16 bg-slate-200"></div>
+              
+              <div className="flex flex-col items-center gap-3 group cursor-default">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-300">Built By</span>
+                <img src="/bytebuggers.png" alt="ByteBuggers Logo" className="h-12 w-auto object-contain grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500 group-hover:scale-105 group-hover:drop-shadow-md" />
+              </div>
+
+            </div>
+          </div>
+        </section>
 
         {/* Features Section */}
         <section id="features" className="w-full bg-white py-24 border-y border-slate-200">
@@ -187,7 +207,7 @@ export default function LandingPage() {
         {/* How It Works */}
         <section className="w-full max-w-6xl mx-auto px-6 py-24">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4 tracking-tight">How CS ZONE LMS Works</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4 tracking-tight">How LMS ACROTYX Works</h2>
             <p className="text-lg text-slate-600">A seamless flow from course registration to academic success.</p>
           </div>
 
@@ -232,7 +252,7 @@ export default function LandingPage() {
           <div className="max-w-6xl mx-auto px-6">
             <div className="text-center max-w-2xl mx-auto mb-16">
               <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4 tracking-tight">Simple, Volume-Based Pricing</h2>
-              <p className="text-lg text-slate-600">The more students you host on CS ZONE LMS, the less you pay per student. Simple as that.</p>
+              <p className="text-lg text-slate-600">The more students you host on LMS ACROTYX, the less you pay per student. Simple as that.</p>
               
               {/* Billing Cycle Toggle */}
               <div className="flex items-center justify-center gap-3 mt-8">
@@ -351,8 +371,8 @@ export default function LandingPage() {
         {/* Final CTA */}
         <section className="w-full bg-blue-50 py-24 px-6 border-y border-blue-100">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-6 tracking-tight">Start using CS ZONE LMS today</h2>
-            <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto">Join students and teachers managing their academic journeys on CS ZONE LMS.</p>
+            <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-6 tracking-tight">Start using LMS ACROTYX today</h2>
+            <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto">Join students and teachers managing their academic journeys on LMS ACROTYX.</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/signup" className="w-full sm:w-auto px-8 py-4 bg-blue-600 text-white rounded-xl font-medium text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2">
                 Create Free Account <ArrowRight className="w-5 h-5" />
@@ -380,10 +400,10 @@ export default function LandingPage() {
                 className="flex items-center gap-2 mb-8 group cursor-pointer bg-transparent border-0 p-0 outline-none hover:opacity-85 transition-opacity"
                 aria-label="Scroll to top"
               >
-                <img src="/Logo-WithOut-BG.png" alt="CS ZONE LMS Logo" className="h-14 w-auto object-contain" />
+                <img src="/notbg.png" alt="Logo" className="h-14 w-auto object-contain" />
               </button>
               <p className="text-slate-500 mb-8 leading-relaxed max-w-sm text-sm">
-                CS ZONE LMS.<br /> Manage your courses, classes, grades, and academic communication from a single platform.
+                LMS ACROTYX.<br /> Manage your courses, classes, grades, and academic communication from a single platform.
               </p>
             </div>
 
@@ -431,7 +451,7 @@ export default function LandingPage() {
           {/* Bottom Bar */}
           <div className="pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="text-sm text-slate-500">
-              © {new Date().getFullYear()} CS ZONE LMS. All rights reserved.
+              © {new Date().getFullYear()} LMS ACROTYX. All rights reserved.
             </div>
             <div className="flex flex-wrap justify-center gap-6 text-sm text-slate-500 font-medium">
               <a href="#" className="hover:text-blue-600 transition-colors">Twitter</a>
@@ -449,7 +469,7 @@ export default function LandingPage() {
             {/* Header */}
             <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-5 text-white flex justify-between items-center">
               <div>
-                <h3 className="font-bold text-lg md:text-xl">Contact CS ZONE LMS</h3>
+                <h3 className="font-bold text-lg md:text-xl">Contact LMS ACROTYX</h3>
                 <p className="text-blue-100 text-xs mt-0.5">Send your queries to info@cszone.pk</p>
               </div>
               <button 

@@ -96,7 +96,7 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ co
               
               <div className="p-6 border-t border-slate-100 bg-slate-50/50 text-center">
                 <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">Issued By</p>
-                <p className="text-xs font-bold text-slate-600">CS ZONE LMS</p>
+                <p className="text-xs font-bold text-slate-600">LMS ACROTYX</p>
               </div>
             </div>
 

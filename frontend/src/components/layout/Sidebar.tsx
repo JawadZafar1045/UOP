@@ -50,8 +50,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     }`}>
       <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100">
         <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-90 transition-opacity cursor-pointer">
-          <img src="/Logo-WithOut-BG.png" alt="CS ZONE LMS Logo" className="h-8 w-auto object-contain" />
-          <span className="font-semibold text-slate-800 tracking-tight text-lg">CS ZONE LMS Space</span>
+          <img src="/notbg.png" alt="Logo" className="h-8 w-auto object-contain" />
+          <span className="font-semibold text-slate-800 tracking-tight text-lg">LMS ACROTYX Space</span>
         </Link>
         <button
           onClick={onClose}
