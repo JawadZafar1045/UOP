@@ -67,7 +67,7 @@ export default function AdminRegisterPage() {
           </div>
           <h2 className="text-4xl font-bold mb-6 tracking-tight">Institution Registration</h2>
           <p className="text-xl text-blue-100/90 leading-relaxed mb-12">
-            Create your college admin account to set up and manage your institution on CS ZONE LMS Space.
+            Create your college admin account to set up and manage your institution on LMS ACROTYX Space.
           </p>
           <div className="grid grid-cols-2 gap-6 text-left">
             {[
@@ -94,7 +94,7 @@ export default function AdminRegisterPage() {
           <div className="flex flex-col items-center mb-10">
             <Link href="/" className="mb-6">
               <div className="flex justify-center">
-                <img src="/Logo-WithOut-BG.png" alt="CS ZONE LMS Logo" className="h-24 w-auto object-contain drop-shadow-md" />
+                <img src="/notbg.png" alt="Logo" className="h-24 w-auto object-contain drop-shadow-md" />
               </div>
             </Link>
             <h1 className="text-3xl font-bold text-slate-900">Institution Registration</h1>

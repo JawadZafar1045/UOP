@@ -277,7 +277,7 @@ export default function LoginPage() {
           <div className="flex flex-col items-center mb-10">
             <Link href="/" className="mb-8">
               <div className="flex justify-center">
-                <img src="/Logo-WithOut-BG.png" alt="CS ZONE LMS Logo" className="h-24 w-auto object-contain drop-shadow-md" />
+                <img src="/notbg.png" alt="Logo" className="h-24 w-auto object-contain drop-shadow-md" />
               </div>
             </Link>
             <h1 className="text-3xl font-bold text-slate-900">Welcome Back</h1>
@@ -364,7 +364,7 @@ export default function LoginPage() {
                 <><Loader size="sm" /> Signing in...</>
               ) : (
                 <>
-                  Sign in to CS ZONE LMS{" "}
+                  Sign in to LMS ACROTYX{" "}
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </>
               )}

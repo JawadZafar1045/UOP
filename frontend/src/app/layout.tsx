@@ -7,10 +7,10 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'CS ZONE LMS',
+  title: 'LMS ACROTYX',
   description: 'Learning Management System.',
   icons: {
-    icon: '/Logo-WithOut-BG.png',
+    icon: '/notbg.png',
   },
 };
 
