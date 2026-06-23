@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   title: 'LMS ACROTYX',
   description: 'Learning Management System.',
   icons: {
-    icon: '/notbg.png',
+    icon: '/favicon.svg',
   },
 };
 

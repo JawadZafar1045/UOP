@@ -84,7 +84,7 @@ export default function LandingPage() {
             className="flex items-center cursor-pointer bg-transparent border-0 p-0 outline-none hover:opacity-85 transition-opacity"
             aria-label="Scroll to top"
           >
-            <img src="/notbg.png" alt="Logo" className="h-8 md:h-10 w-auto object-contain" />
+            <img src="/acrotyx-logo.png" alt="Logo" className="h-10 md:h-11 w-auto object-contain" />
           </button>
           <div className="hidden md:block h-4 w-[1px] bg-slate-200"></div>
           <div className="flex items-center gap-5 md:gap-6">
@@ -185,7 +185,7 @@ export default function LandingPage() {
               <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Everything you need to master your courses</h2>
               <p className="text-lg text-slate-600">Powerful, interconnected modules designed to enhance your learning and academic collaboration.</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {[
                 { icon: <GraduationCap className="w-6 h-6 text-indigo-600" />, title: "Course Catalog", desc: "Browse and enroll in high-quality academic courses curated by teachers." },
                 { icon: <Users className="w-6 h-6 text-teal-600" />, title: "Student Management", desc: "Centralize student records, profiles, and performance logs." },
@@ -400,7 +400,7 @@ export default function LandingPage() {
                 className="flex items-center gap-2 mb-8 group cursor-pointer bg-transparent border-0 p-0 outline-none hover:opacity-85 transition-opacity"
                 aria-label="Scroll to top"
               >
-                <img src="/notbg.png" alt="Logo" className="h-14 w-auto object-contain" />
+                <img src="/acrotyx-logo.png" alt="Logo" className="h-14 w-auto object-contain" />
               </button>
               <p className="text-slate-500 mb-8 leading-relaxed max-w-sm text-sm">
                 LMS ACROTYX.<br /> Manage your courses, classes, grades, and academic communication from a single platform.

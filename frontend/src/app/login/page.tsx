@@ -277,7 +277,7 @@ export default function LoginPage() {
           <div className="flex flex-col items-center mb-10">
             <Link href="/" className="mb-8">
               <div className="flex justify-center">
-                <img src="/notbg.png" alt="Logo" className="h-24 w-auto object-contain drop-shadow-md" />
+                <img src="/acrotyx-logo.png" alt="Logo" className="h-24 w-auto object-contain drop-shadow-md" />
               </div>
             </Link>
             <h1 className="text-3xl font-bold text-slate-900">Welcome Back</h1>

@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+@theme {
+  --color-blue-50: #f5f0f6;
+  --color-blue-100: #e8dbec;
+  --color-blue-200: #d4badb;
+  --color-blue-300: #b98fc4;
+  --color-blue-400: #9c63a9;
+  --color-blue-500: #81478f;
+  --color-blue-600: #3c1a47;
+  --color-blue-700: #2d1335;
+  --color-blue-800: #1e0d23;
+  --color-blue-900: #0f0612;
+  --color-blue-950: #080309;
+}
+
 @layer base {
   :root {
     --background: 210 40% 98%; /* Slate 50 */
@@ -8,7 +22,7 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 217.2 91.2% 59.8%; /* Action Blue #3B82F6 */
+    --primary: 285.3 46.4% 19%; /* Acrotyx #3c1a47 */
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -20,15 +34,15 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 217.2 91.2% 59.8%;
+    --ring: 285.3 46.4% 19%;
     --radius: 0.5rem;
   }
 }
 
 /* Custom elevations based on DESIGN.md */
 .elevation-1 {
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.04);
+  box-shadow: 0 2px 8px rgba(60, 26, 71, 0.04);
 }
 .elevation-2 {
-  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.08);
+  box-shadow: 0 10px 20px rgba(60, 26, 71, 0.08);
 }
