@@ -94,7 +94,7 @@ export default function AdminRegisterPage() {
           <div className="flex flex-col items-center mb-10">
             <Link href="/" className="mb-6">
               <div className="flex justify-center">
-                <img src="/acrotyx-logo.png" alt="Logo" className="h-24 w-auto object-contain drop-shadow-md" />
+                <img src="/acrotyx-logo.png" alt="Logo" className="h-10 w-auto object-contain drop-shadow-md" />
               </div>
             </Link>
             <h1 className="text-3xl font-bold text-slate-900">Institution Registration</h1>

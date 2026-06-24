@@ -77,7 +77,7 @@ export default function SignupPage() {
           <div className="flex flex-col items-center mb-10">
             <Link href="/" className="mb-6">
               <div className="flex justify-center">
-                <img src="/acrotyx-logo.png" alt="Logo" className="h-24 w-auto object-contain drop-shadow-md" />
+                <img src="/acrotyx-logo.png" alt="Logo" className="h-10 w-auto object-contain drop-shadow-md" />
               </div>
             </Link>
             <h1 className="text-3xl font-bold text-slate-900">Create Account</h1>
@@ -179,7 +179,7 @@ export default function SignupPage() {
             </p>
             <p className="text-xs text-slate-400">
               Are you a college admin?{" "}
-              <Link href="/register/admin" className="text-indigo-600 font-semibold hover:underline underline-offset-4">
+              <Link href="/register/admin" className="text-[#371c45] font-semibold hover:underline underline-offset-4">
                 Register your institution
               </Link>
             </p>
