@@ -45,7 +45,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   };
 
   return (
-    <aside className={`w-[260px] bg-white border-r border-slate-200 h-screen fixed top-0 left-0 flex flex-col shadow-sm z-40 transition-transform duration-300 lg:translate-x-0 ${
+    <aside className={`w-[260px] bg-white border-r border-slate-200 h-[100dvh] fixed top-0 left-0 flex flex-col shadow-sm z-40 transition-transform duration-300 lg:translate-x-0 ${
       isOpen ? "translate-x-0" : "-translate-x-full"
     }`}>
       <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100">

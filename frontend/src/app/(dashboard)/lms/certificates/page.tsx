@@ -106,11 +106,11 @@ export default function CertificatesPage() {
         </div>
         
         {isInstructor && (
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
             <select 
               value={selectedCourseId} 
               onChange={(e) => setSelectedCourseId(e.target.value)}
-              className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500/20 transition-all outline-none min-w-[200px]"
+              className="px-4 py-3 sm:py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500/20 transition-all outline-none w-full sm:min-w-[200px]"
             >
               <option value="">-- Select Course --</option>
               {courses.map(c => (
@@ -120,9 +120,9 @@ export default function CertificatesPage() {
             <button
               onClick={handleGenerateAll}
               disabled={!selectedCourseId || isGenerating}
-              className="flex items-center gap-2 px-5 py-2 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 transition-all disabled:opacity-50 active:scale-[0.98]"
+              className="flex items-center justify-center gap-2 px-5 py-3 sm:py-2 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 transition-all disabled:opacity-50 active:scale-[0.98] w-full sm:w-auto whitespace-nowrap"
             >
-              {isGenerating ? <><Loader size="sm" /> Generating...</> : <><FileBadge className="w-4 h-4" /> Generate All Eligible</>}
+              {isGenerating ? <><Loader size="sm" /> Generating...</> : <><FileBadge className="w-4 h-4 shrink-0" /> Generate All Eligible</>}
             </button>
           </div>
         )}
