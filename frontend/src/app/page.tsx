@@ -25,7 +25,7 @@ export default function LandingPage() {
     else if (studentCount > 1500) basePrice = 1.00;
     else if (studentCount > 500) basePrice = 1.50;
     else if (studentCount > 100) basePrice = 2.00;
-    
+
     if (billingCycle === 'yearly') {
       basePrice = basePrice * 0.8;
     }
@@ -79,12 +79,12 @@ export default function LandingPage() {
       {/* Navigation */}
       <div className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
         <nav className="pointer-events-auto flex items-center gap-6 md:gap-8 px-6 py-2 bg-white/90 backdrop-blur-xl border border-white/20 rounded-full shadow-2xl shadow-blue-900/10 transition-all duration-300 ring-1 ring-black/5">
-          <button 
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} 
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             className="flex items-center cursor-pointer bg-transparent border-0 p-0 outline-none hover:opacity-85 transition-opacity"
             aria-label="Scroll to top"
           >
-            <img src="/acrotyx-logo.png" alt="Logo" className="h-10 md:h-11 w-auto object-contain" />
+            <img src="/acrotyx-logo.png" alt="Logo" className="h-8 md:h-8 w-auto object-contain" />
           </button>
           <div className="hidden md:block h-4 w-[1px] bg-slate-200"></div>
           <div className="flex items-center gap-5 md:gap-6">
@@ -117,7 +117,7 @@ export default function LandingPage() {
             {/* Background Image with Overlay */}
             <div className="absolute inset-0 z-0">
               <img
-                src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2000&auto=format&fit=crop"
+                src="/Hero.png"
                 alt="Background"
                 className="absolute inset-0 w-full h-full object-cover object-center"
               />
@@ -132,8 +132,8 @@ export default function LandingPage() {
                 <span className="flex h-1.5 w-1.5 rounded-full bg-blue-400 animate-pulse"></span>
                 LMS ACROTYX is live
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-6 leading-[1.15]">
-                Empower your learning, courses, and education <span className="text-blue-400">in one place</span>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#FFFFFF] tracking-tight mb-6 leading-[1.15]">
+                Empower your learning, courses, and education in one place
               </h1>
               <p className="text-lg md:text-xl text-slate-100 max-w-2xl mb-10 leading-relaxed font-medium drop-shadow-sm">
                 The modern learning management system that brings courses, live sessions, assignments, and academic tracking into a single workspace.
@@ -161,14 +161,14 @@ export default function LandingPage() {
           <div className="max-w-5xl mx-auto px-6 text-center">
             <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-10">LMS ACROTYX is proudly supported by</p>
             <div className="flex flex-col md:flex-row items-center justify-center gap-16 md:gap-28">
-              
+
               <div className="flex flex-col items-center gap-3 group cursor-default">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-300">Powered By</span>
                 <img src="/cszone-logo.png" alt="CS Zone Logo" className="h-14 w-auto object-contain grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500 group-hover:scale-105 group-hover:drop-shadow-md" />
               </div>
 
               <div className="hidden md:block w-px h-16 bg-slate-200"></div>
-              
+
               <div className="flex flex-col items-center gap-3 group cursor-default">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-300">Built By</span>
                 <img src="/bytebuggers.png" alt="ByteBuggers Logo" className="h-12 w-auto object-contain grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500 group-hover:scale-105 group-hover:drop-shadow-md" />
@@ -253,11 +253,11 @@ export default function LandingPage() {
             <div className="text-center max-w-2xl mx-auto mb-16">
               <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4 tracking-tight">Simple, Volume-Based Pricing</h2>
               <p className="text-lg text-slate-600">The more students you host on LMS ACROTYX, the less you pay per student. Simple as that.</p>
-              
+
               {/* Billing Cycle Toggle */}
               <div className="flex items-center justify-center gap-3 mt-8">
                 <span className={`text-sm font-semibold ${billingCycle === 'monthly' ? 'text-blue-600' : 'text-slate-500'}`}>Monthly</span>
-                <button 
+                <button
                   onClick={() => setBillingCycle(prev => prev === 'monthly' ? 'yearly' : 'monthly')}
                   className="w-12 h-6 bg-blue-600 rounded-full p-1 transition-colors duration-200 focus:outline-none flex items-center"
                 >
@@ -272,7 +272,7 @@ export default function LandingPage() {
 
             {/* Calculator Card */}
             <div className="max-w-4xl mx-auto bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-12">
-              
+
               {/* Left Column: Slider and Tiers */}
               <div className="md:col-span-7 p-8 md:p-10 space-y-8 flex flex-col justify-center text-left">
                 <div className="space-y-4">
@@ -280,15 +280,15 @@ export default function LandingPage() {
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Number of Students</label>
                     <span className="text-3xl font-black text-blue-600 tracking-tight">{studentCount} <span className="text-sm font-medium text-slate-500">Students</span></span>
                   </div>
-                  
+
                   {/* Slider */}
                   <div className="relative pt-2">
-                    <input 
-                      type="range" 
-                      min="10" 
-                      max="5000" 
+                    <input
+                      type="range"
+                      min="10"
+                      max="5000"
                       step="10"
-                      value={studentCount} 
+                      value={studentCount}
                       onChange={e => setStudentCount(parseInt(e.target.value))}
                       className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600 outline-none border border-slate-200"
                     />
@@ -312,13 +312,12 @@ export default function LandingPage() {
                       { range: "1501-5000", price: "$1.00", active: studentCount > 1500 && studentCount <= 5000 },
                       { range: "5000+", price: "$0.75", active: studentCount > 5000 }
                     ].map((tier, index) => (
-                      <div 
-                        key={index} 
-                        className={`p-2 py-3 rounded-xl border transition-all duration-300 ${
-                          tier.active 
-                            ? 'bg-blue-50 border-blue-200 text-blue-700 shadow-sm scale-[1.03]' 
-                            : 'bg-slate-50 border-slate-100 text-slate-400'
-                        }`}
+                      <div
+                        key={index}
+                        className={`p-2 py-3 rounded-xl border transition-all duration-300 ${tier.active
+                          ? 'bg-blue-50 border-blue-200 text-blue-700 shadow-sm scale-[1.03]'
+                          : 'bg-slate-50 border-slate-100 text-slate-400'
+                          }`}
                       >
                         <div className="truncate mb-1">{tier.range}</div>
                         <div className="text-xs font-black">{tier.price}</div>
@@ -332,7 +331,7 @@ export default function LandingPage() {
               <div className="md:col-span-5 bg-slate-50 border-t md:border-t-0 md:border-l border-slate-200 p-8 md:p-10 flex flex-col justify-between items-center text-center">
                 <div className="w-full space-y-6">
                   <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Estimated Cost</h3>
-                  
+
                   <div className="space-y-1">
                     <span className="text-5xl font-black text-slate-900 tracking-tight">
                       ${calculateTotalPrice()}
@@ -354,7 +353,7 @@ export default function LandingPage() {
                 </div>
 
                 <div className="w-full space-y-3 pt-8 md:pt-0">
-                  <button 
+                  <button
                     onClick={() => setIsContactOpen(true)}
                     className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-xl shadow-blue-500/10 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                   >
@@ -395,12 +394,12 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-16">
             {/* Brand Section */}
             <div className="lg:col-span-4">
-              <button 
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} 
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 className="flex items-center gap-2 mb-8 group cursor-pointer bg-transparent border-0 p-0 outline-none hover:opacity-85 transition-opacity"
                 aria-label="Scroll to top"
               >
-                <img src="/acrotyx-logo.png" alt="Logo" className="h-14 w-auto object-contain" />
+                <img src="/acrotyx-logo.png" alt="Logo" className="h-10 w-auto object-contain" />
               </button>
               <p className="text-slate-500 mb-8 leading-relaxed max-w-sm text-sm">
                 LMS ACROTYX.<br /> Manage your courses, classes, grades, and academic communication from a single platform.
@@ -472,11 +471,11 @@ export default function LandingPage() {
                 <h3 className="font-bold text-lg md:text-xl">Contact LMS ACROTYX</h3>
                 <p className="text-blue-100 text-xs mt-0.5">Send your queries to info@cszone.pk</p>
               </div>
-              <button 
+              <button
                 onClick={() => {
                   setIsContactOpen(false);
                   setContactSubmitted(false);
-                }} 
+                }}
                 className="p-1.5 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white"
                 aria-label="Close"
               >
@@ -491,26 +490,26 @@ export default function LandingPage() {
                   {/* Name */}
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Full Name</label>
-                    <input 
-                      type="text" 
-                      required 
-                      value={contactForm.name} 
+                    <input
+                      type="text"
+                      required
+                      value={contactForm.name}
                       onChange={e => setContactForm(prev => ({ ...prev, name: e.target.value }))}
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-800"
-                      placeholder="John Doe" 
+                      placeholder="John Doe"
                     />
                   </div>
 
                   {/* Email */}
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Email Address</label>
-                    <input 
-                      type="email" 
-                      required 
-                      value={contactForm.email} 
+                    <input
+                      type="email"
+                      required
+                      value={contactForm.email}
                       onChange={e => setContactForm(prev => ({ ...prev, email: e.target.value }))}
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-800"
-                      placeholder="john@example.com" 
+                      placeholder="john@example.com"
                     />
                   </div>
                 </div>
@@ -519,24 +518,24 @@ export default function LandingPage() {
                   {/* Phone */}
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Phone Number</label>
-                    <input 
-                      type="tel" 
-                      value={contactForm.phone} 
+                    <input
+                      type="tel"
+                      value={contactForm.phone}
                       onChange={e => setContactForm(prev => ({ ...prev, phone: e.target.value }))}
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-800"
-                      placeholder="+92 300 1234567" 
+                      placeholder="+92 300 1234567"
                     />
                   </div>
 
                   {/* Institution */}
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Institution / College</label>
-                    <input 
-                      type="text" 
-                      value={contactForm.institution} 
+                    <input
+                      type="text"
+                      value={contactForm.institution}
                       onChange={e => setContactForm(prev => ({ ...prev, institution: e.target.value }))}
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-800"
-                      placeholder="College Name" 
+                      placeholder="College Name"
                     />
                   </div>
                 </div>
@@ -544,23 +543,23 @@ export default function LandingPage() {
                 {/* Subject */}
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Subject</label>
-                  <input 
-                    type="text" 
-                    required 
-                    value={contactForm.subject} 
+                  <input
+                    type="text"
+                    required
+                    value={contactForm.subject}
                     onChange={e => setContactForm(prev => ({ ...prev, subject: e.target.value }))}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-800"
-                    placeholder="How can we help you?" 
+                    placeholder="How can we help you?"
                   />
                 </div>
 
                 {/* Message */}
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Message</label>
-                  <textarea 
-                    required 
+                  <textarea
+                    required
                     rows={4}
-                    value={contactForm.message} 
+                    value={contactForm.message}
                     onChange={e => setContactForm(prev => ({ ...prev, message: e.target.value }))}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none text-slate-800"
                     placeholder="Write details of your query..."
@@ -568,8 +567,8 @@ export default function LandingPage() {
                 </div>
 
                 {/* Submit button */}
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/10 active:scale-[0.98] transition-all"
                 >
                   <Send className="w-4 h-4" /> Send Message
@@ -586,7 +585,7 @@ export default function LandingPage() {
                 <p className="text-slate-600 text-sm max-w-sm mx-auto">
                   Your query details have been captured. A mail application has been opened to send this information to <span className="font-semibold text-blue-600">info@cszone.pk</span>.
                 </p>
-                <button 
+                <button
                   onClick={() => {
                     setIsContactOpen(false);
                     setContactSubmitted(false);
