@@ -12,7 +12,8 @@ import {
   Mail,
   X,
   Phone,
-  Send
+  Send,
+  Menu
 } from 'lucide-react';
 
 export default function LandingPage() {
@@ -42,6 +43,7 @@ export default function LandingPage() {
   };
 
   const [isContactOpen, setIsContactOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [contactSubmitted, setContactSubmitted] = useState(false);
   const [contactForm, setContactForm] = useState({
     name: '',
@@ -78,31 +80,59 @@ export default function LandingPage() {
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       {/* Navigation */}
       <div className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
-        <nav className="pointer-events-auto flex items-center gap-6 md:gap-8 px-6 py-2 bg-white/90 backdrop-blur-xl border border-white/20 rounded-full shadow-2xl shadow-blue-900/10 transition-all duration-300 ring-1 ring-black/5">
+        <nav className="relative pointer-events-auto flex items-center justify-between px-4 sm:px-6 py-2 w-full max-w-4xl bg-white/90 backdrop-blur-xl border border-white/20 rounded-full shadow-2xl shadow-blue-900/10 transition-all duration-300 ring-1 ring-black/5">
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="flex items-center cursor-pointer bg-transparent border-0 p-0 outline-none hover:opacity-85 transition-opacity"
+            className="flex items-center cursor-pointer bg-transparent border-0 p-0 outline-none hover:opacity-85 transition-opacity shrink-0"
             aria-label="Scroll to top"
           >
-            <img src="/acrotyx-logo.png" alt="Logo" className="h-8 md:h-8 w-auto object-contain" />
+            <img src="/acrotyx-logo.png" alt="Logo" className="h-6 md:h-8 w-auto object-contain" />
           </button>
-          <div className="hidden md:block h-4 w-[1px] bg-slate-200"></div>
-          <div className="flex items-center gap-5 md:gap-6">
-            <Link href="#pricing" className="text-[10px] md:text-xs font-bold text-slate-600 hover:text-blue-600 transition-colors uppercase tracking-widest">
+          
+          {/* Desktop/Tablet Links */}
+          <div className="hidden md:flex items-center gap-4 md:gap-6 shrink-0">
+            <Link href="#pricing" className="text-xs font-bold text-slate-600 hover:text-blue-600 transition-colors uppercase tracking-widest whitespace-nowrap">
               Pricing
             </Link>
             <div className="h-3 w-[1px] bg-slate-200"></div>
-            <button onClick={() => setIsContactOpen(true)} className="text-[10px] md:text-xs font-bold text-slate-600 hover:text-blue-600 transition-colors uppercase tracking-widest bg-transparent border-0 p-0 cursor-pointer outline-none">
+            <button onClick={() => setIsContactOpen(true)} className="text-xs font-bold text-slate-600 hover:text-blue-600 transition-colors uppercase tracking-widest bg-transparent border-0 p-0 cursor-pointer outline-none whitespace-nowrap">
               Contact
             </button>
             <div className="h-3 w-[1px] bg-slate-200"></div>
-            <Link href="/login" className="text-[10px] md:text-xs font-bold text-slate-600 hover:text-blue-600 transition-colors uppercase tracking-widest">
+            <Link href="/login" className="text-xs font-bold text-slate-600 hover:text-blue-600 transition-colors uppercase tracking-widest whitespace-nowrap">
               Login
             </Link>
-            <Link href="/signup" className="text-[10px] md:text-xs font-bold bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 hover:scale-105 active:scale-95 uppercase tracking-widest">
+            <Link href="/signup" className="text-xs font-bold bg-blue-600 text-white px-5 py-2.5 rounded-full hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 hover:scale-105 active:scale-95 uppercase tracking-widest whitespace-nowrap shrink-0">
               Join with us
             </Link>
           </div>
+
+          {/* Mobile Menu Button */}
+          <button 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden p-2 -mr-2 text-slate-700 bg-transparent border-0 outline-none cursor-pointer flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors"
+          >
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+
+          {/* Mobile Dropdown Menu */}
+          {isMobileMenuOpen && (
+            <div className="absolute top-full mt-2 right-0 w-48 bg-white border border-slate-200 rounded-2xl p-4 shadow-xl flex flex-col gap-4 md:hidden z-50">
+              <Link href="#pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">
+                Pricing
+              </Link>
+              <button onClick={() => { setIsContactOpen(true); setIsMobileMenuOpen(false); }} className="text-left text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors bg-transparent border-0 p-0 cursor-pointer outline-none">
+                Contact
+              </button>
+              <div className="h-[1px] w-full bg-slate-100"></div>
+              <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">
+                Login
+              </Link>
+              <Link href="/signup" onClick={() => setIsMobileMenuOpen(false)} className="text-center text-sm font-bold bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-all shadow-md shadow-blue-600/20">
+                Join with us
+              </Link>
+            </div>
+          )}
         </nav>
       </div>
 
@@ -132,7 +162,7 @@ export default function LandingPage() {
                 <span className="flex h-1.5 w-1.5 rounded-full bg-blue-400 animate-pulse"></span>
                 LMS ACROTYX is live
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#FFFFFF] tracking-tight mb-6 leading-[1.15]">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#FFFFFF] tracking-tight mb-6 leading-[1.15]">
                 Empower your learning, courses, and education in one place
               </h1>
               <p className="text-lg md:text-xl text-slate-100 max-w-2xl mb-10 leading-relaxed font-medium drop-shadow-sm">
