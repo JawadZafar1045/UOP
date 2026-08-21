@@ -1,212 +1,21 @@
-// "use client";
-
-// import { useStore } from "@/store/useStore";
-// import { useRouter } from "next/navigation";
-// import { useState } from "react";
-// import Link from "next/link";
-// import api from "@/services/api";
-// import { LogIn, Mail, Lock, ArrowRight, ShieldCheck } from "lucide-react";
-
-// export default function LoginPage() {
-//   const router = useRouter();
-//   const setAuth = useStore((state) => state.setAuth);
-
-//   const [email, setEmail] = useState("");
-//   const [password, setPassword] = useState("");
-//   const [tenantId, setTenantId] = useState("default");
-//   const [loading, setLoading] = useState(false);
-//   const [error, setError] = useState("");
-
-//   const handleLogin = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     setLoading(true);
-//     setError("");
-
-//     try {
-//       const res: any = await api.post("/auth/login", { email, password, tenantId });
-//       setAuth(res.data.user, res.data.accessToken);
-//       router.push("/dashboard");
-//     } catch (err: any) {
-//       setError(err?.response?.data?.message || err?.message || "Login failed. Please check your credentials.");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-slate-50 flex overflow-hidden font-sans">
-//       {/* Left Side - Visual/Marketing */}
-//       <div className="hidden lg:flex lg:w-1/2 bg-blue-600 relative overflow-hidden items-center justify-center p-12">
-//         <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800" />
-//         <div className="absolute top-0 left-0 w-full h-full opacity-10">
-//           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white rounded-full blur-3xl" />
-//           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-400 rounded-full blur-3xl" />
-//         </div>
-
-//         <div className="relative z-10 max-w-lg text-white">
-//           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm font-medium mb-8 border border-white/20">
-//             <ShieldCheck className="w-4 h-4" />
-//             Secure Enterprise Login
-//           </div>
-//           <h2 className="text-4xl font-bold mb-6 tracking-tight">Your entire business, Unified.</h2>
-//           <p className="text-xl text-blue-100/90 leading-relaxed mb-8">
-//             Access your CRM, LMS, and communication tools in one secure environment. Seamless operations start here.
-//           </p>
-//           <div className="space-y-4">
-//             {[
-//               "Unified CRM & Lead Tracking",
-//               "Powerful Learning Management",
-//               "Real-time Team Communication",
-//               "Centralized Employee Directory"
-//             ].map((text, i) => (
-//               <div key={i} className="flex items-center gap-3">
-//                 <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-white">
-//                   <ShieldCheck className="w-3 h-3" />
-//                 </div>
-//                 <span className="text-blue-50 font-medium">{text}</span>
-//               </div>
-//             ))}
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Right Side - Login Form */}
-//       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 bg-white">
-//         <div className="w-full max-w-md">
-//           {/* Logo & Header */}
-//           <div className="flex flex-col items-center mb-10">
-//             <Link href="/" className="mb-8">
-//               <div className="flex items-center gap-2">
-//                 <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-200">U</div>
-//                 <span className="font-extrabold text-2xl text-slate-900 tracking-tight">UOP</span>
-//               </div>
-//             </Link>
-//             <h1 className="text-3xl font-bold text-slate-900">Welcome Back</h1>
-//             <p className="text-slate-500 mt-2">Enter your details to access your workspace</p>
-//           </div>
-
-//           <div className="relative mb-8">
-//             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100" /></div>
-//             <div className="relative flex justify-center text-xs uppercase tracking-widest font-bold text-slate-400">
-//               <span className="bg-white px-4">Or sign in with email</span>
-//             </div>
-//           </div>
-
-//           <form onSubmit={handleLogin} className="space-y-5">
-//             {error && (
-//               <div className="bg-red-50 border border-red-100 p-4 rounded-xl text-sm text-red-600 flex gap-3 items-start">
-//                 <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">!</div>
-//                 {error}
-//               </div>
-//             )}
-
-//             <div className="space-y-2">
-//               <label className="text-sm font-semibold text-slate-700 ml-1">Workspace Tenant ID</label>
-//               <div className="relative group">
-//                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
-//                   <ShieldCheck className="w-5 h-5" />
-//                 </div>
-//                 <input
-//                   type="text"
-//                   required
-//                   value={tenantId}
-//                   onChange={(e) => setTenantId(e.target.value)}
-//                   className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
-//                   placeholder="e.g. default or company-name"
-//                 />
-//               </div>
-//             </div>
-
-//             <div className="space-y-2">
-//               <label className="text-sm font-semibold text-slate-700 ml-1">Email Address</label>
-//               <div className="relative group">
-//                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
-//                   <Mail className="w-5 h-5" />
-//                 </div>
-//                 <input
-//                   type="email"
-//                   required
-//                   value={email}
-//                   onChange={(e) => setEmail(e.target.value)}
-//                   className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
-//                   placeholder="name@company.com"
-//                 />
-//               </div>
-//             </div>
-
-//             <div className="space-y-2">
-//               <div className="flex items-center justify-between ml-1">
-//                 <label className="text-sm font-semibold text-slate-700">Password</label>
-//                 <Link href="#" className="text-xs font-bold text-blue-600 hover:text-blue-700">Forgot password?</Link>
-//               </div>
-//               <div className="relative group">
-//                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
-//                   <Lock className="w-5 h-5" />
-//                 </div>
-//                 <input
-//                   type="password"
-//                   required
-//                   value={password}
-//                   onChange={(e) => setPassword(e.target.value)}
-//                   className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
-//                   placeholder="••••••••"
-//                 />
-//               </div>
-//             </div>
-
-//             <div className="flex items-center gap-2 ml-1">
-//               <input
-//                 id="remember"
-//                 type="checkbox"
-//                 className="w-4 h-4 rounded border-slate-200 text-blue-600 focus:ring-blue-500/20 cursor-pointer"
-//               />
-//               <label htmlFor="remember" className="text-sm text-slate-500 cursor-pointer select-none">Keep me signed in</label>
-//             </div>
-
-//             <button
-//               type="submit"
-//               disabled={loading}
-//               className="w-full flex justify-center items-center gap-2 py-4 px-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 disabled:opacity-50 disabled:shadow-none group"
-//             >
-//               {loading ? (
-//                 <>Signing in...</>
-//               ) : (
-//                 <>Sign in to UOP <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>
-//               )}
-//             </button>
-//           </form>
-
-//           <div className="mt-10 text-center">
-//             <p className="text-sm text-slate-500 font-medium">
-//               New to the platform?{" "}
-//               <Link href="/signup" className="text-blue-600 font-bold hover:text-blue-700 transition-colors underline-offset-4 hover:underline">
-//                 Create an account
-//               </Link>
-//             </p>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
 "use client";
 
+import { Suspense, useState } from "react";
 import { useStore } from "@/store/useStore";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import api from "@/services/api";
-import { Mail, Lock, ArrowRight, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { Mail, Lock, ArrowRight, ShieldCheck, GraduationCap, CheckCircle2 } from "lucide-react";
 import Loader from "@/components/ui/Loader";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams?.get("returnUrl") || "/lms";
   const setAuth = useStore((state) => state.setAuth);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [tenantId, setTenantId] = useState("default");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -219,12 +28,11 @@ export default function LoginPage() {
       const res: any = await api.post("/auth/login", {
         email,
         password,
-        tenantId,
       });
       const { accessToken, refreshToken, user } = res.data;
 
       setAuth(user, accessToken, refreshToken);
-      router.push("/dashboard");
+      router.push(returnUrl);
     } catch (err: any) {
       setError(
         err?.response?.data?.message ||
@@ -238,33 +46,34 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex overflow-hidden font-sans">
-      {/* Left Side - Visual/Marketing */}
-      <div className="hidden lg:flex lg:w-1/2 bg-blue-600 relative overflow-hidden items-center justify-center p-12">
-        {/* Updated to Tailwind v4-ready gradient syntax */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800" />
-        <div className="absolute top-0 left-0 w-full h-full opacity-10">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-400 rounded-full blur-3xl" />
-        </div>
+      {/* Left Side - CSZone Marketing Banner */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 relative overflow-hidden items-center justify-center p-12 text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(99,102,241,0.3),rgba(255,255,255,0))]" />
 
-        <div className="relative z-10 max-w-lg text-white text-center">
-          <h2 className="text-4xl font-bold mb-6 tracking-tight">Join your college platform</h2>
-          <p className="text-xl text-blue-100/90 leading-relaxed mb-12">
-            Access your learning materials, courses, and progress — all in one place.
+        <div className="relative z-10 max-w-lg space-y-6">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-indigo-300 text-xs font-bold uppercase tracking-wider border border-white/15">
+            <GraduationCap className="w-4 h-4" />
+            CSZone Learning Platform
+          </div>
+
+          <h2 className="text-4xl font-extrabold tracking-tight text-white leading-tight">
+            Learn Practical Tech & Security Skills.
+          </h2>
+
+          <p className="text-slate-300 text-base leading-relaxed">
+            Sign in to access your enrolled courses, recorded video lectures, project materials, and progress dashboard.
           </p>
-          <div className="grid grid-cols-2 gap-6 text-left">
+
+          <div className="space-y-3 pt-4">
             {[
-              { title: "Live Sessions", desc: "Join real-time classes" },
-              { title: "Assignments", desc: "Submit & track work" },
-              { title: "Quizzes", desc: "Test your knowledge" },
-              { title: "Certificates", desc: "Earn on completion" }
-            ].map((item, i) => (
-              <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-4 backdrop-blur-sm">
-                <div className="flex items-center gap-2 mb-1">
-                  <CheckCircle2 className="w-4 h-4 text-blue-300" />
-                  <span className="font-bold text-white text-sm">{item.title}</span>
-                </div>
-                <p className="text-xs text-blue-200/70">{item.desc}</p>
+              "Instant access to free courses & curriculum previews",
+              "Verified student dashboard with video resume",
+              "Admin-approved professional track enrollments",
+              "Industry certificates upon course completion",
+            ].map((text, i) => (
+              <div key={i} className="flex items-center gap-3 text-sm text-slate-200">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                <span>{text}</span>
               </div>
             ))}
           </div>
@@ -272,85 +81,59 @@ export default function LoginPage() {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 bg-white">
-        <div className="w-full max-w-md">
-          <div className="flex flex-col items-center mb-10">
-            <Link href="/" className="mb-8">
-              <div className="flex justify-center">
-                <img src="/acrotyx-logo.png" alt="Logo" className="h-10 w-auto object-contain drop-shadow-md" />
-              </div>
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-white">
+        <div className="w-full max-w-md space-y-8">
+          
+          {/* Logo & Header */}
+          <div className="text-center space-y-2">
+            <Link href="/" className="inline-block mb-2 group">
+              <img
+                src="/cszone-logo.png"
+                alt="CSZone"
+                className="h-12 w-auto mx-auto object-contain group-hover:scale-105 transition-transform"
+              />
             </Link>
-            <h1 className="text-3xl font-bold text-slate-900">Welcome Back</h1>
-            <p className="text-slate-500 mt-2">
-              Enter your details to access your workspace
-            </p>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight">Sign In</h1>
+            <p className="text-slate-500 text-sm">Enter your credentials to continue your learning journey</p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-5">
-            {error && (
-              <div className="bg-red-50 border border-red-100 p-4 rounded-xl text-sm text-red-600 flex gap-3 items-start">
-                <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">
-                  !
-                </div>
-                {error}
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700 ml-1">
-                College Code
-              </label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                  <ShieldCheck className="w-5 h-5" />
-                </div>
-                <input
-                  type="text"
-                  required
-                  value={tenantId}
-                  onChange={(e) => setTenantId(e.target.value)}
-                  className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
-                  placeholder="e.g. default"
-                />
-              </div>
+          {error && (
+            <div className="bg-red-50 border border-red-200 p-4 rounded-xl text-xs text-red-600 font-semibold leading-relaxed">
+              {error}
             </div>
+          )}
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700 ml-1">
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1.5">
                 Email Address
               </label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                  <Mail className="w-5 h-5" />
-                </div>
+              <div className="relative">
+                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
-                  placeholder="name@company.com"
+                  placeholder="learner@example.com"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between ml-1">
-                <label className="text-sm font-semibold text-slate-700">
-                  Password
-                </label>
-              </div>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                  <Lock className="w-5 h-5" />
-                </div>
+            <div>
+              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1.5">
+                Password
+              </label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
                   placeholder="••••••••"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                 />
               </div>
             </div>
@@ -358,29 +141,39 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center items-center gap-2 py-4 px-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 disabled:opacity-50 disabled:shadow-none group"
+              className="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-extrabold text-sm transition-all shadow-md shadow-indigo-600/20 hover:shadow-indigo-600/30 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? (
-                <><Loader size="sm" /> Signing in...</>
+                <Loader size="sm" text="Signing in..." />
               ) : (
                 <>
-                  Sign in to LMS ACROTYX{" "}
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  Sign In to CSZone
+                  <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
-            <p className="text-center text-slate-500 mt-8 text-sm">
-              Don&apos;t have an account?{" "}
-              <Link
-                href="/signup"
-                className="text-blue-600 font-bold hover:text-blue-700 transition-colors"
-              >
-                Create new account
-              </Link>
-            </p>
           </form>
+
+          <div className="text-center text-xs text-slate-500">
+            Don't have an account yet?{" "}
+            <Link
+              href={`/signup${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ""}`}
+              className="text-indigo-600 font-bold hover:underline"
+            >
+              Create a free account
+            </Link>
+          </div>
+
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader size="lg" text="Loading..." /></div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

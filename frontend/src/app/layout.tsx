@@ -1,14 +1,9 @@
-
-
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
-
 export const metadata: Metadata = {
-  title: 'LMS ACROTYX',
-  description: 'Learning Management System.',
+  title: 'CSZone LMS — Public Learning Platform',
+  description: 'Practical cybersecurity, programming, and technology courses.',
   icons: {
     icon: '/favicon.svg',
   },
@@ -21,7 +16,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-slate-50 text-slate-900`}>
+      <body className="font-sans antialiased bg-slate-50 text-slate-900 selection:bg-indigo-500 selection:text-white">
         {children}
       </body>
     </html>

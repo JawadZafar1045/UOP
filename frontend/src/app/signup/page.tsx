@@ -1,21 +1,22 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import api from "@/services/api";
-import { UserPlus, Mail, Lock, User, ArrowRight, CheckCircle2, Building2 } from "lucide-react";
+import { useStore } from "@/store/useStore";
+import { Mail, Lock, User, ArrowRight, CheckCircle2, GraduationCap } from "lucide-react";
 import Loader from "@/components/ui/Loader";
 
-export default function SignupPage() {
+function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams?.get("returnUrl") || "/lms";
+  const setAuth = useStore((state) => state.setAuth);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [tenantId, setTenantId] = useState("");
-  const [role, setRole] = useState("student");
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -25,10 +26,22 @@ export default function SignupPage() {
     setError("");
 
     try {
-      await api.post("/auth/register", { name, email, password, tenantId, role });
-      router.push(`/verify-email?email=${encodeURIComponent(email)}&tenantId=${encodeURIComponent(tenantId)}`);
+      await api.post("/auth/register", {
+        name,
+        email,
+        password,
+      });
+
+      const loginRes: any = await api.post("/auth/login", {
+        email,
+        password,
+      });
+      const { accessToken, refreshToken, user } = loginRes.data;
+
+      setAuth(user, accessToken, refreshToken);
+      router.push(returnUrl);
     } catch (err: any) {
-      const msg = err?.message || err?.response?.data?.message || "Registration failed.";
+      const msg = err?.response?.data?.message || err?.message || "Registration failed. Please check your details.";
       setError(msg);
     } finally {
       setLoading(false);
@@ -38,33 +51,33 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen bg-slate-50 flex overflow-hidden font-sans">
       {/* Left Side */}
-      <div className="hidden lg:flex lg:w-1/2 bg-blue-600 relative overflow-hidden items-center justify-center p-12">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-700 via-blue-600 to-blue-800" />
-        <div className="absolute top-0 left-0 w-full h-full opacity-10">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-400 rounded-full blur-3xl" />
-        </div>
-        <div className="relative z-10 max-w-lg text-white text-center">
-          <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 flex items-center justify-center text-white mb-8 mx-auto shadow-xl">
-            <UserPlus className="w-10 h-10" />
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 relative overflow-hidden items-center justify-center p-12 text-white">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(99,102,241,0.3),rgba(255,255,255,0))]" />
+
+        <div className="relative z-10 max-w-lg space-y-6">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-indigo-300 text-xs font-bold uppercase tracking-wider border border-white/15">
+            <GraduationCap className="w-4 h-4" />
+            CSZone Learning Platform
           </div>
-          <h2 className="text-4xl font-bold mb-6 tracking-tight">Join your college platform</h2>
-          <p className="text-xl text-blue-100/90 leading-relaxed mb-12">
-            Access your learning materials, courses, and progress — all in one place.
+
+          <h2 className="text-4xl font-extrabold tracking-tight text-white leading-tight">
+            Start Learning for Free Today
+          </h2>
+
+          <p className="text-slate-300 text-base leading-relaxed">
+            Create your account to unlock interactive cybersecurity modules, web engineering tracks, and hands-on projects.
           </p>
-          <div className="grid grid-cols-2 gap-6 text-left">
+
+          <div className="space-y-3 pt-4">
             {[
-              { title: "Live Sessions", desc: "Join real-time classes" },
-              { title: "Assignments", desc: "Submit & track work" },
-              { title: "Quizzes", desc: "Test your knowledge" },
-              { title: "Certificates", desc: "Earn on completion" }
+              "Immediate enrollment in free courses",
+              "Video lecture playback & progress saving",
+              "Admin-reviewed admission into specialized tracks",
+              "Verified certificates of completion",
             ].map((item, i) => (
-              <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-4 backdrop-blur-sm">
-                <div className="flex items-center gap-2 mb-1">
-                  <CheckCircle2 className="w-4 h-4 text-blue-300" />
-                  <span className="font-bold text-white text-sm">{item.title}</span>
-                </div>
-                <p className="text-xs text-blue-200/70">{item.desc}</p>
+              <div key={i} className="flex items-center gap-3 text-sm text-slate-200">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                <span>{item}</span>
               </div>
             ))}
           </div>
@@ -72,120 +85,116 @@ export default function SignupPage() {
       </div>
 
       {/* Right Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 bg-white overflow-y-auto">
-        <div className="w-full max-w-md py-12">
-          <div className="flex flex-col items-center mb-10">
-            <Link href="/" className="mb-6">
-              <div className="flex justify-center">
-                <img src="/acrotyx-logo.png" alt="Logo" className="h-10 w-auto object-contain drop-shadow-md" />
-              </div>
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-white overflow-y-auto">
+        <div className="w-full max-w-md space-y-8">
+          
+          <div className="text-center space-y-2">
+            <Link href="/" className="inline-block mb-2 group">
+              <img
+                src="/cszone-logo.png"
+                alt="CSZone"
+                className="h-12 w-auto mx-auto object-contain group-hover:scale-105 transition-transform"
+              />
             </Link>
-            <h1 className="text-3xl font-bold text-slate-900">Create Account</h1>
-            <p className="text-slate-500 mt-2">Register with your college code</p>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight">Create Free Account</h1>
+            <p className="text-slate-500 text-sm">Join the CSZone student community</p>
           </div>
 
+          {error && (
+            <div className="bg-red-50 border border-red-200 p-4 rounded-xl text-xs text-red-600 font-semibold leading-relaxed">
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleRegister} className="space-y-4">
-            {error && (
-              <div className="bg-red-50 border border-red-200 p-4 rounded-xl text-sm text-red-700 flex gap-3 items-start">
-                <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5 font-bold text-red-500">!</div>
-                <span>{error}</span>
-              </div>
-            )}
-
-            {/* Full Name */}
-            <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 ml-1">Full Name</label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                  <User className="w-5 h-5" />
-                </div>
-                <input type="text" required value={name} onChange={(e) => setName(e.target.value)}
-                  className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
-                  placeholder="John Doe" />
+            <div>
+              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1.5">
+                Full Name
+              </label>
+              <div className="relative">
+                <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Ali Khan"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                />
               </div>
             </div>
 
-            {/* College Code */}
-            <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 ml-1">College Code</label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                  <Building2 className="w-5 h-5" />
-                </div>
-                <input type="text" required value={tenantId} onChange={(e) => setTenantId(e.target.value.toLowerCase())}
-                  className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
-                  placeholder="Enter code given by your college" />
-              </div>
-              <p className="text-xs text-slate-400 ml-1">Your college admin will provide this code</p>
-            </div>
-
-            {/* Email */}
-            <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 ml-1">Email Address</label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                  <Mail className="w-5 h-5" />
-                </div>
-                <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
-                  placeholder="john@college.edu" />
+            <div>
+              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1.5">
+                Email Address
+              </label>
+              <div className="relative">
+                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="learner@example.com"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                />
               </div>
             </div>
 
-            {/* Role */}
-            <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 ml-1">I am a</label>
-              <div className="relative group">
-                <select value={role} onChange={(e) => setRole(e.target.value)}
-                  className="block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none appearance-none cursor-pointer">
-                  <option value="student">Student</option>
-                  <option value="teacher">Teacher</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-slate-400">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
+            <div>
+              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1.5">
+                Password
+              </label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Minimum 6 characters"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                />
               </div>
             </div>
 
-            {/* Password */}
-            <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 ml-1">Password</label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                  <Lock className="w-5 h-5" />
-                </div>
-                <input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
-                  placeholder="Min 8 characters" />
-              </div>
-            </div>
-
-            <button type="submit" disabled={loading}
-              className="w-full flex justify-center items-center gap-2 py-4 px-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 disabled:opacity-50 disabled:shadow-none group">
-              {loading ? <><Loader size="sm" /> Creating Account...</> : (
-                <><span>Create Account</span><ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-extrabold text-sm transition-all shadow-md shadow-indigo-600/20 hover:shadow-indigo-600/30 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <Loader size="sm" text="Creating account..." />
+              ) : (
+                <>
+                  Create Account & Start Learning
+                  <ArrowRight className="w-4 h-4" />
+                </>
               )}
             </button>
           </form>
 
-          <div className="mt-8 text-center space-y-3">
-            <p className="text-sm text-slate-500 font-medium">
-              Already have an account?{" "}
-              <Link href="/login" className="text-blue-600 font-bold hover:text-blue-700 transition-colors hover:underline underline-offset-4">
-                Sign in
-              </Link>
-            </p>
-            <p className="text-xs text-slate-400">
-              Are you a college admin?{" "}
-              <Link href="/register/admin" className="text-[#371c45] font-semibold hover:underline underline-offset-4">
-                Register your institution
-              </Link>
-            </p>
+          <div className="text-center text-xs text-slate-500">
+            Already have an account?{" "}
+            <Link
+              href={`/login${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ""}`}
+              className="text-indigo-600 font-bold hover:underline"
+            >
+              Sign in
+            </Link>
           </div>
+
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader size="lg" text="Loading..." /></div>}>
+      <SignupForm />
+    </Suspense>
   );
 }

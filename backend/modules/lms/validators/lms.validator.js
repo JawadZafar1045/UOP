@@ -25,16 +25,19 @@ const createCourseVal = [
     .trim()
     .notEmpty()
     .withMessage('Course title is required')
-    .isLength({ max: 100 })
-    .withMessage('Course title cannot exceed 100 characters'),
+    .isLength({ max: 120 })
+    .withMessage('Course title cannot exceed 120 characters'),
   body('description')
-    .trim()
-    .notEmpty()
-    .withMessage('Course description is required'),
+    .optional()
+    .trim(),
   body('status')
     .optional()
-    .isIn(['draft', 'active', 'archived'])
-    .withMessage('Status must be draft, active, or archived'),
+    .isIn(['draft', 'active', 'published', 'completed', 'archived'])
+    .withMessage('Status must be draft, active, published, completed, or archived'),
+  body('type')
+    .optional()
+    .isIn(['free', 'paid'])
+    .withMessage('Type must be free or paid'),
 ];
 
 const updateCourseVal = [
@@ -46,17 +49,19 @@ const updateCourseVal = [
     .trim()
     .notEmpty()
     .withMessage('Course title cannot be empty')
-    .isLength({ max: 100 })
-    .withMessage('Course title cannot exceed 100 characters'),
+    .isLength({ max: 120 })
+    .withMessage('Course title cannot exceed 120 characters'),
   body('description')
     .optional()
-    .trim()
-    .notEmpty()
-    .withMessage('Course description cannot be empty'),
+    .trim(),
   body('status')
     .optional()
-    .isIn(['draft', 'active', 'archived'])
-    .withMessage('Status must be draft, active, or archived'),
+    .isIn(['draft', 'active', 'published', 'completed', 'archived'])
+    .withMessage('Status must be draft, active, published, completed, or archived'),
+  body('type')
+    .optional()
+    .isIn(['free', 'paid'])
+    .withMessage('Type must be free or paid'),
 ];
 
 const deleteCourseVal = [
@@ -70,9 +75,8 @@ const enrollStudentVal = [
     .custom(isObjectId)
     .withMessage('Invalid course ID format'),
   body('studentId')
-    .trim()
-    .notEmpty()
-    .withMessage('Student identifier (ID or Email) is required'),
+    .optional()
+    .trim(),
 ];
 
 const unenrollStudentVal = [

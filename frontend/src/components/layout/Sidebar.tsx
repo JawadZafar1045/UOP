@@ -49,8 +49,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       isOpen ? "translate-x-0" : "-translate-x-full"
     }`}>
       <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100">
-        <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-90 transition-opacity cursor-pointer">
-          <img src="/acrotyx-logo.png" alt="Logo" className="h-8 w-auto object-contain" />
+        <Link href="/dashboard" className="flex items-center hover:opacity-90 transition-opacity cursor-pointer">
+          <img src="/cszone-logo.png" alt="CSZone" className="h-9 w-auto object-contain" />
         </Link>
         <button
           onClick={onClose}

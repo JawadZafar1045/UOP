@@ -72,7 +72,7 @@ export default function CourseOverviewPage({
     title: "",
     description: "",
     duration: "",
-    status: "draft" as "draft" | "active" | "completed",
+    status: "draft" as "draft" | "active" | "published" | "completed" | "archived",
     completionCriteria: {
       minAttendancePercent: 75,
       minAssignmentScore: 60,

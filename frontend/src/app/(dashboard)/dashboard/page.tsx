@@ -183,16 +183,39 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8 max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-100">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
-            {isTeacherOrAdmin ? "Overview" : "Student Dashboard"}
+            {user?.role === 'admin' ? "Admin Overview" : user?.role === 'teacher' ? "Instructor Overview" : "Student Dashboard"}
           </h1>
-          <p className="text-slate-500 mt-1">
-            {isTeacherOrAdmin 
-              ? "Monitor your platform's performance and educational growth." 
-              : `Welcome back, ${user?.name || 'Student'}! Track your learning progress.`}
+          <p className="text-slate-500 mt-1 text-sm">
+            {user?.role === 'admin'
+              ? "Platform metrics, paid course admissions, and content management."
+              : user?.role === 'teacher'
+              ? "Monitor student enrollments, submissions, and course delivery."
+              : `Welcome back, ${user?.name || 'Student'}! Track your progress and continue learning.`}
           </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {user?.role === 'admin' && (
+            <Link
+              href="/lms/admin"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/20 transition-all"
+            >
+              <span>🛡️</span>
+              Admin Control Panel
+            </Link>
+          )}
+
+          {user?.role === 'student' && (
+            <Link
+              href="/courses"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/20 transition-all"
+            >
+              Explore Course Catalog
+            </Link>
+          )}
         </div>
       </div>
 
