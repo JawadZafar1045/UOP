@@ -50,8 +50,8 @@ function Toggle({
     <button
       type="button"
       onClick={() => onChange(!enabled)}
-      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-        enabled ? "bg-indigo-600" : "bg-slate-200"
+      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+        enabled ? "bg-blue-600" : "bg-slate-200"
       }`}
     >
       <span
@@ -75,7 +75,7 @@ function StatCard({
 }) {
   return (
     <div className="flex flex-col items-center justify-center bg-slate-50 rounded-2xl p-4 gap-1 hover:-translate-y-0.5 transition-transform duration-200 cursor-default">
-      <div className="text-indigo-500 mb-1">{icon}</div>
+      <div className="text-blue-600 mb-1">{icon}</div>
       <span className="text-xl font-bold text-slate-800">{value}</span>
       <span className="text-[11px] text-slate-400 font-medium tracking-wide text-center">
         {label}
@@ -292,18 +292,18 @@ export default function ProfilePage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500 pb-10">
       {/* Header */}
-      <div>
+      <div className="animate-fade-in-down">
         <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">Your profile</h1>
         <p className="text-sm text-slate-500 mt-1">Manage your personal information and account settings</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-[272px_1fr] gap-5 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-[272px_1fr] gap-5 items-start animate-fade-in-up animation-delay-100">
         {/* ── Sidebar ── */}
         <div className="space-y-4">
           {/* Avatar + Info Card */}
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
             {/* Top gradient band */}
-            <div className="h-20 bg-gradient-to-br from-indigo-500 to-violet-600 relative">
+            <div className="h-20 bg-gradient-to-br from-blue-500 to-blue-700 relative">
               <div className="absolute bottom-0 left-0 right-0 h-8 bg-white rounded-t-[20px]" />
             </div>
 
@@ -313,7 +313,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => setShowAvatarModal(true)}
-                  className="rounded-full ring-4 ring-white shadow-lg overflow-hidden flex hover:opacity-90 transition-opacity bg-gradient-to-br from-indigo-500 to-violet-600 w-20 h-20 items-center justify-center"
+                  className="rounded-full ring-4 ring-white shadow-lg overflow-hidden flex hover:opacity-90 transition-opacity bg-gradient-to-br from-blue-500 to-blue-700 w-20 h-20 items-center justify-center"
                 >
                   {avatarSrc?.startsWith("nice:") ? (
                     <NiceAvatar className="w-20 h-20" style={{ width: '5rem', height: '5rem' }} {...(PRESETS.find(p => p.url === avatarSrc)?.config || genConfig(avatarSrc))} />
@@ -333,7 +333,7 @@ export default function ProfilePage() {
               </div>
 
               <h2 className="font-semibold text-slate-900 text-base">{user.name}</h2>
-              <span className="mt-1.5 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full">
+              <span className="mt-1.5 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-blue-700 bg-blue-50 border border-blue-100 px-3 py-1 rounded-full">
                 {user.role}
               </span>
 
@@ -350,12 +350,12 @@ export default function ProfilePage() {
           </div>
 
           {/* Security Note */}
-          <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4">
-            <div className="flex items-center gap-2 text-indigo-700 mb-1.5">
+          <div className="bg-blue-50/60 border border-blue-100 rounded-2xl p-4">
+            <div className="flex items-center gap-2 text-blue-700 mb-1.5">
               <Shield className="w-4 h-4" />
               <span className="text-sm font-semibold">Security note</span>
             </div>
-            <p className="text-xs text-indigo-600/80 leading-relaxed">
+            <p className="text-xs text-blue-600/80 leading-relaxed">
               Your email is used for authentication across all enrolled courses and cannot be changed.
             </p>
           </div>
@@ -372,7 +372,7 @@ export default function ProfilePage() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-1.5 text-sm px-4 py-4 border-b-2 -mb-px font-medium transition-colors duration-150 ${
                   activeTab === tab.id
-                    ? "border-indigo-600 text-indigo-600"
+                    ? "border-blue-600 text-blue-600"
                     : "border-transparent text-slate-500 hover:text-slate-700"
                 }`}
               >
@@ -399,7 +399,7 @@ export default function ProfilePage() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
                     placeholder="Enter your name"
                     required
                   />
@@ -417,8 +417,8 @@ export default function ProfilePage() {
                       disabled
                       className="w-full px-3.5 py-2.5 pr-24 rounded-xl border border-slate-100 bg-slate-50 text-sm text-slate-400 cursor-not-allowed"
                     />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[10px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
-                      <CheckCircle2 className="w-3 h-3" /> Verified
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[10px] font-semibold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">
+                      <CheckCircle2 className="w-3 h-3 text-blue-600" /> Verified
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-400">Email cannot be changed for security reasons.</p>
@@ -427,17 +427,14 @@ export default function ProfilePage() {
                 {/* Phone */}
                 <div className="space-y-1.5">
                   <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
-                    <Phone className="w-3.5 h-3.5 text-slate-400" /> Phone
-                    <span className="text-[10px] font-normal text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">
-                      optional
-                    </span>
+                    <Phone className="w-3.5 h-3.5 text-slate-400" /> Phone number
                   </label>
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                    placeholder="+92 300 0000000"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
+                    placeholder="+92 300 1234567"
                   />
                 </div>
 
@@ -445,52 +442,33 @@ export default function ProfilePage() {
                 <div className="space-y-1.5">
                   <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
                     <MapPin className="w-3.5 h-3.5 text-slate-400" /> Location
-                    <span className="text-[10px] font-normal text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">
-                      optional
-                    </span>
                   </label>
                   <input
                     type="text"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                    placeholder="City, Country"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
+                    placeholder="e.g. Peshawar, Pakistan"
                   />
                 </div>
               </div>
 
               {/* Bio */}
               <div className="space-y-1.5">
-                <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
-                  Bio
-                  <span className="text-[10px] font-normal text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">
-                    optional
-                  </span>
-                </label>
+                <label className="text-xs font-semibold text-slate-600 block">Bio</label>
                 <textarea
+                  rows={3}
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  rows={3}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-none"
-                  placeholder="Tell something about yourself..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all resize-none"
+                  placeholder="Tell us a little bit about yourself..."
+                  maxLength={300}
                 />
+                <p className="text-[11px] text-slate-400 text-right">{bio.length}/300</p>
               </div>
 
-              {/* Footer */}
-              <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setName(user.name);
-                    setPhone(user.phone || "");
-                    setLocation(user.location || "");
-                    setBio(user.bio || "");
-                    setAvatarSrc(user.avatar || null);
-                  }}
-                  className="text-sm text-slate-500 hover:text-slate-700 px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all"
-                >
-                  Discard
-                </button>
+              {/* Save button */}
+              <div className="pt-2 border-t border-slate-100 flex justify-end">
                 <button
                   type="submit"
                   disabled={
@@ -501,7 +479,7 @@ export default function ProfilePage() {
                       bio.trim() === (user.bio || "") &&
                       avatarSrc === (user.avatar || null))
                   }
-                  className="flex items-center gap-2 bg-indigo-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.97] shadow-sm shadow-indigo-200"
+                  className="flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.97] shadow-xs cursor-pointer"
                 >
                   {isLoading ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -531,7 +509,7 @@ export default function ProfilePage() {
                     type={showCurrent ? "text" : "password"}
                     value={currentPwd}
                     onChange={(e) => setCurrentPwd(e.target.value)}
-                    className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                    className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
                     placeholder="Enter current password"
                     required
                   />
@@ -555,7 +533,7 @@ export default function ProfilePage() {
                     type={showNew ? "text" : "password"}
                     value={newPwd}
                     onChange={(e) => setNewPwd(e.target.value)}
-                    className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                    className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all"
                     placeholder="Minimum 8 characters"
                     minLength={8}
                     required
@@ -579,7 +557,7 @@ export default function ProfilePage() {
                   type="password"
                   value={confirmPwd}
                   onChange={(e) => setConfirmPwd(e.target.value)}
-                  className={`w-full px-3.5 py-2.5 rounded-xl border bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all ${
+                  className={`w-full px-3.5 py-2.5 rounded-xl border bg-slate-50 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all ${
                     confirmPwd && confirmPwd !== newPwd
                       ? "border-red-300 focus:border-red-400 focus:ring-red-200"
                       : "border-slate-200"
@@ -598,7 +576,7 @@ export default function ProfilePage() {
                 <button
                   type="submit"
                   disabled={isLoading || !currentPwd || !newPwd || newPwd !== confirmPwd}
-                  className="flex items-center gap-2 bg-indigo-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.97] shadow-sm shadow-indigo-200"
+                  className="flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.97] shadow-xs cursor-pointer"
                 >
                   {isLoading ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -640,7 +618,7 @@ export default function ProfilePage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex items-center gap-2 bg-indigo-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-all active:scale-[0.97] shadow-sm shadow-indigo-200"
+                  className="flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-all active:scale-[0.97] shadow-xs cursor-pointer"
                 >
                   {isLoading ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -692,8 +670,8 @@ export default function ProfilePage() {
                 }}
                 className={`aspect-square rounded-full overflow-hidden bg-white p-1 transition-all hover:scale-105 ${
                   avatarSrc === null
-                    ? "ring-4 ring-indigo-500 ring-offset-2"
-                    : "ring-1 ring-slate-200 hover:ring-indigo-300"
+                    ? "ring-4 ring-blue-500 ring-offset-2"
+                    : "ring-1 ring-slate-200 hover:ring-blue-300"
                 }`}
               >
                 <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center">
@@ -713,8 +691,8 @@ export default function ProfilePage() {
                     }}
                     className={`aspect-square rounded-full overflow-hidden bg-slate-50 p-1 transition-all hover:scale-105 flex items-center justify-center ${
                       isSelected
-                        ? "ring-4 ring-indigo-500 ring-offset-2 bg-indigo-50"
-                        : "ring-1 ring-slate-200 hover:ring-indigo-300 hover:bg-slate-100"
+                        ? "ring-4 ring-blue-500 ring-offset-2 bg-blue-50"
+                        : "ring-1 ring-slate-200 hover:ring-blue-300 hover:bg-slate-100"
                     }`}
                   >
                     {p.url.startsWith("nice:") ? (

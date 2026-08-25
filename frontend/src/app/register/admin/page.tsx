@@ -60,21 +60,22 @@ export default function AdminRegisterPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex overflow-hidden font-sans">
-      {/* Left Side Banner */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 relative overflow-hidden items-center justify-center p-12 text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(99,102,241,0.3),rgba(255,255,255,0))]" />
+      {/* Left Side Banner - Bright Executive Theme */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-50/90 via-white to-slate-100 relative overflow-hidden items-center justify-center p-12 text-slate-900 border-r border-slate-200">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-60" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-200/40 blur-[120px] rounded-full pointer-events-none animate-blob" />
 
-        <div className="relative z-10 max-w-lg space-y-6">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-indigo-300 text-xs font-bold uppercase tracking-wider border border-white/15">
-            <Shield className="w-4 h-4 text-indigo-400" />
+        <div className="relative z-10 max-w-lg space-y-6 animate-fade-in-up">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider border border-blue-200 shadow-xs animate-fade-in-down">
+            <Shield className="w-4 h-4 text-blue-600" />
             CSZone LMS Control Center
           </div>
 
-          <h2 className="text-4xl font-extrabold tracking-tight text-white leading-tight">
+          <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 leading-tight">
             Administrator Setup
           </h2>
 
-          <p className="text-slate-300 text-base leading-relaxed">
+          <p className="text-slate-600 text-base leading-relaxed">
             Create an administrator account to manage curriculum, review paid student enrollments, upload lectures, and monitor platform performance.
           </p>
 
@@ -85,8 +86,10 @@ export default function AdminRegisterPage() {
               "Video lecture uploads and streaming settings",
               "Student enrollments & user management",
             ].map((item, i) => (
-              <div key={i} className="flex items-center gap-3 text-sm text-slate-200">
-                <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+              <div key={i} className="flex items-center gap-3 text-sm text-slate-700 font-medium">
+                <div className="w-5 h-5 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 shrink-0">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                </div>
                 <span>{item}</span>
               </div>
             ))}
@@ -96,13 +99,13 @@ export default function AdminRegisterPage() {
 
       {/* Right Side - Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-white overflow-y-auto">
-        <div className="w-full max-w-md space-y-8">
+        <div className="w-full max-w-md space-y-8 animate-fade-in-up animation-delay-100">
           <div className="text-center space-y-2">
             <Link href="/" className="inline-block mb-2 group">
               <img
                 src="/cszone-logo.png"
                 alt="CSZone"
-                className="h-12 w-auto mx-auto object-contain group-hover:scale-105 transition-transform"
+                className="h-12 w-auto mx-auto object-contain group-hover:scale-105 transition-transform duration-300"
               />
             </Link>
             <h1 className="text-3xl font-black text-slate-900 tracking-tight">Admin Registration</h1>
@@ -110,10 +113,10 @@ export default function AdminRegisterPage() {
           </div>
 
           {success ? (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 text-center space-y-3">
-              <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto" />
-              <p className="text-emerald-800 font-extrabold text-lg">Admin Account Created!</p>
-              <p className="text-emerald-600 text-sm">Redirecting to login...</p>
+            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 text-center space-y-3">
+              <CheckCircle2 className="w-12 h-12 text-blue-600 mx-auto" />
+              <p className="text-blue-900 font-extrabold text-lg">Admin Account Created!</p>
+              <p className="text-blue-600 text-sm">Redirecting to login...</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -136,7 +139,7 @@ export default function AdminRegisterPage() {
                     value={form.name}
                     onChange={set("name")}
                     placeholder="Admin Name"
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -154,7 +157,7 @@ export default function AdminRegisterPage() {
                     value={form.email}
                     onChange={set("email")}
                     placeholder="admin@cszone.pk"
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -174,7 +177,7 @@ export default function AdminRegisterPage() {
                       value={form.password}
                       onChange={set("password")}
                       placeholder="••••••••"
-                      className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
                     />
                   </div>
                 </div>
@@ -192,7 +195,7 @@ export default function AdminRegisterPage() {
                       value={form.confirmPassword}
                       onChange={set("confirmPassword")}
                       placeholder="••••••••"
-                      className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
                     />
                   </div>
                 </div>
@@ -210,16 +213,16 @@ export default function AdminRegisterPage() {
                     value={form.secretKey}
                     onChange={set("secretKey")}
                     placeholder="uop_admin_2026"
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
                   />
                 </div>
-                <p className="text-[11px] text-slate-400 mt-1 font-medium">Default secret key: <code className="text-indigo-600 font-mono">uop_admin_2026</code></p>
+                <p className="text-[11px] text-slate-400 mt-1 font-medium">Default secret key: <code className="text-blue-600 font-mono">uop_admin_2026</code></p>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-extrabold text-sm transition-all shadow-md shadow-indigo-600/20 hover:shadow-indigo-600/30 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full py-3.5 px-4 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-xl font-extrabold text-sm transition-all shadow-xs hover:shadow-md cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <Loader size="sm" text="Creating Admin Account..." />
@@ -235,7 +238,7 @@ export default function AdminRegisterPage() {
 
           <div className="text-center text-xs text-slate-500">
             Already have an account?{" "}
-            <Link href="/login" className="text-indigo-600 font-bold hover:underline">
+            <Link href="/login" className="text-blue-600 font-bold hover:underline">
               Sign In
             </Link>
           </div>

@@ -84,19 +84,23 @@ function CoursesCatalogContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
       <PublicNavbar />
 
       {/* Catalog Header */}
-      <section className="bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-900 text-white py-14 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <span className="text-xs font-extrabold uppercase tracking-widest text-indigo-400">
+      <section className="relative overflow-hidden bg-gradient-to-b from-white via-slate-50 to-blue-50/20 text-slate-900 py-14 border-b border-slate-200">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-50 pointer-events-none" />
+        <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-96 h-96 bg-blue-100/50 rounded-full blur-3xl pointer-events-none animate-blob" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-extrabold uppercase tracking-widest border border-blue-200 shadow-xs animate-fade-in-down">
+            <Sparkles className="w-3.5 h-3.5 text-blue-600 animate-pulse-glow" />
             CSZone Course Library
           </span>
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight mt-2 text-white">
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight mt-3 text-slate-900 animate-fade-in-up">
             Explore All Courses
           </h1>
-          <p className="mt-3 text-slate-300 max-w-xl mx-auto text-sm sm:text-base">
+          <p className="mt-3 text-slate-600 max-w-xl mx-auto text-sm sm:text-base animate-fade-in-up animation-delay-100">
             Discover free introductory modules and comprehensive paid training tracks led by industry experts.
           </p>
         </div>
@@ -106,7 +110,7 @@ function CoursesCatalogContent() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full">
         
         {/* Search & Filter Bar */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-6 shadow-xs mb-8 space-y-4">
+        <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-xs mb-8 space-y-4 animate-fade-in-up animation-delay-200">
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-4 justify-between">
             
             {/* Search Input */}
@@ -117,7 +121,7 @@ function CoursesCatalogContent() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by course title, skill, or instructor..."
-                className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               />
               {search && (
                 <button
@@ -145,7 +149,7 @@ function CoursesCatalogContent() {
                 onClick={() => setTypeFilter('free')}
                 className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   typeFilter === 'free'
-                    ? 'bg-emerald-600 text-white shadow-xs'
+                    ? 'bg-blue-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -155,7 +159,7 @@ function CoursesCatalogContent() {
                 onClick={() => setTypeFilter('paid')}
                 className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   typeFilter === 'paid'
-                    ? 'bg-indigo-600 text-white shadow-xs'
+                    ? 'bg-slate-900 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -172,7 +176,7 @@ function CoursesCatalogContent() {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-semibold text-xs focus:outline-none focus:border-indigo-500 cursor-pointer"
+              className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-semibold text-xs focus:outline-none focus:border-blue-500 cursor-pointer"
             >
               <option value="All">All Categories</option>
               {categories.map((c) => (
@@ -184,7 +188,7 @@ function CoursesCatalogContent() {
             <select
               value={levelFilter}
               onChange={(e) => setLevelFilter(e.target.value)}
-              className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-semibold text-xs focus:outline-none focus:border-indigo-500 cursor-pointer"
+              className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-semibold text-xs focus:outline-none focus:border-blue-500 cursor-pointer"
             >
               <option value="All">All Levels</option>
               <option value="Beginner">Beginner</option>
@@ -195,7 +199,7 @@ function CoursesCatalogContent() {
             {(search || typeFilter !== 'all' || categoryFilter !== 'All' || levelFilter !== 'All') && (
               <button
                 onClick={resetFilters}
-                className="text-indigo-600 hover:text-indigo-700 font-bold ml-auto flex items-center gap-1 cursor-pointer"
+                className="text-blue-600 hover:text-blue-700 font-bold ml-auto flex items-center gap-1 cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
                 Reset filters
@@ -215,7 +219,7 @@ function CoursesCatalogContent() {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-pulse">
             {[1, 2, 3, 4, 5, 6].map((n) => (
-              <div key={n} className="bg-white rounded-2xl h-96 border border-slate-200/80 shadow-xs" />
+              <div key={n} className="bg-white rounded-2xl h-96 border border-slate-200 shadow-xs" />
             ))}
           </div>
         ) : filteredCourses.length > 0 ? (
@@ -225,7 +229,7 @@ function CoursesCatalogContent() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-20 bg-white rounded-3xl border border-slate-200/80 p-8 max-w-lg mx-auto">
+          <div className="text-center py-20 bg-white rounded-3xl border border-slate-200 p-8 max-w-lg mx-auto">
             <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 mx-auto mb-4">
               <BookOpen className="w-8 h-8" />
             </div>
@@ -235,7 +239,7 @@ function CoursesCatalogContent() {
             </p>
             <button
               onClick={resetFilters}
-              className="px-6 py-2.5 bg-indigo-600 text-white font-bold text-sm rounded-xl shadow-md hover:bg-indigo-700 transition-all cursor-pointer"
+              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-xs transition-all cursor-pointer"
             >
               Clear all filters
             </button>

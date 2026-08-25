@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import * as notificationService from '../services/notification.service';
+import { useStore } from './useStore';
 
 export interface Notification {
   _id: string;
@@ -34,17 +35,32 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   isLoading: false,
 
   fetchNotifications: async () => {
+    // Only attempt to fetch if user is authenticated with an access token
+    const token = typeof window !== 'undefined' ? useStore.getState().accessToken : null;
+    if (!token) return;
+
     set({ isLoading: true });
     try {
-      const response = await notificationService.getNotifications();
-      if (response.success && response.data) {
+      const response: any = await notificationService.getNotifications();
+      const payload = response?.data || response;
+      if (payload) {
         set({
-          notifications: response.data.notifications || [],
-          unreadCount: response.data.unreadCount || 0,
+          notifications: Array.isArray(payload.notifications)
+            ? payload.notifications
+            : Array.isArray(payload)
+            ? payload
+            : [],
+          unreadCount:
+            typeof payload.unreadCount === 'number'
+              ? payload.unreadCount
+              : Array.isArray(payload.notifications)
+              ? payload.notifications.filter((n: any) => !n.isRead).length
+              : 0,
         });
       }
     } catch (error) {
-      console.error('Failed to fetch notifications:', error);
+      // Gracefully handle or warn rather than breaking the app
+      console.warn('Notifications fetch skipped/failed:', error);
     } finally {
       set({ isLoading: false });
     }

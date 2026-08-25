@@ -172,7 +172,7 @@ export default function CourseDetailsPage({
           </p>
           <Link
             href="/courses"
-            className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-md hover:bg-indigo-700 transition-all text-sm"
+            className="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-xs hover:bg-blue-700 transition-all text-sm"
           >
             Browse All Courses
           </Link>
@@ -188,62 +188,65 @@ export default function CourseDetailsPage({
   const isRejected = regStatus?.status === 'rejected';
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
       <PublicNavbar />
 
-      {/* Hero Header */}
-      <section className="bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-900 text-white py-12 md:py-16 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Hero Header - Bright Executive Theme */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-white via-slate-50/80 to-blue-50/30 text-slate-900 py-12 md:py-16 border-b border-slate-200">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-70" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-blue-100/60 blur-[100px] pointer-events-none rounded-full animate-blob" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-start">
             
             {/* Left Header Content (2 Cols) */}
             <div className="lg:col-span-2 space-y-4">
               
               {/* Badges */}
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 animate-fade-in-down">
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-extrabold tracking-wide uppercase shadow-md ${
+                  className={`px-3 py-1 rounded-full text-xs font-extrabold tracking-wide uppercase shadow-xs ${
                     isFree
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-indigo-600 text-white'
+                      ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                      : 'bg-slate-900 text-white'
                   }`}
                 >
-                  {isFree ? 'FREE COURSE' : 'PAID TRACK'}
+                  {isFree ? (user ? 'FREE ACCESS • UNLOCKED' : 'FREE COURSE') : 'PRO TRACK'}
                 </span>
                 {course.category && (
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/10 text-slate-200 backdrop-blur-md border border-white/10">
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-white text-slate-700 border border-slate-200 shadow-xs">
                     {course.category}
                   </span>
                 )}
                 {course.level && (
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/10 text-slate-200 backdrop-blur-md border border-white/10">
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-white text-slate-700 border border-slate-200 shadow-xs">
                     {course.level}
                   </span>
                 )}
               </div>
 
               {/* Title */}
-              <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
+              <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 leading-tight animate-fade-in-up">
                 {course.title}
               </h1>
 
               {/* Short Description */}
-              <p className="text-base sm:text-lg text-slate-300 leading-relaxed font-normal">
+              <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal animate-fade-in-up animation-delay-100">
                 {course.shortDescription || course.description}
               </p>
 
               {/* Meta Info */}
-              <div className="pt-4 flex flex-wrap items-center gap-6 text-xs sm:text-sm text-slate-300">
+              <div className="pt-4 flex flex-wrap items-center gap-6 text-xs sm:text-sm text-slate-600 animate-fade-in-up animation-delay-200">
                 <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-indigo-400" />
-                  <span>Instructor: <strong className="text-white font-bold">{course.instructor?.name || 'CSZone Team'}</strong></span>
+                  <User className="w-4 h-4 text-blue-600" />
+                  <span>Instructor: <strong className="text-slate-900 font-bold">{course.instructor?.name || 'CSZone Team'}</strong></span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-indigo-400" />
+                  <BookOpen className="w-4 h-4 text-blue-600" />
                   <span>{course.moduleCount} Modules • {course.lectureCount} Lectures</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-indigo-400" />
+                  <Clock className="w-4 h-4 text-blue-600" />
                   <span>{course.duration}</span>
                 </div>
               </div>
@@ -251,38 +254,43 @@ export default function CourseDetailsPage({
             </div>
 
             {/* Mobile / Tablet Quick Price (on large screens sticky card is used) */}
-            <div className="lg:hidden bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 text-white space-y-4">
+            <div className="lg:hidden bg-white p-6 rounded-2xl border border-slate-200 text-slate-900 shadow-xs space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-300">Tuition</span>
-                <span className="text-2xl font-black text-white">
-                  {isFree ? 'FREE' : `${course.currency} ${(course.price || 0).toLocaleString()}`}
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  {user && isFree ? 'Student Access' : 'Tuition'}
+                </span>
+                <span className={`text-2xl font-black ${isFree ? 'text-blue-600' : 'text-slate-900'}`}>
+                  {isFree ? (user ? 'FREE • UNLOCKED' : 'FREE') : `${course.currency} ${(course.price || 0).toLocaleString()}`}
                 </span>
               </div>
-              {isEnrolled ? (
+              {isEnrolled || (user && isFree) ? (
                 <Link
                   href={`/learn/${course.slug || course._id}`}
-                  className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-xl text-center block shadow-lg"
+                  className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold rounded-xl text-center block shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2"
                 >
-                  Continue Learning ▶
+                  <Play className="w-4 h-4 fill-current" />
+                  {isEnrolled ? 'Continue Learning' : 'Go to Classroom'}
+                  <ArrowRight className="w-4 h-4" />
                 </Link>
               ) : isPending ? (
-                <div className="w-full py-3 bg-amber-500/20 border border-amber-500/40 text-amber-300 font-bold rounded-xl text-center text-xs">
+                <div className="w-full py-3 bg-amber-50 border border-amber-200 text-amber-800 font-bold rounded-xl text-center text-xs">
                   Registration Under Review ⏳
                 </div>
-              ) : isFree ? (
+              ) : !user && isFree ? (
                 <button
                   onClick={handleFreeEnroll}
                   disabled={enrolling}
-                  className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-xl text-center block shadow-lg cursor-pointer"
+                  className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold rounded-xl text-center block shadow-xs cursor-pointer transition-all flex items-center justify-center gap-2"
                 >
-                  {enrolling ? 'Enrolling...' : 'Enroll for Free'}
+                  {enrolling ? 'Enrolling...' : <>Enroll for Free <ArrowRight className="w-4 h-4" /></>}
                 </button>
               ) : (
                 <button
                   onClick={() => user ? setRegisterModalOpen(true) : router.push(`/login?returnUrl=/courses/${slug}`)}
-                  className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold rounded-xl text-center block shadow-lg cursor-pointer"
+                  className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold rounded-xl text-center block shadow-xs cursor-pointer transition-all flex items-center justify-center gap-2"
                 >
                   Register / Enroll
+                  <ArrowRight className="w-4 h-4" />
                 </button>
               )}
             </div>
@@ -332,14 +340,14 @@ export default function CourseDetailsPage({
             {/* What You Will Learn Card */}
             <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-xs">
               <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight mb-6 flex items-center gap-2.5">
-                <Sparkles className="w-5 h-5 text-indigo-600" />
+                <Sparkles className="w-5 h-5 text-blue-600 animate-pulse-glow" />
                 What You Will Learn
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {(course.whatYouWillLearn || []).map((item: string, i: number) => (
                   <div key={i} className="flex items-start gap-3">
-                    <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <div className="w-5 h-5 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5 border border-blue-100">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                     </div>
                     <span className="text-sm text-slate-700 leading-snug">{item}</span>
@@ -370,7 +378,7 @@ export default function CourseDetailsPage({
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 text-xs font-bold text-indigo-600">
+                <div className="flex items-center gap-2 text-xs font-bold text-blue-600">
                   <Play className="w-3.5 h-3.5 fill-current" />
                   Free Previews Available
                 </div>
@@ -394,7 +402,7 @@ export default function CourseDetailsPage({
                         className="w-full flex items-center justify-between p-4 sm:p-5 bg-slate-50/80 hover:bg-slate-100/80 transition-colors text-left cursor-pointer"
                       >
                         <div className="flex items-center gap-3">
-                          <span className="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 font-black text-xs flex items-center justify-center shrink-0">
+                          <span className="w-7 h-7 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 font-black text-xs flex items-center justify-center shrink-0">
                             {mIdx + 1}
                           </span>
                           <div>
@@ -447,18 +455,18 @@ export default function CourseDetailsPage({
                                 {lec.isPreview ? (
                                   <button
                                     onClick={() => handleOpenPreview(lec)}
-                                    className="flex items-center gap-1.5 px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs rounded-lg transition-colors cursor-pointer border border-indigo-200"
+                                    className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs rounded-lg transition-colors cursor-pointer border border-blue-200"
                                   >
                                     <Play className="w-3 h-3 fill-current" />
                                     Free Preview
                                   </button>
-                                ) : isEnrolled ? (
+                                ) : isEnrolled || (user && isFree) ? (
                                   <Link
                                     href={`/learn/${course.slug || course._id}`}
-                                    className="flex items-center gap-1 text-emerald-600 font-bold text-xs hover:underline"
+                                    className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs rounded-lg transition-colors border border-blue-200"
                                   >
                                     <Play className="w-3 h-3 fill-current" />
-                                    Watch
+                                    Watch Lecture
                                   </Link>
                                 ) : (
                                   <div className="flex items-center gap-1 text-slate-400 text-xs font-medium bg-slate-100 px-2 py-1 rounded-md" title="Enroll to unlock">
@@ -483,7 +491,7 @@ export default function CourseDetailsPage({
                 Instructor
               </h2>
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white font-black text-xl flex items-center justify-center shadow-md">
+                <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white font-black text-xl flex items-center justify-center shadow-md">
                   {course.instructor?.name?.charAt(0) || 'C'}
                 </div>
                 <div>
@@ -501,10 +509,10 @@ export default function CourseDetailsPage({
 
           {/* Right Column: Sticky Action Card (Desktop) */}
           <div className="hidden lg:block lg:sticky lg:top-24 space-y-6">
-            <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xl overflow-hidden">
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
               
               {/* Card Thumbnail */}
-              <div className="relative aspect-video w-full bg-slate-100">
+              <div className="relative aspect-video w-full bg-slate-100 border-b border-slate-200">
                 {course.thumbnail ? (
                   <img
                     src={course.thumbnail}
@@ -512,9 +520,12 @@ export default function CourseDetailsPage({
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 flex flex-col items-center justify-center p-6 text-center text-white">
-                    <BookOpen className="w-10 h-10 text-indigo-300 mb-2" />
-                    <span className="text-xs font-bold uppercase tracking-wider text-indigo-200">CSZone Platform</span>
+                  <div className="w-full h-full bg-gradient-to-br from-blue-50 via-slate-50 to-blue-100/60 flex flex-col items-center justify-center p-6 text-center text-slate-700 relative select-none">
+                    <div className="absolute inset-0 bg-[linear-gradient(to_right,#cbd5e1_1px,transparent_1px),linear-gradient(to_bottom,#cbd5e1_1px,transparent_1px)] bg-[size:1.25rem_1.25rem] opacity-35" />
+                    <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-center text-blue-600 mb-2 relative z-10">
+                      <BookOpen className="w-6 h-6" />
+                    </div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-700 relative z-10">CSZone Platform</span>
                   </div>
                 )}
               </div>
@@ -522,19 +533,22 @@ export default function CourseDetailsPage({
               {/* Card Details */}
               <div className="p-6 space-y-6">
                 <div className="flex items-baseline justify-between">
-                  <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Tuition</span>
-                  <span className={`text-3xl font-black ${isFree ? 'text-emerald-600' : 'text-slate-900'}`}>
-                    {isFree ? 'FREE' : `${course.currency} ${(course.price || 0).toLocaleString()}`}
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
+                    {user && isFree ? 'Student Access' : 'Tuition'}
+                  </span>
+                  <span className={`text-3xl font-black ${isFree ? 'text-blue-600' : 'text-slate-900'}`}>
+                    {isFree ? (user ? 'FREE • UNLOCKED' : 'FREE') : `${course.currency} ${(course.price || 0).toLocaleString()}`}
                   </span>
                 </div>
 
                 {/* Main Action Button */}
-                {isEnrolled ? (
+                {isEnrolled || (user && isFree) ? (
                   <Link
                     href={`/learn/${course.slug || course._id}`}
-                    className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-2xl shadow-lg shadow-emerald-500/20 text-center block transition-all flex items-center justify-center gap-2"
+                    className="w-full py-4 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold rounded-2xl shadow-md shadow-blue-600/20 text-center block transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    Continue Learning
+                    <Play className="w-4 h-4 fill-current" />
+                    {isEnrolled ? 'Continue Learning' : 'Go to Classroom'}
                     <ArrowRight className="w-5 h-5" />
                   </Link>
                 ) : isPending ? (
@@ -545,11 +559,11 @@ export default function CourseDetailsPage({
                     </div>
                     <p className="text-[11px] text-amber-700">Access will unlock once approved.</p>
                   </div>
-                ) : isFree ? (
+                ) : !user && isFree ? (
                   <button
                     onClick={handleFreeEnroll}
                     disabled={enrolling}
-                    className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold rounded-2xl shadow-lg shadow-emerald-500/20 text-center block transition-all cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full py-4 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold rounded-2xl shadow-md shadow-blue-600/20 text-center block transition-all cursor-pointer flex items-center justify-center gap-2"
                   >
                     {enrolling ? (
                       <><Loader2 className="w-5 h-5 animate-spin" /> Enrolling...</>
@@ -560,7 +574,7 @@ export default function CourseDetailsPage({
                 ) : (
                   <button
                     onClick={() => user ? setRegisterModalOpen(true) : router.push(`/login?returnUrl=/courses/${slug}`)}
-                    className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold rounded-2xl shadow-lg shadow-indigo-600/30 text-center block transition-all cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full py-4 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold rounded-2xl shadow-md shadow-blue-600/20 text-center block transition-all cursor-pointer flex items-center justify-center gap-2"
                   >
                     Register / Enroll
                     <ArrowRight className="w-5 h-5" />
@@ -570,15 +584,15 @@ export default function CourseDetailsPage({
                 {/* Guarantee / Benefits */}
                 <div className="space-y-3 pt-4 border-t border-slate-100 text-xs text-slate-600">
                   <div className="flex items-center gap-2.5 font-medium">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    <CheckCircle2 className="w-4 h-4 text-blue-600" />
                     <span>Instant access to all modules after enrollment</span>
                   </div>
                   <div className="flex items-center gap-2.5 font-medium">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    <CheckCircle2 className="w-4 h-4 text-blue-600" />
                     <span>Watch recorded video lectures at your own pace</span>
                   </div>
                   <div className="flex items-center gap-2.5 font-medium">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    <CheckCircle2 className="w-4 h-4 text-blue-600" />
                     <span>Track video progress & lecture completions</span>
                   </div>
                 </div>
@@ -604,7 +618,7 @@ export default function CourseDetailsPage({
             </button>
 
             <div className="space-y-2 mb-6">
-              <span className="text-xs font-extrabold uppercase tracking-widest text-indigo-600">Course Application</span>
+              <span className="text-xs font-extrabold uppercase tracking-widest text-blue-600">Course Application</span>
               <h3 className="text-2xl font-black text-slate-900">Register for {course.title}</h3>
               <p className="text-xs sm:text-sm text-slate-500">
                 Tuition: <strong className="text-slate-900 font-bold">{course.currency} {(course.price || 0).toLocaleString()}</strong>.
@@ -624,7 +638,7 @@ export default function CourseDetailsPage({
                   value={paymentRef}
                   onChange={(e) => setPaymentRef(e.target.value)}
                   placeholder="e.g. Bank Transfer ID, Receipt #, or EasyPaisa/JazzCash ref"
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
                 />
                 <p className="text-[11px] text-slate-400">
                   If you have already submitted fee payment to CSZone, include your reference number here to expedite approval.
@@ -641,7 +655,7 @@ export default function CourseDetailsPage({
                   onChange={(e) => setRegisterNotes(e.target.value)}
                   placeholder="Any background details or message for the instructor..."
                   rows={3}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
                 />
               </div>
 
@@ -656,7 +670,7 @@ export default function CourseDetailsPage({
                 <button
                   type="submit"
                   disabled={registerSubmitting}
-                  className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-sm rounded-xl shadow-md shadow-indigo-600/20 flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold text-sm rounded-xl shadow-xs hover:shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-50 transition-all"
                 >
                   {registerSubmitting ? (
                     <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</>
@@ -678,7 +692,7 @@ export default function CourseDetailsPage({
             
             <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold uppercase tracking-wider border border-indigo-500/30">
+                <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-xs font-bold uppercase tracking-wider border border-blue-500/30">
                   Free Preview
                 </span>
                 <h3 className="font-bold text-lg text-white truncate max-w-lg">
@@ -730,7 +744,7 @@ export default function CourseDetailsPage({
                   else if (user) setRegisterModalOpen(true);
                   else router.push(`/login?returnUrl=/courses/${slug}`);
                 }}
-                className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer transition-all"
+                className="px-5 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer transition-all"
               >
                 {isFree ? 'Enroll for Full Course' : 'Register for Full Track'}
               </button>

@@ -44,12 +44,12 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ co
             {/* Verification Badge & Details Column */}
             <div className="lg:w-[400px] shrink-0 flex flex-col justify-between border-r border-slate-100 bg-white">
               <div>
-                <div className="bg-emerald-500 p-8 flex flex-col items-center justify-center text-white text-center">
+                <div className="bg-blue-600 p-8 flex flex-col items-center justify-center text-white text-center">
                   <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-3 shadow-lg">
-                    <CheckCircle className="w-10 h-10 text-emerald-500" />
+                    <CheckCircle className="w-10 h-10 text-blue-600" />
                   </div>
                   <h1 className="text-xl font-bold mb-1">Certificate Verified</h1>
-                  <p className="text-emerald-100 text-xs font-medium">This is a valid credential.</p>
+                  <p className="text-blue-100 text-xs font-medium">This is a valid credential.</p>
                 </div>
                 
                 <div className="p-6 space-y-6">
@@ -72,8 +72,8 @@ export default function VerifyCertificatePage({ params }: { params: Promise<{ co
                     </div>
                     
                     <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
-                        <Calendar className="w-4.5 h-4.5 text-indigo-600" />
+                      <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                        <Calendar className="w-4.5 h-4.5 text-blue-600" />
                       </div>
                       <div>
                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Issue Date</p>

@@ -241,14 +241,14 @@ export default function CourseLearningClassroom({
         </p>
         <div className="flex items-center gap-3">
           <Link
-            href={`/courses/${slug}`}
+            href="/courses"
             className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs transition-all"
           >
             Course Details
           </Link>
           <Link
             href="/lms"
-            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-all"
+            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition-all cursor-pointer"
           >
             Back to Dashboard
           </Link>
@@ -288,11 +288,11 @@ export default function CourseLearningClassroom({
             </span>
             <div className="w-28 h-2 bg-slate-800 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-indigo-500 to-emerald-400 transition-all duration-500 rounded-full"
+                className="h-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-500 rounded-full"
                 style={{ width: `${courseData.overallProgressPercent || 0}%` }}
               />
             </div>
-            <span className="text-xs font-black text-emerald-400">
+            <span className="text-xs font-black text-blue-400">
               {courseData.overallProgressPercent || 0}%
             </span>
           </div>
@@ -317,7 +317,7 @@ export default function CourseLearningClassroom({
           <div className="w-full bg-black aspect-video max-h-[70vh] flex items-center justify-center relative shadow-2xl">
             {!hasLectures ? (
               <div className="text-center p-12 text-slate-300 max-w-md mx-auto space-y-3">
-                <div className="w-14 h-14 bg-indigo-500/20 text-indigo-400 rounded-2xl flex items-center justify-center mx-auto">
+                <div className="w-14 h-14 bg-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center mx-auto">
                   <BookOpen className="w-7 h-7" />
                 </div>
                 <h3 className="text-lg font-bold text-white">Curriculum In Preparation</h3>
@@ -328,7 +328,7 @@ export default function CourseLearningClassroom({
                   <div className="pt-2">
                     <Link
                       href="/lms/admin"
-                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition-all"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer"
                     >
                       <span>🛠️</span>
                       Add Modules & Upload Videos in Course Builder
@@ -351,10 +351,10 @@ export default function CourseLearningClassroom({
                   return (
                     <iframe
                       src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`}
-                      title={currentLecture?.title || "Video Lecture"}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      title={currentLecture?.title || 'Lecture Stream'}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
-                      className="w-full h-full border-0 aspect-video"
+                      className="w-full h-full border-0"
                     />
                   );
                 }
@@ -364,15 +364,13 @@ export default function CourseLearningClassroom({
                 return (
                   <video
                     ref={videoRef}
-                    key={streamUrl}
                     src={streamUrl}
                     controls
-                    autoPlay
                     controlsList="nodownload"
                     onTimeUpdate={handleTimeUpdate}
-                    onPause={() => saveProgress(false)}
                     onEnded={() => saveProgress(true)}
                     className="w-full h-full object-contain"
+                    poster={courseData.thumbnail}
                   >
                     Your browser does not support video playback.
                   </video>
@@ -391,13 +389,12 @@ export default function CourseLearningClassroom({
             })()}
           </div>
 
-          {/* Video Control Bar & Lecture Information */}
-          {hasLectures && (
-            <div className="p-6 sm:p-8 max-w-5xl mx-auto w-full space-y-6">
-              {/* Lecture Header & Navigation Buttons */}
+          {/* Lecture Info & Actions Under Video */}
+          {currentLecture && (
+            <div className="p-6 sm:p-8 space-y-6 max-w-4xl">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
                 <div>
-                  <div className="flex items-center gap-2 text-xs text-indigo-400 font-bold uppercase tracking-wider mb-1">
+                  <div className="flex items-center gap-2 text-xs text-blue-400 font-bold uppercase tracking-wider mb-1">
                     Module {currentModuleIndex + 1} • Lecture {currentLectureIndex + 1}
                   </div>
                   <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
@@ -418,8 +415,8 @@ export default function CourseLearningClassroom({
                     onClick={() => saveProgress(true)}
                     className={`px-4 py-2 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer ${
                       currentLecture?.completed
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                        : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                        ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white'
                     }`}
                   >
                     <Check className="w-4 h-4" />
@@ -494,15 +491,15 @@ export default function CourseLearningClassroom({
                           onClick={() => selectLecture(mIdx, lIdx)}
                           className={`w-full p-3.5 flex items-center justify-between text-left transition-colors cursor-pointer ${
                             isSelected
-                              ? 'bg-indigo-600/20 text-indigo-200 border-l-4 border-indigo-500'
+                              ? 'bg-blue-600/20 text-blue-200 border-l-4 border-blue-500'
                               : 'hover:bg-slate-800/60 text-slate-300'
                           }`}
                         >
                           <div className="flex items-center gap-3 min-w-0">
                             {isDone ? (
-                              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                              <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0" />
                             ) : isSelected ? (
-                              <Play className="w-4 h-4 text-indigo-400 fill-current shrink-0" />
+                              <Play className="w-4 h-4 text-blue-400 fill-current shrink-0" />
                             ) : (
                               <div className="w-4 h-4 rounded-full border border-slate-600 shrink-0" />
                             )}

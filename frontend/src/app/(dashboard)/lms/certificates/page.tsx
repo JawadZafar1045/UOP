@@ -93,7 +93,7 @@ export default function CertificatesPage() {
 
 
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in-down">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
             {isInstructor ? 'Certificate Management' : 'My Certificates'}
@@ -106,7 +106,7 @@ export default function CertificatesPage() {
         </div>
         
         {isInstructor && (
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto animate-fade-in-up animation-delay-100">
             <select 
               value={selectedCourseId} 
               onChange={(e) => setSelectedCourseId(e.target.value)}
@@ -120,7 +120,7 @@ export default function CertificatesPage() {
             <button
               onClick={handleGenerateAll}
               disabled={!selectedCourseId || isGenerating}
-              className="flex items-center justify-center gap-2 px-5 py-3 sm:py-2 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 transition-all disabled:opacity-50 active:scale-[0.98] w-full sm:w-auto whitespace-nowrap"
+              className="flex items-center justify-center gap-2 px-5 py-3 sm:py-2 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 active:scale-95 shadow-xs transition-all disabled:opacity-50 w-full sm:w-auto whitespace-nowrap cursor-pointer"
             >
               {isGenerating ? <><Loader size="sm" /> Generating...</> : <><FileBadge className="w-4 h-4 shrink-0" /> Generate All Eligible</>}
             </button>
@@ -218,11 +218,11 @@ export default function CertificatesPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 animate-fade-in-up animation-delay-200">
             {certificates.map((cert) => (
-              <div key={cert._id} className="bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-sm hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 flex flex-col group relative">
+              <div key={cert._id} className="bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-sm hover:shadow-xl hover:shadow-blue-500/5 hover:-translate-y-1.5 transition-all duration-300 flex flex-col group relative">
                 {/* Decorative Accent */}
-                <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+                <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 to-blue-600"></div>
                 
                 <div className="p-8 bg-gradient-to-br from-slate-50 to-blue-50/30 border-b border-slate-100/60 relative overflow-hidden flex-1">
                   <div className="absolute -top-6 -right-6 p-4 opacity-[0.03] transform rotate-12 group-hover:scale-110 group-hover:opacity-[0.05] transition-all duration-700">

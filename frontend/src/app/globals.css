@@ -1,17 +1,80 @@
 @import "tailwindcss";
 
 @theme {
-  --color-blue-50: #f5f0f6;
-  --color-blue-100: #e8dbec;
-  --color-blue-200: #d4badb;
-  --color-blue-300: #b98fc4;
-  --color-blue-400: #9c63a9;
-  --color-blue-500: #81478f;
-  --color-blue-600: #3c1a47;
-  --color-blue-700: #2d1335;
-  --color-blue-800: #1e0d23;
-  --color-blue-900: #0f0612;
-  --color-blue-950: #080309;
+  --color-blue-50: #eff6ff;
+  --color-blue-100: #dbeafe;
+  --color-blue-200: #bfdbfe;
+  --color-blue-300: #93c5fd;
+  --color-blue-400: #60a5fa;
+  --color-blue-500: #3b82f6;
+  --color-blue-600: #2563eb;
+  --color-blue-700: #1d4ed8;
+  --color-blue-800: #1e40af;
+  --color-blue-900: #1e3a8a;
+  --color-blue-950: #172554;
+
+  --animate-fade-in-up: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-fade-in-down: fadeInDown 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-float: float 4s ease-in-out infinite;
+  --animate-pulse-glow: pulseGlow 2.5s ease-in-out infinite;
+  --animate-blob: blob 8s infinite;
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.65;
+      transform: scale(1.1);
+    }
+  }
+
+  @keyframes blob {
+    0% {
+      transform: translate(0px, 0px) scale(1);
+    }
+    33% {
+      transform: translate(25px, -30px) scale(1.08);
+    }
+    66% {
+      transform: translate(-15px, 15px) scale(0.95);
+    }
+    100% {
+      transform: translate(0px, 0px) scale(1);
+    }
+  }
 }
 
 @layer base {
@@ -22,7 +85,7 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 285.3 46.4% 19%; /* Acrotyx #3c1a47 */
+    --primary: 221.2 83.2% 53.3%; /* Professional Tech Blue #2563eb */
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -34,15 +97,27 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 285.3 46.4% 19%;
+    --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
   }
 }
 
-/* Custom elevations based on DESIGN.md */
+/* Professional clean elevations */
 .elevation-1 {
-  box-shadow: 0 2px 8px rgba(60, 26, 71, 0.04);
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05);
 }
 .elevation-2 {
-  box-shadow: 0 10px 20px rgba(60, 26, 71, 0.08);
+  box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.07), 0 4px 6px -4px rgba(15, 23, 42, 0.05);
 }
+
+/* Stagger animation delay helper utilities */
+.animation-delay-100 { animation-delay: 100ms; }
+.animation-delay-200 { animation-delay: 200ms; }
+.animation-delay-300 { animation-delay: 300ms; }
+.animation-delay-400 { animation-delay: 400ms; }
+.animation-delay-500 { animation-delay: 500ms; }
+.animation-delay-2000 { animation-delay: 2s; }
+.animation-delay-4000 { animation-delay: 4s; }
+
+
+

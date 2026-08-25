@@ -750,13 +750,31 @@ const rejectRegistration = async (tenantId, registrationId, reason, adminUserId)
 // ══════════════════════════════════════════════════════════════════════════════
 
 const getStudentEnrolledCourses = async (tenantId, userId) => {
-  const courses = await Course.find({
-    tenantId,
-    enrolledStudents: userId
-  })
+  // Fetch ALL published/active courses in the platform or courses where student is enrolled
+  const query = {
+    $or: [
+      { isPublished: true },
+      { status: { $in: ['published', 'active'] } },
+      { enrolledStudents: userId }
+    ]
+  };
+  if (tenantId) query.tenantId = tenantId;
+
+  const courses = await Course.find(query)
     .populate('instructor', 'name email avatar')
     .lean()
     .sort({ updatedAt: -1 });
+
+  // Get all registrations for this user to check pending/approved status on paid tracks
+  const userRegistrations = await CourseRegistration.find({
+    userId,
+    ...(tenantId ? { tenantId } : {})
+  }).lean();
+
+  const regMap = new Map();
+  userRegistrations.forEach(r => {
+    regMap.set(String(r.courseId), r);
+  });
 
   const enriched = await Promise.all(
     courses.map(async (c) => {
@@ -765,35 +783,55 @@ const getStudentEnrolledCourses = async (tenantId, userId) => {
         totalLectures += (m.lectures || m.lessons || []).length;
       });
 
-      const completedCount = await LectureProgress.countDocuments({
-        tenantId,
-        userId,
-        courseId: c._id,
-        completed: true
-      });
+      const isDirectlyEnrolled = (c.enrolledStudents || []).map(String).includes(String(userId));
+      const isFree = c.type === 'free' || !c.type || !c.price || c.price === 0;
+      
+      // If free course, student has free access (or is auto-enrolled)
+      const isUnlocked = isDirectlyEnrolled || isFree;
 
-      const progressPercent = totalLectures > 0
+      const reg = regMap.get(String(c._id));
+      const registrationStatus = reg?.status || (isUnlocked ? 'enrolled' : 'not_enrolled');
+
+      const completedCount = isUnlocked
+        ? await LectureProgress.countDocuments({
+            userId,
+            courseId: c._id,
+            completed: true,
+            ...(tenantId ? { tenantId } : {})
+          })
+        : 0;
+
+      const progressPercent = (isUnlocked && totalLectures > 0)
         ? Math.min(100, Math.round((completedCount / totalLectures) * 100))
         : 0;
 
-      const lastProgress = await LectureProgress.findOne({
-        tenantId,
-        userId,
-        courseId: c._id
-      }).sort({ lastWatchedAt: -1 }).lean();
+      const lastProgress = isUnlocked
+        ? await LectureProgress.findOne({
+            userId,
+            courseId: c._id,
+            ...(tenantId ? { tenantId } : {})
+          }).sort({ lastWatchedAt: -1 }).lean()
+        : null;
 
       return {
         _id: c._id,
         title: c.title,
         slug: c.slug || String(c._id),
-        description: c.description,
-        thumbnail: c.thumbnail,
+        description: c.description || '',
+        shortDescription: c.shortDescription || c.description || '',
+        thumbnail: c.thumbnail || '',
         instructor: c.instructor?.name || c.instructorName || 'CSZone Team',
         type: c.type || 'free',
+        price: c.price || 0,
+        currency: c.currency || 'PKR',
         category: c.category || 'General',
+        level: c.level || 'Beginner',
         totalLectures,
         completedLectures: completedCount,
-        progressPercent,
+        progressPercent: isUnlocked ? progressPercent : 0,
+        isLocked: !isUnlocked,
+        isEnrolled: isUnlocked,
+        registrationStatus,
         lastLectureId: lastProgress?.lectureId || null,
         lastWatchedAt: lastProgress?.lastWatchedAt || c.updatedAt
       };

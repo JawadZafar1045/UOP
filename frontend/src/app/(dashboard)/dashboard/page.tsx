@@ -85,8 +85,8 @@ export default function DashboardPage() {
       {
         label: 'Enrolled',
         data: courses.slice(0, 6).map(c => c.enrolledStudents?.length || 0),
-        backgroundColor: '#4F46E5', // Beautiful deep indigo
-        hoverBackgroundColor: '#6366F1', // Light indigo on hover
+        backgroundColor: '#2563eb', // Royal tech blue
+        hoverBackgroundColor: '#1d4ed8', // Darker blue on hover
         borderRadius: 8,
         borderSkipped: false,
       },
@@ -98,7 +98,7 @@ export default function DashboardPage() {
     datasets: [
       {
         data: [lmsStats.published, lmsStats.draft],
-        backgroundColor: ['#10B981', '#F59E0B'],
+        backgroundColor: ['#2563eb', '#f59e0b'],
         borderWidth: 4,
         borderColor: '#ffffff',
         hoverBorderWidth: 4,
@@ -183,7 +183,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8 max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-100">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-100 animate-fade-in-down">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
             {user?.role === 'admin' ? "Admin Overview" : user?.role === 'teacher' ? "Instructor Overview" : "Student Dashboard"}
@@ -201,7 +201,7 @@ export default function DashboardPage() {
           {user?.role === 'admin' && (
             <Link
               href="/lms/admin"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/20 transition-all"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
             >
               <span>🛡️</span>
               Admin Control Panel
@@ -211,7 +211,7 @@ export default function DashboardPage() {
           {user?.role === 'student' && (
             <Link
               href="/courses"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/20 transition-all"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
             >
               Explore Course Catalog
             </Link>
@@ -220,7 +220,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Role-Based KPI Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in-up animation-delay-100">
         {isTeacherOrAdmin ? (
           <>
             <div className="bg-blue-50/50 border border-blue-100 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
@@ -235,26 +235,26 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="bg-emerald-50/50 border border-emerald-100 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="bg-slate-50 border border-slate-200 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-emerald-600" />
+                <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-100">
+                  <CheckCircle className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-slate-900 leading-none">{stats?.stats?.active || lmsStats.published}</p>
-                  <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1.5">Live Content</p>
+                  <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mt-1.5">Live Content</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-purple-50/50 border border-purple-100 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="bg-blue-50/40 border border-blue-100/80 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                  <Users className="w-6 h-6 text-purple-600" />
+                <div className="w-12 h-12 bg-blue-100/70 rounded-xl flex items-center justify-center">
+                  <Users className="w-6 h-6 text-blue-700" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-slate-900 leading-none">{stats?.stats?.students || lmsStats.enrolled}</p>
-                  <p className="text-[10px] font-bold text-purple-600 uppercase tracking-widest mt-1.5">Students</p>
+                  <p className="text-[10px] font-bold text-blue-700 uppercase tracking-widest mt-1.5">Students</p>
                 </div>
               </div>
             </div>
@@ -273,26 +273,26 @@ export default function DashboardPage() {
           </>
         ) : (
           <>
-            <div className="bg-indigo-50/50 border border-indigo-100 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="bg-blue-50/50 border border-blue-100 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
-                  <BookOpen className="w-6 h-6 text-indigo-600" />
+                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <BookOpen className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-slate-900 leading-none">{stats?.stats?.enrolled || 0}</p>
-                  <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mt-1.5">Enrolled</p>
+                  <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-1.5">Enrolled</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-emerald-50/50 border border-emerald-100 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="bg-slate-50 border border-slate-200 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-emerald-600" />
+                <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-100">
+                  <CheckCircle className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-slate-900 leading-none">{stats?.stats?.completed || 0}</p>
-                  <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1.5">Completed</p>
+                  <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mt-1.5">Completed</p>
                 </div>
               </div>
             </div>
@@ -309,14 +309,14 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="bg-purple-50/50 border border-purple-100 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="bg-slate-50 border border-slate-200 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                  <PieChart className="w-6 h-6 text-purple-600" />
+                <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-100">
+                  <PieChart className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-slate-900 leading-none">{stats?.stats?.certificates || 0}</p>
-                  <p className="text-[10px] font-bold text-purple-600 uppercase tracking-widest mt-1.5">Certificates</p>
+                  <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mt-1.5">Certificates</p>
                 </div>
               </div>
             </div>
@@ -396,34 +396,61 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Student View — Continue Learning */}
+      {/* Student View — Continue Learning & Course Tracks */}
       {!isTeacherOrAdmin && (
         <div className="bg-white border border-slate-200/60 p-8 rounded-3xl shadow-sm">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
             <div>
-              <h3 className="font-bold text-slate-900 text-xl tracking-tight">Continue Learning</h3>
-              <p className="text-sm text-slate-500 mt-1">Pick up right where you left off</p>
+              <h3 className="font-bold text-slate-900 text-xl tracking-tight">My Active Learning</h3>
+              <p className="text-sm text-slate-500 mt-1">Pick up right where you left off in your courses</p>
             </div>
-            <Link href="/lms" className="text-sm font-bold text-blue-600 hover:text-blue-700 whitespace-nowrap">View All Courses</Link>
+            <Link href="/lms?tab=all" className="text-sm font-bold text-blue-600 hover:text-blue-700 whitespace-nowrap">
+              View All Courses →
+            </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {courses.slice(0, 4).map((course) => (
-              <Link key={course._id} href={`/lms/courses/${course._id}`} className="group">
-                <div className="flex items-center gap-4 p-4 border border-slate-100 rounded-2xl hover:border-blue-200 hover:shadow-lg hover:shadow-blue-500/5 transition-all">
-                  <div className="w-16 h-16 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 group-hover:bg-blue-100 transition-colors">
-                    <BookOpen className="w-8 h-8 text-blue-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors">{course.title}</h4>
-                    <p className="text-xs text-slate-500 mt-1 line-clamp-1">{course.description || 'No description available'}</p>
-                    <div className="mt-3 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-blue-500 rounded-full" style={{ width: '45%' }}></div>
+          {courses.filter((c: any) => !c.isLocked).length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {courses.filter((c: any) => !c.isLocked).slice(0, 4).map((course: any) => {
+                const safeSlug = (course.slug && !course.slug.startsWith('http') && !course.slug.includes('/'))
+                  ? course.slug
+                  : course._id;
+                const progress = course.progressPercent || 0;
+
+                return (
+                  <Link key={course._id} href={`/learn/${safeSlug}`} className="group">
+                    <div className="flex items-center gap-4 p-4 border border-slate-100 rounded-2xl hover:border-blue-200 hover:shadow-lg hover:shadow-blue-500/5 transition-all bg-white">
+                      <div className="w-16 h-16 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 group-hover:bg-blue-100 transition-colors">
+                        <BookOpen className="w-8 h-8 text-blue-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors">
+                          {course.title}
+                        </h4>
+                        <p className="text-xs text-slate-500 mt-1 line-clamp-1">
+                          {course.shortDescription || course.description || 'Interactive cybersecurity & tech curriculum.'}
+                        </p>
+                        <div className="mt-3 flex items-center justify-between text-[10px] font-bold text-slate-500 mb-1">
+                          <span>Progress</span>
+                          <span className="text-blue-600 font-extrabold">{progress}%</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-600 rounded-full transition-all" style={{ width: `${progress}%` }}></div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-10 bg-slate-50 rounded-2xl border border-slate-100 p-6 space-y-3">
+              <BookOpen className="w-8 h-8 text-slate-400 mx-auto" />
+              <p className="text-sm font-semibold text-slate-700">No active course progress yet</p>
+              <Link href="/lms" className="inline-block px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs">
+                Explore Available Courses
               </Link>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
       )}
 

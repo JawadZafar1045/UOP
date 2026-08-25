@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useStore } from "../../store/useStore";
 import NiceAvatar, { genConfig } from "react-nice-avatar";
 
@@ -32,12 +32,15 @@ interface SidebarProps {
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const user = useStore(state => state.user);
   const logout = useStore(state => state.logout);
 
+  const currentTab = searchParams.get('tab') || 'all';
+
   useEffect(() => {
     onClose();
-  }, [pathname]);
+  }, [pathname, searchParams]);
 
   const handleLogout = () => {
     logout();
@@ -71,7 +74,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             href="/lms/admin"
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
               pathname.startsWith('/lms/admin')
-                ? 'bg-indigo-50 text-indigo-700 font-semibold border border-indigo-100'
+                ? 'bg-blue-50 text-blue-700 font-semibold border border-blue-200'
                 : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
             }`}
           >
@@ -81,8 +84,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         )}
         
         {navItems.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-          const isLmsExpanded = item.name === 'LMS' && isActive;
+          const isLmsMatch = item.name === 'LMS' && pathname.startsWith('/lms');
+          const isActive = isLmsMatch || pathname === item.href || pathname.startsWith(item.href + '/');
+          const isLmsExpanded = item.name === 'LMS' && (isActive || isLmsMatch);
           
           return (
             <div key={item.name}>
@@ -90,7 +94,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 href={item.href}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   isActive
-                    ? "bg-blue-50 text-blue-700"
+                    ? "bg-blue-50 text-blue-700 font-semibold"
                     : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                 }`}
               >
@@ -101,14 +105,32 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               {isLmsExpanded && (
                 <div className="ml-9 mt-1 mb-2 space-y-1 border-l-2 border-slate-100 pl-2">
                   <Link 
-                    href="/lms" 
-                    className={`block px-3 py-2 rounded-md text-sm transition-colors ${pathname === '/lms' ? 'text-blue-700 font-medium bg-blue-50/50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
+                    href="/lms?tab=all" 
+                    className={`block px-3 py-2 rounded-md text-sm transition-colors ${
+                      pathname === '/lms' && currentTab === 'all'
+                        ? 'text-blue-700 font-semibold bg-blue-50/50' 
+                        : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
+                  >
+                    All Courses
+                  </Link>
+                  <Link 
+                    href="/lms?tab=unlocked" 
+                    className={`block px-3 py-2 rounded-md text-sm transition-colors ${
+                      pathname === '/lms' && (currentTab === 'unlocked' || currentTab === 'my')
+                        ? 'text-blue-700 font-semibold bg-blue-50/50' 
+                        : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
                   >
                     My Courses
                   </Link>
                   <Link 
                     href="/lms/certificates" 
-                    className={`block px-3 py-2 rounded-md text-sm transition-colors ${pathname.startsWith('/lms/certificates') ? 'text-blue-700 font-medium bg-blue-50/50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
+                    className={`block px-3 py-2 rounded-md text-sm transition-colors ${
+                      pathname.startsWith('/lms/certificates') 
+                        ? 'text-blue-700 font-semibold bg-blue-50/50' 
+                        : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+                    }`}
                   >
                     Certificates
                   </Link>
