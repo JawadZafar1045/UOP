@@ -222,12 +222,17 @@ export default function AdminDashboardPage() {
 
       if (editingCourse) {
         await lmsService.updateCourse(editingCourse._id, payload);
+        setCourseModalOpen(false);
+        await fetchAllData();
       } else {
-        await lmsService.createCourse(payload);
+        // After creating, jump straight into the Curriculum Builder
+        const newCourse = await lmsService.createCourse(payload);
+        setCourseModalOpen(false);
+        await fetchAllData();
+        if (newCourse?._id) {
+          handleOpenBuilder(newCourse);
+        }
       }
-
-      setCourseModalOpen(false);
-      await fetchAllData();
     } catch (err: any) {
       alert(err?.message || "Failed to save course.");
     }

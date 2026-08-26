@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import PublicNavbar from '@/components/layout/PublicNavbar';
 import PublicFooter from '@/components/layout/PublicFooter';
+import AppLayout from '@/components/layout/AppLayout';
 import { useStore } from '@/store/useStore';
 import * as lmsService from '@/services/lms.service';
 import {
@@ -146,23 +147,34 @@ export default function CourseDetailsPage({
     setPreviewModalOpen(true);
   };
 
-  if (loading) {
+  // Wrapper: AppLayout for logged-in users, public layout for guests
+  const PageWrapper = ({ children }: { children: React.ReactNode }) => {
+    if (user) {
+      return <AppLayout><div className="min-h-screen bg-slate-50 font-sans selection:bg-blue-600 selection:text-white">{children}</div></AppLayout>;
+    }
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+      <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
         <PublicNavbar />
-        <div className="flex-1 flex items-center justify-center py-20">
-          <Loader size="lg" text="Loading course details..." />
-        </div>
+        <div className="flex-1">{children}</div>
         <PublicFooter />
       </div>
+    );
+  };
+
+  if (loading) {
+    return (
+      <PageWrapper>
+        <div className="flex items-center justify-center py-40">
+          <Loader size="lg" text="Loading course details..." />
+        </div>
+      </PageWrapper>
     );
   }
 
   if (error || !course) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
-        <PublicNavbar />
-        <div className="flex-1 flex flex-col items-center justify-center py-20 px-4 text-center">
+      <PageWrapper>
+        <div className="flex flex-col items-center justify-center py-32 px-4 text-center">
           <div className="w-16 h-16 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center mb-4">
             <AlertCircle className="w-8 h-8" />
           </div>
@@ -177,8 +189,7 @@ export default function CourseDetailsPage({
             Browse All Courses
           </Link>
         </div>
-        <PublicFooter />
-      </div>
+      </PageWrapper>
     );
   }
 
@@ -188,8 +199,7 @@ export default function CourseDetailsPage({
   const isRejected = regStatus?.status === 'rejected';
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
-      <PublicNavbar />
+    <PageWrapper>
 
       {/* Hero Header - Bright Executive Theme */}
       <section className="relative overflow-hidden bg-gradient-to-b from-white via-slate-50/80 to-blue-50/30 text-slate-900 py-12 md:py-16 border-b border-slate-200">
@@ -260,9 +270,14 @@ export default function CourseDetailsPage({
                   {user && isFree ? 'Student Access' : 'Tuition'}
                 </span>
                 <span className={`text-2xl font-black ${isFree ? 'text-blue-600' : 'text-slate-900'}`}>
-                  {isFree ? (user ? 'FREE • UNLOCKED' : 'FREE') : `${course.currency} ${(course.price || 0).toLocaleString()}`}
+                  {isFree ? (user ? 'FREE' : 'FREE') : `${course.currency} ${(course.price || 0).toLocaleString()}`}
                 </span>
               </div>
+              {user && isFree && (
+                <div className="text-xs font-extrabold text-emerald-600 uppercase tracking-widest text-right">
+                  ✓ Unlocked
+                </div>
+              )}
               {isEnrolled || (user && isFree) ? (
                 <Link
                   href={`/learn/${course.slug || course._id}`}
@@ -532,13 +547,20 @@ export default function CourseDetailsPage({
 
               {/* Card Details */}
               <div className="p-6 space-y-6">
-                <div className="flex items-baseline justify-between">
-                  <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
-                    {user && isFree ? 'Student Access' : 'Tuition'}
-                  </span>
-                  <span className={`text-3xl font-black ${isFree ? 'text-blue-600' : 'text-slate-900'}`}>
-                    {isFree ? (user ? 'FREE • UNLOCKED' : 'FREE') : `${course.currency} ${(course.price || 0).toLocaleString()}`}
-                  </span>
+                <div className="space-y-1">
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
+                      {user && isFree ? 'Student Access' : 'Tuition'}
+                    </span>
+                    <span className={`text-3xl font-black ${isFree ? 'text-blue-600' : 'text-slate-900'}`}>
+                      {isFree ? 'FREE' : `${course.currency} ${(course.price || 0).toLocaleString()}`}
+                    </span>
+                  </div>
+                  {user && isFree && (
+                    <p className="text-right text-xs font-extrabold uppercase tracking-widest text-emerald-600">
+                      ✓ Access Unlocked
+                    </p>
+                  )}
                 </div>
 
                 {/* Main Action Button */}
@@ -709,17 +731,40 @@ export default function CourseDetailsPage({
 
             {/* Video Player Box */}
             <div className="aspect-video w-full bg-black rounded-2xl overflow-hidden flex items-center justify-center relative shadow-inner">
-              {previewLecture.previewUrl ? (
-                <video
-                  src={previewLecture.previewUrl}
-                  controls
-                  autoPlay
-                  controlsList="nodownload"
-                  className="w-full h-full object-contain"
-                >
-                  Your browser does not support HTML video playback.
-                </video>
-              ) : (
+              {previewLecture.previewUrl ? (() => {
+                const streamUrl = previewLecture.previewUrl;
+                const isYouTube = streamUrl.includes('youtube.com') || streamUrl.includes('youtu.be');
+
+                if (isYouTube) {
+                  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+                  const match = streamUrl.match(regExp);
+                  const videoId = match && match[2].length === 11 ? match[2] : null;
+
+                  if (videoId) {
+                    return (
+                      <iframe
+                        src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`}
+                        title={previewLecture.title || 'Lecture Stream'}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="w-full h-full border-0"
+                      />
+                    );
+                  }
+                }
+
+                return (
+                  <video
+                    src={streamUrl}
+                    controls
+                    autoPlay
+                    controlsList="nodownload"
+                    className="w-full h-full object-contain"
+                  >
+                    Your browser does not support HTML video playback.
+                  </video>
+                );
+              })() : (
                 <div className="text-center p-8 text-slate-400">
                   <Play className="w-12 h-12 text-slate-600 mx-auto mb-2" />
                   <p className="text-sm font-semibold">Video stream will be available shortly.</p>
@@ -754,7 +799,6 @@ export default function CourseDetailsPage({
         </div>
       )}
 
-      <PublicFooter />
-    </div>
+    </PageWrapper>
   );
 }

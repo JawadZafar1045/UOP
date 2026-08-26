@@ -49,6 +49,7 @@ export default function CourseLearningClassroom({
   // Video Ref & Progress Tracking
   const videoRef = useRef<HTMLVideoElement>(null);
   const lastSavedTimeRef = useRef(0);
+  const [videoProgress, setVideoProgress] = useState(0); // 0–100 percent watched
 
   // Fetch full learning data
   useEffect(() => {
@@ -122,24 +123,32 @@ export default function CourseLearningClassroom({
 
   // Periodic progress saving function
   const saveProgress = async (isManualComplete = false) => {
-    if (!videoRef.current || !courseData?._id || !currentLecture?._id) return;
+    if (!courseData?._id || !currentLecture?._id) return;
 
-    const currentTime = Math.floor(videoRef.current.currentTime);
-    const duration = Math.floor(videoRef.current.duration || playbackData?.duration || 0);
+    let currentTime = 0;
+    let duration = 0;
 
-    // Don't spam backend if time hasn't changed significantly (unless manual complete)
-    if (!isManualComplete && Math.abs(currentTime - lastSavedTimeRef.current) < 10) {
-      return;
+    if (videoRef.current) {
+      currentTime = Math.floor(videoRef.current.currentTime);
+      duration = Math.floor(videoRef.current.duration || playbackData?.duration || 0);
+
+      // Don't spam backend if time hasn't changed significantly (unless manual complete)
+      if (!isManualComplete && Math.abs(currentTime - lastSavedTimeRef.current) < 10) {
+        return;
+      }
+      lastSavedTimeRef.current = currentTime;
+    } else {
+      // YouTube iframe or external player
+      duration = playbackData?.duration || currentLecture?.duration || 100;
+      currentTime = isManualComplete ? duration : 0;
     }
-
-    lastSavedTimeRef.current = currentTime;
 
     try {
       const updated = await lmsService.updateLectureProgress(
         courseData._id,
         currentLecture._id,
-        isManualComplete ? duration : currentTime,
-        duration
+        isManualComplete ? (duration || 100) : currentTime,
+        duration || 100
       );
 
       if (updated.completed) {
@@ -177,6 +186,11 @@ export default function CourseLearningClassroom({
     if (!videoRef.current) return;
     const currentTime = videoRef.current.currentTime;
     const duration = videoRef.current.duration;
+
+    // Track watched percentage for Mark Complete unlock
+    if (duration > 0) {
+      setVideoProgress(Math.round((currentTime / duration) * 100));
+    }
 
     // Save every 20 seconds
     if (Math.abs(currentTime - lastSavedTimeRef.current) >= 20) {
@@ -350,7 +364,7 @@ export default function CourseLearningClassroom({
                 if (videoId) {
                   return (
                     <iframe
-                      src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`}
+                      src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&controls=1`}
                       title={currentLecture?.title || 'Lecture Stream'}
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
@@ -403,33 +417,63 @@ export default function CourseLearningClassroom({
                 </div>
 
                 {/* Prev / Next Nav */}
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={handlePrevLecture}
-                    className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                    Prev
-                  </button>
-                  <button
-                    onClick={() => saveProgress(true)}
-                    className={`px-4 py-2 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer ${
-                      currentLecture?.completed
-                        ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40'
-                        : 'bg-blue-600 hover:bg-blue-700 text-white'
-                    }`}
-                  >
-                    <Check className="w-4 h-4" />
-                    {currentLecture?.completed ? 'Completed' : 'Mark Complete'}
-                  </button>
-                  <button
-                    onClick={handleNextLecture}
-                    className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
-                  >
-                    Next
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
+                {(() => {
+                  // Compute boundary flags
+                  const isFirstLecture = currentModuleIndex === 0 && currentLectureIndex === 0;
+                  const lastModIdx = (courseData?.modules?.length || 1) - 1;
+                  const lastLecIdx = ((courseData?.modules?.[lastModIdx]?.lectures?.length) || 1) - 1;
+                  const isLastLecture = currentModuleIndex === lastModIdx && currentLectureIndex === lastLecIdx;
+
+                  const streamUrl = playbackData?.playbackUrl || currentLecture?.contentUrl || currentLecture?.video?.playbackUrl || '';
+                  const isYouTube = streamUrl.includes('youtube.com') || streamUrl.includes('youtu.be');
+
+                  // Mark Complete enabled if completed, if YouTube (no HTML5 progress events), or after watching >= 50%
+                  const canMarkComplete = currentLecture?.completed || isYouTube || videoProgress >= 50;
+
+                  return (
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={handlePrevLecture}
+                        disabled={isFirstLecture}
+                        className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5 ${
+                          isFirstLecture
+                            ? 'bg-slate-800/40 text-slate-600 cursor-not-allowed'
+                            : 'bg-slate-800 hover:bg-slate-700 text-slate-200 cursor-pointer'
+                        }`}
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                        Prev
+                      </button>
+                      <button
+                        onClick={() => canMarkComplete && saveProgress(true)}
+                        disabled={!canMarkComplete}
+                        title={!canMarkComplete ? 'Watch at least 50% of the video to mark complete' : ''}
+                        className={`px-4 py-2 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5 ${
+                          currentLecture?.completed
+                            ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40 cursor-default'
+                            : canMarkComplete
+                            ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer'
+                            : 'bg-slate-700/50 text-slate-500 cursor-not-allowed'
+                        }`}
+                      >
+                        <Check className="w-4 h-4" />
+                        {currentLecture?.completed ? 'Completed' : 'Mark Complete'}
+                      </button>
+                      <button
+                        onClick={handleNextLecture}
+                        disabled={isLastLecture}
+                        className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5 ${
+                          isLastLecture
+                            ? 'bg-slate-800/40 text-slate-600 cursor-not-allowed'
+                            : 'bg-slate-800 hover:bg-slate-700 text-slate-200 cursor-pointer'
+                        }`}
+                      >
+                        Next
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Lecture Notes & Instructor Info */}

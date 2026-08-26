@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  --color-blue-50: #eff6ff;
-  --color-blue-100: #dbeafe;
-  --color-blue-200: #bfdbfe;
-  --color-blue-300: #93c5fd;
-  --color-blue-400: #60a5fa;
-  --color-blue-500: #3b82f6;
-  --color-blue-600: #2563eb;
-  --color-blue-700: #1d4ed8;
-  --color-blue-800: #1e40af;
-  --color-blue-900: #1e3a8a;
-  --color-blue-950: #172554;
+  --color-blue-50: #f0f4f8;
+  --color-blue-100: #d9e2ec;
+  --color-blue-200: #bcccdc;
+  --color-blue-300: #9fb3c8;
+  --color-blue-400: #486581;
+  --color-blue-500: #102a43;
+  --color-blue-600: #003066; /* CSZone Primary Company Brand Color */
+  --color-blue-700: #00244d;
+  --color-blue-800: #001833;
+  --color-blue-900: #000c1a;
+  --color-blue-950: #00060d;
 
   --animate-fade-in-up: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-fade-in-down: fadeInDown 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -85,7 +85,7 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%; /* Professional Tech Blue #2563eb */
+    --primary: 212 100% 20%; /* #003066 Brand Navy */
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -97,7 +97,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --ring: 212 100% 20%;
     --radius: 0.5rem;
   }
 }

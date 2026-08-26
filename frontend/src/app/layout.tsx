@@ -5,7 +5,12 @@ export const metadata: Metadata = {
   title: 'CSZone LMS — Public Learning Platform',
   description: 'Practical cybersecurity, programming, and technology courses.',
   icons: {
-    icon: '/favicon.svg',
+    icon: [
+      { url: '/cszone-logo.png', type: 'image/png' },
+      { url: '/favicon.svg', type: 'image/svg+xml' }
+    ],
+    shortcut: '/cszone-logo.png',
+    apple: '/cszone-logo.png',
   },
 };
 

@@ -8,8 +8,8 @@ async function seedAdmin() {
     console.log('Connecting to MongoDB...');
     await mongoose.connect(mongoUri);
 
-    const email = 'admin@cszone.pk';
-    const password = 'AdminPassword123!';
+    const email = process.env.ADMIN_EMAIL || 'lmscszone@gmail.com';
+    const password = process.env.ADMIN_PASSWORD || 'cszone1045@';
     const tenantId = 'cszone';
 
     let admin = await User.findOne({ email });
@@ -23,7 +23,7 @@ async function seedAdmin() {
       console.log('✅ Updated existing Admin credentials:');
     } else {
       admin = await User.create({
-        name: 'CSZone Admin',
+        name: 'CSZone System Admin',
         email,
         password,
         role: 'admin',
