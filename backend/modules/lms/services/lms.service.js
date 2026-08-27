@@ -115,14 +115,34 @@ const createCourse = async (tenantId, data, userId) => {
       .filter(m => m && m.title);
   }
 
+  let assignedInstructor = userId;
+  let assignedInstructorName = '';
+
+  if (data.instructor && /^[0-9a-fA-F]{24}$/.test(String(data.instructor))) {
+    assignedInstructor = data.instructor;
+    const instructorUser = await User.findOne({ _id: data.instructor, tenantId }).select('name');
+    if (instructorUser) {
+      assignedInstructorName = instructorUser.name;
+    }
+  } else if (userId && /^[0-9a-fA-F]{24}$/.test(String(userId))) {
+    const defaultUser = await User.findOne({ _id: userId, tenantId }).select('name');
+    if (defaultUser) {
+      assignedInstructorName = defaultUser.name;
+    }
+  }
+
+  if (data.instructorName && typeof data.instructorName === 'string' && data.instructorName.trim()) {
+    assignedInstructorName = data.instructorName.trim();
+  }
+
   const courseData = {
-    instructor: userId,
     ...data,
+    instructor: assignedInstructor,
+    instructorName: assignedInstructorName,
     tenantId
   };
 
   if (courseData.type === 'paid' && (!courseData.price || courseData.price <= 0)) {
-    // Keep price as 0 if not provided or valid
     courseData.price = courseData.price || 0;
   }
 
@@ -147,7 +167,7 @@ const updateCourse = async (tenantId, courseId, data, userId, userRole) => {
     'title', 'slug', 'description', 'shortDescription', 'startDate', 'endDate',
     'status', 'isPublished', 'isFeatured', 'completionCriteria', 'category',
     'level', 'maxStudents', 'thumbnail', 'type', 'price', 'currency',
-    'instructorName', 'whatYouWillLearn', 'duration', 'modules'
+    'instructor', 'instructorName', 'whatYouWillLearn', 'duration', 'modules', 'tags'
   ];
 
   const safeUpdate = {};
@@ -156,6 +176,18 @@ const updateCourse = async (tenantId, courseId, data, userId, userRole) => {
       safeUpdate[field] = data[field];
     }
   });
+
+  if (safeUpdate.instructor) {
+    if (/^[0-9a-fA-F]{24}$/.test(String(safeUpdate.instructor))) {
+      const instructorUser = await User.findOne({ _id: safeUpdate.instructor, tenantId }).select('name');
+      if (instructorUser) {
+        safeUpdate.instructorName = instructorUser.name;
+      }
+    }
+  } else if (safeUpdate.instructor === '' || safeUpdate.instructor === null) {
+    safeUpdate.instructor = null;
+    safeUpdate.instructorName = '';
+  }
 
   if (safeUpdate.status === 'published' || safeUpdate.status === 'active') {
     safeUpdate.isPublished = true;
@@ -167,7 +199,7 @@ const updateCourse = async (tenantId, courseId, data, userId, userRole) => {
     filter,
     { $set: safeUpdate },
     { new: true, runValidators: true }
-  );
+  ).populate('instructor', 'name email role avatar');
   if (!updated) throw err('Course not found or you do not have permission to edit it.', 404);
   await logActivity({ userId, tenantId, action: 'UPDATE_COURSE', entityType: 'Course', entityId: courseId });
   return updated;
@@ -256,7 +288,7 @@ const getPublicCourses = async (tenantId, query = {}) => {
   const [courses, total] = await Promise.all([
     Course.find(filter)
       .populate('instructor', 'name email avatar')
-      .select('title slug description shortDescription thumbnail duration category level type price currency instructor instructorName modules isFeatured createdAt updatedAt')
+      .select('title slug description shortDescription thumbnail duration category level type price currency instructor instructorName modules isFeatured tags createdAt updatedAt')
       .sort(query.sort === 'price-asc' ? { price: 1 } : query.sort === 'price-desc' ? { price: -1 } : { isFeatured: -1, createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -286,12 +318,13 @@ const getPublicCourses = async (tenantId, query = {}) => {
       thumbnail: c.thumbnail || '',
       category: c.category || 'General',
       level: c.level || 'All levels',
-      type: c.type || 'free',
-      price: c.type === 'paid' ? (c.price || 0) : 0,
+      type: (c.type === 'paid' || (c.price && c.price > 0)) ? 'paid' : 'free',
+      price: (c.type === 'paid' || (c.price && c.price > 0)) ? (c.price || 0) : 0,
       currency: c.currency || 'PKR',
-      instructor: c.instructor?.name || c.instructorName || 'CSZone Team',
+      instructor: c.instructor?.name || c.instructorName || '',
       instructorAvatar: c.instructor?.avatar || '',
       isFeatured: !!c.isFeatured,
+      tags: Array.isArray(c.tags) ? c.tags : [],
       moduleCount,
       lectureCount,
       totalDuration: c.duration || (totalDuration > 0 ? `${Math.round(totalDuration / 60)} mins` : 'Self-paced'),
@@ -372,8 +405,8 @@ const getPublicCourseBySlug = async (tenantId, slugOrId) => {
     thumbnail: course.thumbnail || '',
     category: course.category || 'General',
     level: course.level || 'All levels',
-    type: course.type || 'free',
-    price: course.type === 'paid' ? (course.price || 0) : 0,
+    type: (course.type === 'paid' || (course.price && course.price > 0)) ? 'paid' : 'free',
+    price: (course.type === 'paid' || (course.price && course.price > 0)) ? (course.price || 0) : 0,
     currency: course.currency || 'PKR',
     duration: course.duration || (totalDurationSeconds > 0 ? `${Math.round(totalDurationSeconds / 60)} mins` : 'Self-paced'),
     totalDurationSeconds,
@@ -385,13 +418,8 @@ const getPublicCourseBySlug = async (tenantId, slugOrId) => {
       avatar: course.instructor?.avatar,
       bio: course.instructor?.bio || 'CSZone Instructor'
     },
-    whatYouWillLearn: course.whatYouWillLearn && course.whatYouWillLearn.length > 0
-      ? course.whatYouWillLearn
-      : [
-          'Practical real-world cybersecurity & software skills',
-          'Step-by-step hands-on guided lessons',
-          'Curriculum built and maintained by industry practitioners'
-        ],
+    whatYouWillLearn: Array.isArray(course.whatYouWillLearn) ? course.whatYouWillLearn : [],
+    tags: Array.isArray(course.tags) ? course.tags : [],
     modules,
     isPublished: course.isPublished,
     isFeatured: course.isFeatured,
@@ -942,14 +970,16 @@ const getCourseLearningData = async (tenantId, slugOrId, userId, role) => {
   const isInstructor = course.instructor?._id && String(course.instructor._id) === String(userId);
   const isAdmin = role === 'admin';
 
+  const isPaidCourse = course.type === 'paid' || (course.price && course.price > 0);
+
   // If free course and not yet enrolled, auto-enroll student on entry
-  if (!isEnrolled && !isInstructor && !isAdmin && (course.type === 'free' || !course.type)) {
+  if (!isEnrolled && !isInstructor && !isAdmin && !isPaidCourse) {
     await Course.updateOne(
       { _id: course._id },
       { $addToSet: { enrolledStudents: userId } }
     );
   } else if (!isEnrolled && !isInstructor && !isAdmin) {
-    throw err('You must be enrolled in this course to access the classroom.', 403);
+    throw err('This is a paid course. You must submit an enrollment application and receive Admin approval before accessing this classroom.', 403);
   }
 
   // Fetch all lecture progress for this user
@@ -1167,10 +1197,14 @@ const addLecture = async (tenantId, courseId, moduleId, data, userId) => {
   const mod = course.modules.id(moduleId);
   if (!mod) throw err('Module not found.', 404);
 
+  const exactDuration = (data.video && typeof data.video.duration === 'number' && data.video.duration > 0)
+    ? Math.round(data.video.duration)
+    : (Number(data.duration) || 0);
+
   const newLecture = {
     title: data.title?.trim() || 'New Lecture',
     description: data.description || '',
-    duration: data.duration || (data.video?.duration) || 0,
+    duration: exactDuration,
     isPreview: !!data.isPreview,
     contentType: data.contentType || 'video',
     contentUrl: data.contentUrl || '',
@@ -1201,7 +1235,11 @@ const updateLecture = async (tenantId, courseId, moduleId, lectureId, data, user
 
   if (data.title !== undefined) lec.title = data.title.trim();
   if (data.description !== undefined) lec.description = data.description;
-  if (data.duration !== undefined) lec.duration = data.duration;
+  if (data.video && typeof data.video.duration === 'number' && data.video.duration > 0) {
+    lec.duration = Math.round(data.video.duration);
+  } else if (data.duration !== undefined) {
+    lec.duration = Number(data.duration) || 0;
+  }
   if (data.isPreview !== undefined) lec.isPreview = !!data.isPreview;
   if (data.contentType !== undefined) lec.contentType = data.contentType;
   if (data.contentUrl !== undefined) lec.contentUrl = data.contentUrl;
@@ -1832,9 +1870,20 @@ const approveUser = async (tenantId, targetUserId) => {
   return user;
 };
 
+const getInstructors = async (tenantId) => {
+  return User.find({
+    tenantId,
+    role: { $in: ['teacher', 'admin', 'instructor'] },
+    isActive: true,
+  })
+    .select('name email role avatar bio')
+    .lean()
+    .sort({ name: 1 });
+};
+
 const getAdminCourses = async (tenantId) => {
   const courses = await Course.find({ tenantId })
-    .populate('instructor', 'name email')
+    .populate('instructor', 'name email role avatar')
     .lean()
     .sort({ createdAt: -1 });
   return courses.map(c => {
@@ -1980,6 +2029,7 @@ module.exports = {
   // Admin Dashboard
   getAdminStats,
   getAdminUsers,
+  getInstructors,
   updateUserRole,
   deactivateUser,
   activateUser,

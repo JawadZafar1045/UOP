@@ -20,6 +20,7 @@ interface CourseCardProps {
     level?: string;
     isFeatured?: boolean;
     whatYouWillLearn?: string[];
+    tags?: string[];
   };
 }
 
@@ -161,27 +162,35 @@ export default function CourseCard({ course }: CourseCardProps) {
           </h3>
 
           {/* Description */}
-          <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-            {course.shortDescription || course.description || 'Hands-on practical training designed by cybersecurity professionals.'}
-          </p>
+          {(course.shortDescription || course.description) && (
+            <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+              {course.shortDescription || course.description}
+            </p>
+          )}
 
-          {/* Feature Highlights Pills */}
-          <div className="flex flex-wrap gap-1.5 pt-1">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-medium hover:bg-blue-50 hover:text-blue-700 transition-colors">
-              <CheckCircle className="w-2.5 h-2.5 text-blue-600" /> Hands-on Labs
-            </span>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-medium hover:bg-blue-50 hover:text-blue-700 transition-colors">
-              <CheckCircle className="w-2.5 h-2.5 text-blue-600" /> Certificate
-            </span>
-          </div>
-
-          {/* Instructor & Faculty */}
-          <div className="flex items-center gap-2 pt-2 text-xs text-slate-500">
-            <div className="w-6 h-6 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-bold text-[10px] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-              CS
+          {/* Feature / Topic Tags (Rendered ONLY if admin added tags) */}
+          {Array.isArray(course.tags) && course.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {course.tags.slice(0, 3).map((tag, idx) => (
+                <span
+                  key={idx}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-medium hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                >
+                  <CheckCircle className="w-2.5 h-2.5 text-blue-600" /> {tag}
+                </span>
+              ))}
             </div>
-            <span className="truncate text-xs">Faculty: <strong className="font-semibold text-slate-800">{course.instructor || 'CSZone Security Team'}</strong></span>
-          </div>
+          )}
+
+          {/* Instructor & Faculty (Shown only when instructor is assigned) */}
+          {course.instructor && (
+            <div className="flex items-center gap-2 pt-2 text-xs text-slate-500">
+              <div className="w-6 h-6 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-bold text-[10px] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                {course.instructor.charAt(0).toUpperCase()}
+              </div>
+              <span className="truncate text-xs">Instructor: <strong className="font-semibold text-slate-800">{course.instructor}</strong></span>
+            </div>
+          )}
         </div>
 
         {/* Footer & Price & CTA */}

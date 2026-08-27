@@ -844,7 +844,27 @@ const revokeCertificate = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
+const getInstructors = async (req, res, next) => {
+  try {
+    const data = await lmsService.getInstructors(req.tenantId);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const uploadThumbnail = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No thumbnail file provided' });
+    }
+    const { uploadFile } = require('../../shared/services/fileService');
+    const result = await uploadFile(req.file, 'uop_course_thumbnails');
+    res.json({ success: true, data: { url: result.url, publicId: result.publicId } });
+  } catch (e) { next(e); }
+};
+
 module.exports = {
+  getInstructors,
+  uploadThumbnail,
   // Public Catalog
   getPublicCourses,
   getPublicCourseBySlug,

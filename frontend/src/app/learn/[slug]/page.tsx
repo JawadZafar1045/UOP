@@ -23,6 +23,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import Loader from '@/components/ui/Loader';
+import { formatDuration } from '@/utils/formatDuration';
 
 export default function CourseLearningClassroom({
   params,
@@ -553,7 +554,7 @@ export default function CourseLearningClassroom({
                                 {lec.title}
                               </p>
                               <span className="text-[10px] text-slate-500">
-                                {lec.duration > 0 ? `${Math.round(lec.duration / 60)} mins` : 'Video'}
+                                {lec.duration > 0 ? formatDuration(lec.duration) : 'Video'}
                               </span>
                             </div>
                           </div>

@@ -66,6 +66,10 @@ router.patch('/admin/courses/:id/modules/:moduleId/lectures/:lectureId', authori
 router.delete('/admin/courses/:id/modules/:moduleId/lectures/:lectureId', authorize('admin', 'teacher'), ctrl.deleteLecture);
 
 router.post('/admin/upload-video', authorize('admin', 'teacher'), upload.single('video'), ctrl.uploadLectureVideo);
+router.post('/admin/upload-thumbnail', authorize('admin', 'teacher'), upload.single('thumbnail'), ctrl.uploadThumbnail);
+
+// ── Instructors / Faculty ──────────────────────────────────────────────────────
+router.get('/instructors', authorize('admin', 'teacher'), ctrl.getInstructors);
 
 // ── Certificates ───────────────────────────────────────────────────────────────
 router.get('/certificates/mine', authorize('student'), ctrl.getMyCertificates);

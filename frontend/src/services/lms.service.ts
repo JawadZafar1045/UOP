@@ -150,6 +150,18 @@ export const uploadLectureVideo = async (formData: FormData) => {
   return res.data?.data ?? res.data;
 };
 
+export const uploadThumbnail = async (formData: FormData) => {
+  const res = await api.post('/lms/admin/upload-thumbnail', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data?.data ?? res.data;
+};
+
+export const getInstructors = async () => {
+  const res = await api.get('/lms/instructors');
+  return res.data?.data ?? res.data;
+};
+
 // ══════════════════════════════════════════════════════════════════════════════
 // Preserved Course API
 // ══════════════════════════════════════════════════════════════════════════════

@@ -27,6 +27,7 @@ import {
   Loader2
 } from 'lucide-react';
 import Loader from '@/components/ui/Loader';
+import { formatDuration } from '@/utils/formatDuration';
 
 export default function CourseDetailsPage({
   params,
@@ -46,6 +47,7 @@ export default function CourseDetailsPage({
   const [regStatus, setRegStatus] = useState<any>(null);
   const [enrolling, setEnrolling] = useState(false);
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
+  const [requestSuccessModalOpen, setRequestSuccessModalOpen] = useState(false);
   const [paymentRef, setPaymentRef] = useState('');
   const [registerNotes, setRegisterNotes] = useState('');
   const [registerSubmitting, setRegisterSubmitting] = useState(false);
@@ -134,6 +136,9 @@ export default function CourseDetailsPage({
       });
       setRegisterModalOpen(false);
       setRegStatus({ status: 'pending' });
+      setRequestSuccessModalOpen(true);
+      setPaymentRef('');
+      setRegisterNotes('');
     } catch (err: any) {
       alert(err?.message || 'Registration failed.');
     } finally {
@@ -193,7 +198,8 @@ export default function CourseDetailsPage({
     );
   }
 
-  const isFree = course.type === 'free' || !course.price || course.price === 0;
+  const isPaid = course.type === 'paid' || (course.price && Number(course.price) > 0);
+  const isFree = !isPaid;
   const isEnrolled = regStatus?.status === 'enrolled';
   const isPending = regStatus?.status === 'pending';
   const isRejected = regStatus?.status === 'rejected';
@@ -216,12 +222,14 @@ export default function CourseDetailsPage({
               <div className="flex flex-wrap items-center gap-2 animate-fade-in-down">
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-extrabold tracking-wide uppercase shadow-xs ${
-                    isFree
-                      ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                      : 'bg-slate-900 text-white'
+                    isPaid
+                      ? (isEnrolled ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-slate-900 text-white')
+                      : (isEnrolled ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-blue-100 text-blue-800 border border-blue-200')
                   }`}
                 >
-                  {isFree ? (user ? 'FREE ACCESS • UNLOCKED' : 'FREE COURSE') : 'PRO TRACK'}
+                  {isPaid
+                    ? (isEnrolled ? 'PAID TRACK • ENROLLED' : '🔒 LOCKED • PAID COURSE')
+                    : (isEnrolled ? 'FREE ACCESS • ENROLLED' : 'FREE COURSE')}
                 </span>
                 {course.category && (
                   <span className="px-3 py-1 rounded-full text-xs font-bold bg-white text-slate-700 border border-slate-200 shadow-xs">
@@ -247,18 +255,22 @@ export default function CourseDetailsPage({
 
               {/* Meta Info */}
               <div className="pt-4 flex flex-wrap items-center gap-6 text-xs sm:text-sm text-slate-600 animate-fade-in-up animation-delay-200">
-                <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-blue-600" />
-                  <span>Instructor: <strong className="text-slate-900 font-bold">{course.instructor?.name || 'CSZone Team'}</strong></span>
-                </div>
+                {(course.instructor?.name || course.instructorName) && (
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-blue-600" />
+                    <span>Instructor: <strong className="text-slate-900 font-bold">{course.instructor?.name || course.instructorName}</strong></span>
+                  </div>
+                )}
                 <div className="flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-blue-600" />
-                  <span>{course.moduleCount} Modules • {course.lectureCount} Lectures</span>
+                  <span>{course.moduleCount || (course.modules?.length || 0)} Modules • {course.lectureCount || 0} Lectures</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-blue-600" />
-                  <span>{course.duration}</span>
-                </div>
+                {course.duration && (
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-blue-600" />
+                    <span>{course.duration}</span>
+                  </div>
+                )}
               </div>
 
             </div>
@@ -267,31 +279,42 @@ export default function CourseDetailsPage({
             <div className="lg:hidden bg-white p-6 rounded-2xl border border-slate-200 text-slate-900 shadow-xs space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  {user && isFree ? 'Student Access' : 'Tuition'}
+                  {isFree ? 'Tuition' : 'Tuition'}
                 </span>
                 <span className={`text-2xl font-black ${isFree ? 'text-blue-600' : 'text-slate-900'}`}>
-                  {isFree ? (user ? 'FREE' : 'FREE') : `${course.currency} ${(course.price || 0).toLocaleString()}`}
+                  {isFree ? 'FREE' : `${course.currency || 'PKR'} ${(course.price || 0).toLocaleString()}`}
                 </span>
               </div>
-              {user && isFree && (
+              {isEnrolled && (
                 <div className="text-xs font-extrabold text-emerald-600 uppercase tracking-widest text-right">
-                  ✓ Unlocked
+                  ✓ Unlocked & Enrolled
                 </div>
               )}
-              {isEnrolled || (user && isFree) ? (
+              {isEnrolled ? (
                 <Link
                   href={`/learn/${course.slug || course._id}`}
                   className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold rounded-xl text-center block shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2"
                 >
                   <Play className="w-4 h-4 fill-current" />
-                  {isEnrolled ? 'Continue Learning' : 'Go to Classroom'}
+                  Continue Learning
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               ) : isPending ? (
-                <div className="w-full py-3 bg-amber-50 border border-amber-200 text-amber-800 font-bold rounded-xl text-center text-xs">
-                  Registration Under Review ⏳
+                <div className="w-full py-3 bg-amber-50 border border-amber-200 text-amber-800 font-bold rounded-xl text-center text-xs space-y-1">
+                  <div>⏳ Registration Under Review</div>
+                  <p className="text-[10px] text-amber-700">Course will unlock once approved by Admin.</p>
                 </div>
-              ) : !user && isFree ? (
+              ) : isRejected ? (
+                <div className="w-full p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-center text-xs space-y-2">
+                  <div className="font-bold">❌ Registration Not Approved</div>
+                  <button
+                    onClick={() => setRegisterModalOpen(true)}
+                    className="w-full py-2 bg-rose-600 text-white font-bold rounded-lg text-xs"
+                  >
+                    Re-apply
+                  </button>
+                </div>
+              ) : isFree ? (
                 <button
                   onClick={handleFreeEnroll}
                   disabled={enrolling}
@@ -302,9 +325,10 @@ export default function CourseDetailsPage({
               ) : (
                 <button
                   onClick={() => user ? setRegisterModalOpen(true) : router.push(`/login?returnUrl=/courses/${slug}`)}
-                  className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold rounded-xl text-center block shadow-xs cursor-pointer transition-all flex items-center justify-center gap-2"
+                  className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-extrabold rounded-xl text-center block shadow-xs cursor-pointer transition-all flex items-center justify-center gap-2"
                 >
-                  Register / Enroll
+                  <Lock className="w-4 h-4 text-amber-400" />
+                  Unlock Course / Register
                   <ArrowRight className="w-4 h-4" />
                 </button>
               )}
@@ -353,23 +377,25 @@ export default function CourseDetailsPage({
             )}
 
             {/* What You Will Learn Card */}
-            <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-xs">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight mb-6 flex items-center gap-2.5">
-                <Sparkles className="w-5 h-5 text-blue-600 animate-pulse-glow" />
-                What You Will Learn
-              </h2>
+            {Array.isArray(course.whatYouWillLearn) && course.whatYouWillLearn.length > 0 && (
+              <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-xs">
+                <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight mb-6 flex items-center gap-2.5">
+                  <Sparkles className="w-5 h-5 text-blue-600 animate-pulse-glow" />
+                  What You Will Learn
+                </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {(course.whatYouWillLearn || []).map((item: string, i: number) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <div className="w-5 h-5 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5 border border-blue-100">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {course.whatYouWillLearn.map((item: string, i: number) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <div className="w-5 h-5 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5 border border-blue-100">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="text-sm text-slate-700 leading-snug">{item}</span>
                     </div>
-                    <span className="text-sm text-slate-700 leading-snug">{item}</span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Course Description */}
             <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-xs space-y-4">
@@ -463,7 +489,7 @@ export default function CourseDetailsPage({
 
                               <div className="flex items-center gap-3 shrink-0">
                                 <span className="text-xs text-slate-400 font-medium">
-                                  {lec.durationFormatted || (lec.duration ? `${Math.round(lec.duration / 60)}m` : 'Video')}
+                                  {lec.durationFormatted || (lec.duration ? formatDuration(lec.duration) : 'Video')}
                                 </span>
 
                                 {/* Preview Button or Lock Indicator */}
@@ -500,25 +526,27 @@ export default function CourseDetailsPage({
               </div>
             </div>
 
-            {/* Instructor Card */}
-            <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-xs space-y-4">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-                Instructor
-              </h2>
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white font-black text-xl flex items-center justify-center shadow-md">
-                  {course.instructor?.name?.charAt(0) || 'C'}
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900">
-                    {course.instructor?.name || 'CSZone Security Team'}
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium">
-                    {course.instructor?.bio || 'Certified Cybersecurity & Tech Specialists'}
-                  </p>
+            {/* Instructor Card (Shown only if assigned) */}
+            {(course.instructor?.name || course.instructorName) && (
+              <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-xs space-y-4">
+                <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+                  Instructor
+                </h2>
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white font-black text-xl flex items-center justify-center shadow-md">
+                    {(course.instructor?.name || course.instructorName)?.charAt(0)?.toUpperCase() || 'I'}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900">
+                      {course.instructor?.name || course.instructorName}
+                    </h3>
+                    <p className="text-xs text-slate-500 font-medium">
+                      {course.instructor?.bio || (course.instructor?.role ? `${course.instructor.role.toUpperCase()} • Lead Instructor` : 'Course Instructor')}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
           </div>
 
@@ -550,27 +578,27 @@ export default function CourseDetailsPage({
                 <div className="space-y-1">
                   <div className="flex items-baseline justify-between">
                     <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
-                      {user && isFree ? 'Student Access' : 'Tuition'}
+                      {isFree ? 'Tuition' : 'Tuition'}
                     </span>
                     <span className={`text-3xl font-black ${isFree ? 'text-blue-600' : 'text-slate-900'}`}>
-                      {isFree ? 'FREE' : `${course.currency} ${(course.price || 0).toLocaleString()}`}
+                      {isFree ? 'FREE' : `${course.currency || 'PKR'} ${(course.price || 0).toLocaleString()}`}
                     </span>
                   </div>
-                  {user && isFree && (
+                  {isEnrolled && (
                     <p className="text-right text-xs font-extrabold uppercase tracking-widest text-emerald-600">
-                      ✓ Access Unlocked
+                      ✓ Unlocked & Enrolled
                     </p>
                   )}
                 </div>
 
                 {/* Main Action Button */}
-                {isEnrolled || (user && isFree) ? (
+                {isEnrolled ? (
                   <Link
                     href={`/learn/${course.slug || course._id}`}
                     className="w-full py-4 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold rounded-2xl shadow-md shadow-blue-600/20 text-center block transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Play className="w-4 h-4 fill-current" />
-                    {isEnrolled ? 'Continue Learning' : 'Go to Classroom'}
+                    Continue Learning
                     <ArrowRight className="w-5 h-5" />
                   </Link>
                 ) : isPending ? (
@@ -579,9 +607,27 @@ export default function CourseDetailsPage({
                       <Clock3 className="w-4 h-4 text-amber-600" />
                       Registration Under Review
                     </div>
-                    <p className="text-[11px] text-amber-700">Access will unlock once approved.</p>
+                    <p className="text-[11px] text-amber-700">Access will unlock once approved by Admin.</p>
                   </div>
-                ) : !user && isFree ? (
+                ) : isRejected ? (
+                  <div className="w-full p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-center text-xs space-y-2">
+                    <div className="flex items-center justify-center gap-1.5 font-extrabold text-rose-700">
+                      <AlertCircle className="w-4 h-4" />
+                      Registration Not Approved
+                    </div>
+                    {regStatus?.rejectionReason && (
+                      <p className="text-[11px] text-rose-700 bg-white/80 p-2 rounded-xl border border-rose-100 text-left">
+                        <strong>Reason:</strong> {regStatus.rejectionReason}
+                      </p>
+                    )}
+                    <button
+                      onClick={() => setRegisterModalOpen(true)}
+                      className="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
+                    >
+                      Re-apply with Updated Info
+                    </button>
+                  </div>
+                ) : isFree ? (
                   <button
                     onClick={handleFreeEnroll}
                     disabled={enrolling}
@@ -596,9 +642,10 @@ export default function CourseDetailsPage({
                 ) : (
                   <button
                     onClick={() => user ? setRegisterModalOpen(true) : router.push(`/login?returnUrl=/courses/${slug}`)}
-                    className="w-full py-4 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold rounded-2xl shadow-md shadow-blue-600/20 text-center block transition-all cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full py-4 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-extrabold rounded-2xl shadow-md shadow-slate-900/20 text-center block transition-all cursor-pointer flex items-center justify-center gap-2"
                   >
-                    Register / Enroll
+                    <Lock className="w-4 h-4 text-amber-400" />
+                    Unlock Course / Register
                     <ArrowRight className="w-5 h-5" />
                   </button>
                 )}
@@ -795,6 +842,58 @@ export default function CourseDetailsPage({
               </button>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* Registration Request Success Modal */}
+      {requestSuccessModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full p-6 sm:p-8 relative text-center space-y-5 animate-in zoom-in-95 duration-200">
+            
+            {/* Animated Glow Checkmark Icon */}
+            <div className="mx-auto w-16 h-16 rounded-3xl bg-gradient-to-tr from-emerald-500 to-teal-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30">
+              <CheckCircle2 className="w-8 h-8" />
+            </div>
+
+            <div className="space-y-2">
+              <span className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 inline-block">
+                Request Sent to Admin
+              </span>
+              <h3 className="text-2xl font-black text-slate-900">
+                Application Submitted!
+              </h3>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Your enrollment request has been delivered to the <strong className="text-slate-900 font-bold">Admin</strong>. Once verified, full course access will be unlocked and you will receive a confirmation notification via <strong className="text-slate-900 font-bold">Email</strong>.
+              </p>
+            </div>
+
+            {/* Application Details Summary */}
+            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-left text-xs space-y-2">
+              <div className="flex justify-between items-center text-slate-500">
+                <span>Course:</span>
+                <strong className="text-slate-900 font-bold max-w-[200px] truncate">{course.title}</strong>
+              </div>
+              <div className="flex justify-between items-center text-slate-500">
+                <span>Tuition:</span>
+                <strong className="text-slate-900 font-bold">{course.currency} {(course.price || 0).toLocaleString()}</strong>
+              </div>
+              <div className="flex justify-between items-center text-slate-500 border-t border-slate-200/60 pt-2">
+                <span>Status:</span>
+                <span className="inline-flex items-center gap-1 font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 text-[11px]">
+                  <Clock3 className="w-3 h-3" /> Under Admin Review
+                </span>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <button
+                onClick={() => setRequestSuccessModalOpen(false)}
+                className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold text-sm rounded-2xl shadow-md shadow-blue-600/20 transition-all cursor-pointer"
+              >
+                Got It
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -65,14 +65,15 @@ const courseSchema = new mongoose.Schema(
       trim: true
     },
     instructor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', alias: 'teacher' },
-    instructorName: { type: String, default: 'CSZone Team' },
-    thumbnail: { type: String },
-    duration: { type: String }, // e.g. "8 Hours" or "8 weeks"
+    instructorName: { type: String, default: '' },
+    thumbnail: { type: String, default: '' },
+    duration: { type: String, default: '' }, // e.g. "8 Hours" or "8 weeks"
     isPublished: { type: Boolean, default: false },
     isFeatured: { type: Boolean, default: false },
     category: { type: String, default: 'General' },
     level: { type: String, default: 'All levels' },
     maxStudents: { type: Number },
+    tags: [{ type: String }],
 
     // ── Course Pricing & Type ───────────────────────────────────────────────────
     type: {

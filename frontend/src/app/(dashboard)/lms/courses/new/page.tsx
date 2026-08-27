@@ -1,34 +1,66 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useLmsStore } from '@/store/lmsStore';
+import { useStore } from '@/store/useStore';
 import {
   BookOpen, CheckCircle, ArrowLeft, ChevronRight, ChevronLeft,
   Save, Flame, TrendingUp, Sprout, Users, Trash2, Plus,
   Rocket, Eye, Lightbulb, LayoutList, Paperclip, Clock,
-  CalendarCheck, Pencil, HelpCircle, X
+  CalendarCheck, Pencil, HelpCircle, X, Upload, Image as ImageIcon,
+  DollarSign, Sparkles, UserCheck, Calendar, ShieldCheck, Check
 } from 'lucide-react';
 import Loader from '@/components/ui/Loader';
+import CourseThumbnailUpload from '@/components/ui/CourseThumbnailUpload';
 import Link from 'next/link';
 import api from '@/services/api';
+import * as lmsService from '@/services/lms.service';
 
 const STEPS = [
-  { id: 1, label: 'General info' },
-  { id: 2, label: 'Requirements' },
-  { id: 3, label: 'Content' },
-  { id: 4, label: 'Review' },
+  { id: 1, label: 'Course Identity' },
+  { id: 2, label: 'Pricing & Schedule' },
+  { id: 3, label: 'Requirements & Outcomes' },
+  { id: 4, label: 'Curriculum' },
+  { id: 5, label: 'Review & Publish' },
 ];
 
 const LEVELS = [
-  { label: 'Beginner',     icon: Sprout },
+  { label: 'Beginner', icon: Sprout },
   { label: 'Intermediate', icon: TrendingUp },
-  { label: 'Advanced',     icon: Flame },
-  { label: 'All levels',   icon: Users },
+  { label: 'Advanced', icon: Flame },
+  { label: 'All levels', icon: Users },
 ];
 
-const CATEGORIES = ['Mathematics', 'Science', 'Languages', 'Technology', 'Arts'];
-const DURATIONS  = ['30 minutes', '45 minutes', '1 hour', '1.5 hours', '2 hours'];
+const CATEGORIES = [
+  'Cyber Security',
+  'Web Development',
+  'Cloud & DevOps',
+  'Artificial Intelligence',
+  'Data Science',
+  'Mobile Development',
+  'Software Engineering',
+  'Computer Science',
+  'General',
+];
+
+const PRESET_THUMBNAILS = [
+  { label: 'Cyber Security', url: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=80' },
+  { label: 'Web Development', url: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80' },
+  { label: 'Cloud & DevOps', url: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80' },
+  { label: 'AI & Data', url: 'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=800&q=80' },
+  { label: 'Coding & Tech', url: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80' },
+];
+
+const DURATIONS = [
+  '2 Hours',
+  '4 Hours',
+  '8 Hours',
+  '12 Hours',
+  '4 Weeks',
+  '8 Weeks',
+  '12 Weeks',
+  'Self-paced',
+];
 
 function fmtDate(d: string) {
   if (!d) return '';
@@ -39,38 +71,85 @@ function fmtDate(d: string) {
 
 export default function NewCoursePage() {
   const router = useRouter();
-  const { createCourse } = useLmsStore();
+  const { user } = useStore();
 
-  const [step, setStep]               = useState(1);
-  const [maxVisited, setMaxVisited]   = useState(1);
+  const [step, setStep] = useState(1);
+  const [maxVisited, setMaxVisited] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [published, setPublished]     = useState(false);
-  const [error, setError]             = useState('');
+  const [published, setPublished] = useState(false);
+  const [createdCourseId, setCreatedCourseId] = useState('');
+  const [error, setError] = useState('');
+
+  // Instructors list from backend
+  const [instructors, setInstructors] = useState<any[]>([]);
+  const [loadingInstructors, setLoadingInstructors] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
+    slug: '',
+    shortDescription: '',
     description: '',
+    instructor: '',
+    instructorName: '',
+    thumbnail: '',
+    type: 'free' as 'free' | 'paid',
+    price: 0,
+    currency: 'PKR',
+    category: 'Cyber Security',
+    level: 'Intermediate',
+    duration: '4 Hours',
+    totalHours: '',
+    sessionsPerWeek: '',
+    sessionDuration: '',
     startDate: '',
     endDate: '',
-    category: '',
     maxStudents: '',
-    level: 'Intermediate',
-    tags: ['algebra', 'math'] as string[],
+    tags: [] as string[],
     completionCriteria: {
       minAttendancePercent: 75,
       minAssignmentScore: 60,
       minQuizScore: 60,
     },
-    totalHours: '',
-    sessionsPerWeek: '',
-    sessionDuration: '',
-    modules: ['Introduction & Overview', 'Core Concepts', 'Practical Applications'],
+    whatYouWillLearn: [] as string[],
+    modules: [''] as string[],
     resourceLink: '',
     studentNotes: '',
-    status: 'active',
+    status: 'published',
+    isFeatured: false,
   });
 
   const [tagInput, setTagInput] = useState('');
+  const [learnInput, setLearnInput] = useState('');
+
+  // Fetch real registered instructors
+  useEffect(() => {
+    const fetchInstructors = async () => {
+      setLoadingInstructors(true);
+      try {
+        const data = await lmsService.getInstructors();
+        const list = Array.isArray(data) ? data : [];
+        setInstructors(list);
+
+        // If user is teacher/admin, pre-select themselves by default if not set
+        if (user?._id) {
+          const match = list.find((inst: any) => inst._id === user._id);
+          if (match) {
+            setFormData((prev) => ({
+              ...prev,
+              instructor: prev.instructor || match._id,
+              instructorName: prev.instructorName || match.name,
+            }));
+          }
+        }
+      } catch (e) {
+        console.warn('Could not load instructors list:', e);
+      } finally {
+        setLoadingInstructors(false);
+      }
+    };
+
+    fetchInstructors();
+  }, [user]);
 
   const goTo = (n: number) => {
     if (n > maxVisited + 1) return;
@@ -87,16 +166,38 @@ export default function NewCoursePage() {
       completionCriteria: { ...prev.completionCriteria, [key]: val },
     }));
 
+  const handleInstructorChange = (instructorId: string) => {
+    const found = instructors.find(i => i._id === instructorId);
+    setFormData(prev => ({
+      ...prev,
+      instructor: instructorId,
+      instructorName: found ? found.name : '',
+    }));
+  };
+
   const addTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && tagInput.trim()) {
       e.preventDefault();
-      set('tags', [...formData.tags, tagInput.trim()]);
+      if (!formData.tags.includes(tagInput.trim())) {
+        set('tags', [...formData.tags, tagInput.trim()]);
+      }
       setTagInput('');
     }
   };
 
   const removeTag = (i: number) =>
     set('tags', formData.tags.filter((_, idx) => idx !== i));
+
+  const addLearnItem = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && learnInput.trim()) {
+      e.preventDefault();
+      set('whatYouWillLearn', [...formData.whatYouWillLearn, learnInput.trim()]);
+      setLearnInput('');
+    }
+  };
+
+  const removeLearnItem = (i: number) =>
+    set('whatYouWillLearn', formData.whatYouWillLearn.filter((_, idx) => idx !== i));
 
   const addModule = () =>
     set('modules', [...formData.modules, '']);
@@ -113,152 +214,141 @@ export default function NewCoursePage() {
   };
 
   const handlePublish = async () => {
-  setError('');
+    setError('');
 
-  if (!formData.description.trim()) {
-    setError('Course description is required');
-    setStep(1);
-    return;
-  }
-
-  // Validate dates
-  if (
-    formData.endDate &&
-    formData.startDate &&
-    new Date(formData.endDate) <= new Date(formData.startDate)
-  ) {
-    setError('End date must be after start date');
-    setStep(1);
-    return;
-  }
-
-  setIsSubmitting(true);
-
-  try {
-    // Complete payload
-    const payload = {
-  title: formData.title,
-  description: formData.description,
-  startDate: formData.startDate,
-  endDate: formData.endDate,
-
-  category: formData.category,
-  maxStudents: formData.maxStudents,
-  level: formData.level,
-  tags: formData.tags,
-
-  completionCriteria: {
-    minAttendancePercent:
-      formData.completionCriteria.minAttendancePercent,
-
-    minAssignmentScore:
-      formData.completionCriteria.minAssignmentScore,
-
-    minQuizScore:
-      formData.completionCriteria.minQuizScore,
-  },
-
-  totalHours: formData.totalHours,
-  sessionsPerWeek: formData.sessionsPerWeek,
-  sessionDuration: formData.sessionDuration,
-
-  // FIX HERE
-  modules: formData.modules
-    .map((module) => module.trim())
-    .filter(Boolean)
-    .map((module) => ({
-      title: module,
-    })),
-
-  resourceLink: formData.resourceLink,
-  studentNotes: formData.studentNotes,
-
-  status: formData.status,
-    };
-
-    // API call
-    const res = await api.post('/lms/courses', payload);
-
-    console.log('API RESPONSE:', res.data);
-
-    // Extract course ID safely
-    const courseId =
-      res?.data?.data?._id ||
-      res?.data?._id;
-
-    // Check ID exists
-    if (!courseId) {
-      throw new Error('Course ID not found in response');
+    if (!formData.title.trim()) {
+      setError('Course title is required');
+      setStep(1);
+      return;
     }
 
-    // Show success screen
-    setPublished(true);
+    if (!formData.description.trim()) {
+      setError('Course description is required');
+      setStep(1);
+      return;
+    }
 
-    // Redirect after short delay
-    setTimeout(() => {
-      router.push(`/lms/courses/${courseId}`);
-    }, 1500);
+    if (
+      formData.endDate &&
+      formData.startDate &&
+      new Date(formData.endDate) <= new Date(formData.startDate)
+    ) {
+      setError('End date must be after start date');
+      setStep(2);
+      return;
+    }
 
-  } catch (err: any) {
-    console.error('PUBLISH ERROR:', err);
+    setIsSubmitting(true);
 
-    setError(
-      err?.response?.data?.message ||
-      err?.message ||
-      'Failed to create course'
-    );
+    try {
+      const cleanModules = formData.modules
+        .map(m => m.trim())
+        .filter(Boolean)
+        .map(title => ({ title, lectures: [] }));
 
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+      const payload: any = {
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        shortDescription: formData.shortDescription.trim() || formData.description.trim().substring(0, 140),
+        category: formData.category,
+        level: formData.level,
+        type: formData.type,
+        price: formData.type === 'paid' ? Number(formData.price || 0) : 0,
+        currency: formData.currency || 'PKR',
+        duration: formData.duration || (formData.totalHours ? `${formData.totalHours} Hours` : 'Self-paced'),
+        thumbnail: formData.thumbnail || '',
+        instructor: formData.instructor || undefined,
+        instructorName: formData.instructorName || undefined,
+        startDate: formData.startDate || undefined,
+        endDate: formData.endDate || undefined,
+        maxStudents: formData.maxStudents ? Number(formData.maxStudents) : undefined,
+        tags: formData.tags,
+        whatYouWillLearn: formData.whatYouWillLearn.filter(Boolean),
+        completionCriteria: formData.completionCriteria,
+        status: formData.status,
+        isFeatured: !!formData.isFeatured,
+        modules: cleanModules,
+        resourceLink: formData.resourceLink,
+        studentNotes: formData.studentNotes,
+      };
+
+      if (formData.slug.trim()) {
+        payload.slug = formData.slug.trim();
+      }
+
+      const res = await api.post('/lms/courses', payload);
+      const newCourseId = res?.data?.data?._id || res?.data?._id;
+
+      if (!newCourseId) {
+        throw new Error('Course ID not found in server response');
+      }
+
+      setCreatedCourseId(newCourseId);
+      setPublished(true);
+
+      setTimeout(() => {
+        router.push(`/lms/admin`);
+      }, 2000);
+
+    } catch (err: any) {
+      console.error('PUBLISH ERROR:', err);
+      setError(
+        err?.response?.data?.message ||
+        err?.message ||
+        'Failed to create course'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // ── shared classes ──────────────────────────────────────────────
   const inputCls =
-    'w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all';
+    'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-medium';
 
-  const card = 'bg-white rounded-2xl border border-slate-200 overflow-hidden mb-3 last:mb-0';
-  const cardHead = 'flex items-center gap-3 px-5 py-4 border-b border-slate-100';
-  const cardBody = 'px-5 py-4';
-  const lbl = 'block text-[11px] font-semibold text-slate-500 uppercase tracking-wide mb-1.5';
+  const card = 'bg-white rounded-3xl border border-slate-200 overflow-hidden mb-4 shadow-xs';
+  const cardHead = 'flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50/50';
+  const cardBody = 'p-6';
+  const lbl = 'block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5';
 
   const iconBox = (bg: string, text: string) =>
-    `w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${bg} ${text}`;
+    `w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${bg} ${text}`;
 
   // ── step bar ────────────────────────────────────────────────────
   const StepBar = () => (
-    <div className="flex items-center bg-white border border-slate-200 rounded-xl p-1 mb-4">
+    <div className="flex items-center bg-white border border-slate-200 rounded-2xl p-1.5 mb-6 overflow-x-auto shadow-xs">
       {STEPS.map((s, i) => (
         <div key={s.id} className="flex items-center flex-1 min-w-0">
           <button
             onClick={() => goTo(s.id)}
-            className={`flex items-center justify-center gap-1.5 flex-1 rounded-lg px-2 py-2 text-xs font-medium transition-all min-w-0 ${
+            className={`flex items-center justify-center gap-2 flex-1 rounded-xl px-3 py-2.5 text-xs font-bold transition-all min-w-0 cursor-pointer ${
               step === s.id
-                ? 'bg-blue-50 text-blue-700'
+                ? 'bg-blue-600 text-white shadow-xs'
                 : step > s.id
-                ? 'bg-emerald-50 text-emerald-700'
-                : 'text-slate-400'
+                ? 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                : 'text-slate-400 hover:text-slate-600'
             }`}
           >
-            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-semibold flex-shrink-0 ${
-              step > s.id
-                ? 'bg-emerald-500 text-white'
-                : step === s.id
-                ? 'bg-blue-500 text-white'
+            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0 ${
+              step === s.id
+                ? 'bg-white text-blue-600'
+                : step > s.id
+                ? 'bg-blue-600 text-white'
                 : 'bg-slate-100 text-slate-400'
             }`}>
-              {step > s.id ? <CheckCircle className="w-3 h-3" /> : s.id}
+              {step > s.id ? <Check className="w-3 h-3 stroke-[3]" /> : s.id}
             </span>
-            <span className="hidden sm:block whitespace-nowrap">{s.label}</span>
+            <span className="hidden md:inline whitespace-nowrap">{s.label}</span>
           </button>
           {i < STEPS.length - 1 && (
-            <div className="w-px h-5 bg-slate-200 flex-shrink-0" />
+            <div className="w-px h-6 bg-slate-200 flex-shrink-0 mx-1" />
           )}
         </div>
       ))}
     </div>
   );
 
-  // ── sidebar cards ───────────────────────────────────────────────
+  // ── sidebar tips ───────────────────────────────────────────────
   const TipsCard = ({ tips }: { tips: string[] }) => (
     <div className={card}>
       <div className={cardHead}>
@@ -266,14 +356,14 @@ export default function NewCoursePage() {
           <Lightbulb className="w-4 h-4" />
         </div>
         <div>
-          <p className="text-sm font-medium text-slate-800">Tips</p>
+          <p className="text-sm font-bold text-slate-800">Pro Tips</p>
         </div>
       </div>
-      <div className={cardBody + ' space-y-2.5'}>
+      <div className={cardBody + ' space-y-3'}>
         {tips.map((t, i) => (
-          <div key={i} className="flex items-start gap-2">
-            <CheckCircle className="w-3.5 h-3.5 text-emerald-500 mt-0.5 flex-shrink-0" />
-            <span className="text-xs text-slate-500 leading-relaxed">{t}</span>
+          <div key={i} className="flex items-start gap-2.5">
+            <CheckCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+            <span className="text-xs text-slate-600 leading-relaxed">{t}</span>
           </div>
         ))}
       </div>
@@ -288,23 +378,20 @@ export default function NewCoursePage() {
     icon: any; iconBg: string; iconText: string; barColor: string;
     label: string; valKey: string; val: number;
   }) => (
-    <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl mb-2.5 last:mb-0">
+    <div className="flex items-center gap-4 p-4 bg-slate-50 border border-slate-100 rounded-2xl mb-3 last:mb-0">
       <div className={iconBox(iconBg, iconText)}>
-        <Icon className="w-3.5 h-3.5" />
+        <Icon className="w-4 h-4" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex justify-between items-center mb-1.5">
-          <span className="text-xs text-slate-500">{label}</span>
-          <span className="text-sm font-semibold text-slate-800">{val}%</span>
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-xs font-bold text-slate-700">{label}</span>
+          <span className="text-xs font-black text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">{val}%</span>
         </div>
         <input
           type="range" min={0} max={100} step={1} value={val}
           onChange={e => setCriteria(valKey, Number(e.target.value))}
-          className="w-full accent-blue-500 cursor-pointer"
+          className="w-full accent-blue-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg"
         />
-        <div className="h-1 rounded-full bg-slate-200 mt-1.5 overflow-hidden">
-          <div className={`h-full rounded-full ${barColor} transition-all`} style={{ width: `${val}%` }} />
-        </div>
       </div>
     </div>
   );
@@ -312,131 +399,363 @@ export default function NewCoursePage() {
   // ── published screen ────────────────────────────────────────────
   if (published) {
     return (
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-          <div className="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-7 h-7 text-emerald-500" />
+      <div className="max-w-2xl mx-auto py-12 px-4 animate-fade-in-up">
+        <div className="bg-white rounded-3xl border border-slate-200 p-10 text-center shadow-lg space-y-4">
+          <div className="w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto shadow-xs">
+            <CheckCircle className="w-8 h-8 text-emerald-600" />
           </div>
-          <h2 className="text-xl font-semibold text-slate-900 mb-2">Course published!</h2>
-          <p className="text-sm text-slate-500 mb-6">
-            Your course is now live. Students can enroll starting from the set start date.
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Course Created Successfully!</h2>
+          <p className="text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
+            Your course <strong className="text-slate-900 font-bold">{formData.title}</strong> has been saved and is now ready on the platform.
           </p>
-          <Link href="/lms"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
-            Back to courses
-          </Link>
+
+          <div className="pt-4 flex items-center justify-center gap-3">
+            <Link
+              href="/lms/admin"
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs transition-all"
+            >
+              Open Admin Catalog
+            </Link>
+            <Link
+              href="/lms"
+              className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors"
+            >
+              Back to LMS Hub
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-4">
+    <div className="max-w-6xl mx-auto space-y-6 px-4 py-6 font-sans">
 
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3">
+      {/* Top Navigation Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Link href="/lms"
-            className="w-9 h-9 flex items-center justify-center bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors flex-shrink-0">
-            <ArrowLeft className="w-4 h-4 text-slate-500" />
+          <Link
+            href="/lms/admin"
+            className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 hover:border-slate-300 transition-all shadow-xs shrink-0 cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4 text-slate-600" />
           </Link>
           <div>
-            <h1 className="text-lg font-semibold text-slate-900 leading-snug">Create new course</h1>
-            <p className="text-xs text-slate-500">Fill in the details to publish your course</p>
+            <div className="flex items-center gap-2 text-blue-600 text-xs font-extrabold uppercase tracking-widest">
+              <Sparkles className="w-3.5 h-3.5 animate-pulse-glow" />
+              Course Studio
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Create New Course</h1>
           </div>
         </div>
-        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-500 rounded-full text-xs font-medium flex-shrink-0">
-          <Save className="w-3 h-3" /> Draft saved
+
+        <div className="flex items-center gap-2">
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">
+            Step {step} of {STEPS.length}
+          </span>
         </div>
       </div>
 
-      {/* Error */}
+      {/* Error Alert */}
       {error && (
-        <div className="bg-red-50 text-red-600 px-4 py-3 rounded-xl border border-red-100 text-sm flex items-center gap-2">
-          <X className="w-4 h-4 flex-shrink-0" /> {error}
+        <div className="bg-red-50 text-red-700 px-4 py-3 rounded-2xl border border-red-200 text-xs font-semibold flex items-center justify-between gap-2 shadow-xs">
+          <div className="flex items-center gap-2">
+            <X className="w-4 h-4 text-red-500 shrink-0" />
+            <span>{error}</span>
+          </div>
+          <button onClick={() => setError('')} className="text-red-400 hover:text-red-600">
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
       <StepBar />
 
-      {/* ── STEP 1 ── */}
-      {step === 1 && (
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-3 items-start">
-          <div>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 items-start">
+        
+        {/* Main Step Form Body */}
+        <div className="space-y-4">
+          
+          {/* ── STEP 1: IDENTITY & GENERAL INFO ── */}
+          {step === 1 && (
             <div className={card}>
               <div className={cardHead}>
                 <div className={iconBox('bg-blue-50', 'text-blue-600')}><BookOpen className="w-4 h-4" /></div>
                 <div>
-                  <p className="text-sm font-medium text-slate-800">General information</p>
-                  <p className="text-xs text-slate-400">Core details about your course</p>
+                  <p className="text-sm font-bold text-slate-900">Course Identity & Instructor</p>
+                  <p className="text-xs text-slate-400">Essential course title, media, and faculty assignment</p>
                 </div>
               </div>
-              <div className={cardBody + ' space-y-3'}>
+
+              <div className={cardBody + ' space-y-4'}>
+                
+                {/* Title */}
                 <div>
-                  <label className={lbl}>Course title <span className="text-red-400">*</span></label>
-                  <input required type="text" value={formData.title}
-                    onChange={e => set('title', e.target.value)}
-                    className={inputCls} placeholder="e.g. Introduction to Advanced Mathematics" />
+                  <label className={lbl}>Course Title <span className="text-red-500">*</span></label>
+                  <input
+                    required
+                    type="text"
+                    value={formData.title}
+                    onChange={e => {
+                      const val = e.target.value;
+                      set('title', val);
+                      if (!formData.slug) {
+                        set('slug', val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''));
+                      }
+                    }}
+                    className={inputCls}
+                    placeholder="e.g. Certified Ethical Hacker & Penetration Testing Track"
+                  />
                 </div>
+
+                {/* Slug */}
                 <div>
-                  <label className={lbl}>Description <span className="text-red-400">*</span></label>
-                  <textarea required rows={3} value={formData.description}
+                  <label className={lbl}>
+                    URL Slug <span className="text-[10px] text-slate-400 font-normal">(Auto-generated or custom URL path)</span>
+                  </label>
+                  <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono text-slate-600">
+                    <span className="text-slate-400 shrink-0">/courses/</span>
+                    <input
+                      type="text"
+                      value={formData.slug}
+                      onChange={e => set('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                      className="bg-transparent border-0 outline-none w-full text-slate-800 font-bold ml-1"
+                      placeholder="ethical-hacking-track"
+                    />
+                  </div>
+                </div>
+
+                {/* Instructor Selection Dropdown */}
+                <div>
+                  <label className={lbl}>
+                    Lead Instructor <span className="text-[10px] text-slate-400 font-normal">(Select registered faculty)</span>
+                  </label>
+                  <select
+                    value={formData.instructor}
+                    onChange={e => handleInstructorChange(e.target.value)}
+                    className={inputCls + ' cursor-pointer'}
+                  >
+                    <option value="">-- No Instructor Assigned --</option>
+                    {instructors.map(inst => (
+                      <option key={inst._id} value={inst._id}>
+                        {inst.name} ({inst.role.toUpperCase()} • {inst.email})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Thumbnail Upload & Options */}
+                <div className="p-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl">
+                  <CourseThumbnailUpload
+                    value={formData.thumbnail}
+                    onChange={url => set('thumbnail', url)}
+                  />
+                </div>
+
+                {/* Short Description */}
+                <div>
+                  <label className={lbl}>Short Summary / Card Tagline</label>
+                  <input
+                    type="text"
+                    value={formData.shortDescription}
+                    onChange={e => set('shortDescription', e.target.value)}
+                    className={inputCls}
+                    placeholder="1-2 sentences highlighting the course outcome for catalog cards..."
+                  />
+                </div>
+
+                {/* Full Description */}
+                <div>
+                  <label className={lbl}>Full Description <span className="text-red-500">*</span></label>
+                  <textarea
+                    required
+                    rows={4}
+                    value={formData.description}
                     onChange={e => set('description', e.target.value)}
-                    className={inputCls + ' resize-none'} placeholder="What will students learn? Describe key outcomes..." />
-                  <p className="text-[11px] text-slate-400 mt-1">A clear description improves discoverability</p>
+                    className={inputCls + ' resize-none'}
+                    placeholder="Provide a comprehensive syllabus overview, prerequisites, and learning objectives..."
+                  />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+
+                {/* Category & Level */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className={lbl}>Category</label>
-                    <select value={formData.category} onChange={e => set('category', e.target.value)} className={inputCls}>
-                      <option value="">Select category</option>
-                      {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                    <select
+                      value={formData.category}
+                      onChange={e => set('category', e.target.value)}
+                      className={inputCls + ' cursor-pointer'}
+                    >
+                      {CATEGORIES.map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
                     </select>
                   </div>
+
                   <div>
-                    <label className={lbl}>Max. students</label>
-                    <input type="number" min={1} value={formData.maxStudents}
+                    <label className={lbl}>Difficulty Level</label>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {LEVELS.map(({ label, icon: Icon }) => (
+                        <button
+                          key={label}
+                          type="button"
+                          onClick={() => set('level', label)}
+                          className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                            formData.level === label
+                              ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                              : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                          }`}
+                        >
+                          <Icon className="w-3.5 h-3.5" />
+                          <span className="truncate">{label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          {/* ── STEP 2: PRICING & SCHEDULE ── */}
+          {step === 2 && (
+            <div className={card}>
+              <div className={cardHead}>
+                <div className={iconBox('bg-emerald-50', 'text-emerald-600')}><DollarSign className="w-4 h-4" /></div>
+                <div>
+                  <p className="text-sm font-bold text-slate-900">Pricing, Capacity & Schedule</p>
+                  <p className="text-xs text-slate-400">Configure tuition fees, enrollment caps, and term dates</p>
+                </div>
+              </div>
+
+              <div className={cardBody + ' space-y-5'}>
+                
+                {/* Course Type & Price */}
+                <div>
+                  <label className={lbl}>Course Tuition Model</label>
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <button
+                      type="button"
+                      onClick={() => { set('type', 'free'); set('price', 0); }}
+                      className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                        formData.type === 'free'
+                          ? 'border-blue-600 bg-blue-50/70 text-blue-900 ring-2 ring-blue-500/20'
+                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <div className="font-extrabold text-sm">Free Course</div>
+                      <div className="text-xs text-slate-500 mt-0.5">Open admission to all registered students</div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => set('type', 'paid')}
+                      className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                        formData.type === 'paid'
+                          ? 'border-blue-600 bg-blue-50/70 text-blue-900 ring-2 ring-blue-500/20'
+                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <div className="font-extrabold text-sm">Paid Pro Track</div>
+                      <div className="text-xs text-slate-500 mt-0.5">Requires manual payment approval</div>
+                    </button>
+                  </div>
+
+                  {formData.type === 'paid' && (
+                    <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 border border-slate-200 rounded-2xl animate-fade-in-down">
+                      <div>
+                        <label className={lbl}>Tuition Fee Amount</label>
+                        <input
+                          type="number"
+                          min={1}
+                          value={formData.price}
+                          onChange={e => set('price', Number(e.target.value))}
+                          className={inputCls}
+                          placeholder="e.g. 15000"
+                        />
+                      </div>
+                      <div>
+                        <label className={lbl}>Currency</label>
+                        <input
+                          type="text"
+                          value={formData.currency}
+                          onChange={e => set('currency', e.target.value.toUpperCase())}
+                          className={inputCls}
+                          placeholder="PKR"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Duration & Capacity */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className={lbl}>Course Duration</label>
+                    <select
+                      value={formData.duration}
+                      onChange={e => set('duration', e.target.value)}
+                      className={inputCls + ' cursor-pointer'}
+                    >
+                      {DURATIONS.map(d => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className={lbl}>Max Student Capacity (Optional)</label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={formData.maxStudents}
                       onChange={e => set('maxStudents', e.target.value)}
-                      className={inputCls} placeholder="e.g. 30" />
+                      className={inputCls}
+                      placeholder="e.g. 50 (Leave blank for unlimited)"
+                    />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+
+                {/* Start & End Dates */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className={lbl}>Start date</label>
-                    <input type="date" value={formData.startDate}
-                      onChange={e => set('startDate', e.target.value)} className={inputCls} />
+                    <label className={lbl}>Start Date</label>
+                    <input
+                      type="date"
+                      value={formData.startDate}
+                      onChange={e => set('startDate', e.target.value)}
+                      className={inputCls}
+                    />
                   </div>
                   <div>
-                    <label className={lbl}>End date</label>
-                    <input type="date" value={formData.endDate}
-                      onChange={e => set('endDate', e.target.value)} className={inputCls} />
+                    <label className={lbl}>End Date</label>
+                    <input
+                      type="date"
+                      value={formData.endDate}
+                      onChange={e => set('endDate', e.target.value)}
+                      className={inputCls}
+                    />
                   </div>
                 </div>
+
+                {/* Tags */}
                 <div>
-                  <label className={lbl}>Difficulty level</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {LEVELS.map(({ label, icon: Icon }) => (
-                      <button key={label} type="button" onClick={() => set('level', label)}
-                        className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-medium transition-all ${
-                          formData.level === label
-                            ? 'bg-blue-50 border-blue-200 text-blue-700'
-                            : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
-                        }`}>
-                        <Icon className="w-3.5 h-3.5" /> {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label className={lbl}>Tags</label>
-                  <input type="text" value={tagInput} onChange={e => setTagInput(e.target.value)}
-                    onKeyDown={addTag} className={inputCls} placeholder="Type and press Enter..." />
+                  <label className={lbl}>Topic Tags</label>
+                  <input
+                    type="text"
+                    value={tagInput}
+                    onChange={e => setTagInput(e.target.value)}
+                    onKeyDown={addTag}
+                    className={inputCls}
+                    placeholder="Type keyword and press Enter (e.g. linux, burpsuite, python)..."
+                  />
                   {formData.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-2">
+                    <div className="flex flex-wrap gap-1.5 mt-2.5">
                       {formData.tags.map((t, i) => (
-                        <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">
-                          {t}
-                          <button type="button" onClick={() => removeTag(i)}>
+                        <span key={i} className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-xl text-xs font-bold border border-blue-200">
+                          #{t}
+                          <button type="button" onClick={() => removeTag(i)} className="text-blue-500 hover:text-red-600">
                             <X className="w-3 h-3" />
                           </button>
                         </span>
@@ -444,295 +763,356 @@ export default function NewCoursePage() {
                     </div>
                   )}
                 </div>
+
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Sidebar */}
-          <div>
+          {/* ── STEP 3: REQUIREMENTS & OUTCOMES ── */}
+          {step === 3 && (
             <div className={card}>
               <div className={cardHead}>
-                <div className={iconBox('bg-purple-50', 'text-purple-600')}><Eye className="w-4 h-4" /></div>
+                <div className={iconBox('bg-purple-50', 'text-purple-600')}><ShieldCheck className="w-4 h-4" /></div>
                 <div>
-                  <p className="text-sm font-medium text-slate-800">Live preview</p>
-                  <p className="text-xs text-slate-400">Updates as you type</p>
+                  <p className="text-sm font-bold text-slate-900">Certificate Requirements & Outcomes</p>
+                  <p className="text-xs text-slate-400">Set passing standards and key takeaways</p>
                 </div>
               </div>
-              <div className={cardBody}>
-                {[
-                  ['Title',        formData.title || null],
-                  ['Category',     formData.category || null],
-                  ['Level',        formData.level],
-                  ['Start date',   fmtDate(formData.startDate) || null],
-                  ['End date',     fmtDate(formData.endDate) || null],
-                  ['Max students', formData.maxStudents ? formData.maxStudents + ' students' : null],
-                ].map(([k, v]) => (
-                  <div key={k as string} className="flex justify-between items-center py-1.5 border-b border-slate-100 last:border-0 text-xs">
-                    <span className="text-slate-500">{k}</span>
-                    {v ? (
-                      <span className="font-medium text-slate-800 max-w-[120px] truncate">{v}</span>
-                    ) : (
-                      <span className="text-slate-300 italic">Not set</span>
-                    )}
+
+              <div className={cardBody + ' space-y-6'}>
+                
+                {/* Requirements Sliders */}
+                <div>
+                  <label className={lbl}>Passing Thresholds to Earn Certificate</label>
+                  <Slider
+                    icon={CalendarCheck} iconBg="bg-blue-50" iconText="text-blue-600" barColor="bg-blue-500"
+                    label="Minimum Session Attendance" valKey="minAttendancePercent" val={formData.completionCriteria.minAttendancePercent}
+                  />
+                  <Slider
+                    icon={Pencil} iconBg="bg-emerald-50" iconText="text-emerald-600" barColor="bg-emerald-500"
+                    label="Minimum Assignment Score" valKey="minAssignmentScore" val={formData.completionCriteria.minAssignmentScore}
+                  />
+                  <Slider
+                    icon={HelpCircle} iconBg="bg-amber-50" iconText="text-amber-600" barColor="bg-amber-500"
+                    label="Minimum Quiz Pass Rate" valKey="minQuizScore" val={formData.completionCriteria.minQuizScore}
+                  />
+                </div>
+
+                {/* What You Will Learn */}
+                <div>
+                  <label className={lbl}>What You Will Learn (Key Takeaways)</label>
+                  <div className="flex gap-2 mb-3">
+                    <input
+                      type="text"
+                      value={learnInput}
+                      onChange={e => setLearnInput(e.target.value)}
+                      onKeyDown={addLearnItem}
+                      className={inputCls}
+                      placeholder="e.g. Master offensive security fundamentals and buffer overflows..."
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (learnInput.trim()) {
+                          set('whatYouWillLearn', [...formData.whatYouWillLearn, learnInput.trim()]);
+                          setLearnInput('');
+                        }
+                      }}
+                      className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1 cursor-pointer shrink-0"
+                    >
+                      <Plus className="w-4 h-4" /> Add
+                    </button>
                   </div>
-                ))}
+
+                  {formData.whatYouWillLearn.length > 0 ? (
+                    <div className="space-y-2">
+                      {formData.whatYouWillLearn.map((item, i) => (
+                        <div key={i} className="flex items-center justify-between gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl text-xs text-slate-800">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="w-4 h-4 text-blue-600 shrink-0" />
+                            <span>{item}</span>
+                          </div>
+                          <button type="button" onClick={() => removeLearnItem(i)} className="text-slate-400 hover:text-red-600">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-400 italic">No key learning points added yet.</p>
+                  )}
+                </div>
+
+                {/* Featured on Homepage Toggle */}
+                <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+                  <div>
+                    <span className="font-bold text-slate-900 text-xs block">Feature on Platform Homepage</span>
+                    <span className="text-[11px] text-slate-500">Showcase this course in top highlights and banners</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={formData.isFeatured}
+                    onChange={e => set('isFeatured', e.target.checked)}
+                    className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  />
+                </div>
+
               </div>
             </div>
-            <TipsCard tips={[
-              'A clear title improves search ranking significantly',
-              '60–75% thresholds are industry standard',
-              'Tags help students discover your course faster',
-            ]} />
-          </div>
-        </div>
-      )}
+          )}
 
-      {/* ── STEP 2 ── */}
-      {step === 2 && (
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-3 items-start">
-          <div>
+          {/* ── STEP 4: CURRICULUM MODULES ── */}
+          {step === 4 && (
             <div className={card}>
               <div className={cardHead}>
-                <div className={iconBox('bg-emerald-50', 'text-emerald-600')}><CheckCircle className="w-4 h-4" /></div>
+                <div className={iconBox('bg-blue-50', 'text-blue-600')}><LayoutList className="w-4 h-4" /></div>
                 <div>
-                  <p className="text-sm font-medium text-slate-800">Certificate requirements</p>
-                  <p className="text-xs text-slate-400">Minimum thresholds to earn a certificate</p>
+                  <p className="text-sm font-bold text-slate-900">Curriculum Modules</p>
+                  <p className="text-xs text-slate-400">Outline the course structure into modules</p>
                 </div>
               </div>
-              <div className={cardBody}>
-                <Slider icon={CalendarCheck} iconBg="bg-blue-50" iconText="text-blue-600" barColor="bg-blue-500"
-                  label="Min. attendance" valKey="minAttendancePercent" val={formData.completionCriteria.minAttendancePercent} />
-                <Slider icon={Pencil} iconBg="bg-emerald-50" iconText="text-emerald-600" barColor="bg-emerald-500"
-                  label="Min. assignment score" valKey="minAssignmentScore" val={formData.completionCriteria.minAssignmentScore} />
-                <Slider icon={HelpCircle} iconBg="bg-amber-50" iconText="text-amber-600" barColor="bg-amber-500"
-                  label="Min. quiz score" valKey="minQuizScore" val={formData.completionCriteria.minQuizScore} />
-              </div>
-            </div>
 
-            <div className={card}>
-              <div className={cardHead}>
-                <div className={iconBox('bg-blue-50', 'text-blue-600')}><Clock className="w-4 h-4" /></div>
-                <div>
-                  <p className="text-sm font-medium text-slate-800">Course duration</p>
-                  <p className="text-xs text-slate-400">Estimated time to complete</p>
-                </div>
-              </div>
               <div className={cardBody + ' space-y-3'}>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className={lbl}>Total hours</label>
-                    <input type="number" min={1} value={formData.totalHours}
-                      onChange={e => set('totalHours', e.target.value)}
-                      className={inputCls} placeholder="e.g. 40" />
-                  </div>
-                  <div>
-                    <label className={lbl}>Sessions / week</label>
-                    <input type="number" min={1} value={formData.sessionsPerWeek}
-                      onChange={e => set('sessionsPerWeek', e.target.value)}
-                      className={inputCls} placeholder="e.g. 3" />
-                  </div>
-                </div>
-                <div>
-                  <label className={lbl}>Session duration</label>
-                  <select value={formData.sessionDuration} onChange={e => set('sessionDuration', e.target.value)} className={inputCls}>
-                    <option value="">Select duration</option>
-                    {DURATIONS.map(d => <option key={d}>{d}</option>)}
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div>
-            <TipsCard tips={[
-              '75% attendance is a common minimum for certification',
-              'Set quiz threshold slightly lower than assignments',
-              'Shorter sessions improve student retention rates',
-            ]} />
-          </div>
-        </div>
-      )}
-
-      {/* ── STEP 3 ── */}
-      {step === 3 && (
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-3 items-start">
-          <div>
-            <div className={card}>
-              <div className={cardHead}>
-                <div className={iconBox('bg-purple-50', 'text-purple-600')}><LayoutList className="w-4 h-4" /></div>
-                <div>
-                  <p className="text-sm font-medium text-slate-800">Course modules</p>
-                  <p className="text-xs text-slate-400">Organize your content into modules</p>
-                </div>
-              </div>
-              <div className={cardBody + ' space-y-2'}>
                 {formData.modules.map((m, i) => (
-                  <div key={i} className="flex items-center gap-2 p-2.5 bg-slate-50 rounded-xl">
-                    <div className="w-6 h-6 rounded-full bg-blue-50 text-blue-600 text-[11px] font-semibold flex items-center justify-center flex-shrink-0">
+                  <div key={i} className="flex items-center gap-2 p-2.5 bg-slate-50 border border-slate-100 rounded-2xl">
+                    <div className="w-7 h-7 rounded-xl bg-blue-600 text-white text-xs font-black flex items-center justify-center shrink-0">
                       {i + 1}
                     </div>
-                    <input type="text" value={m} onChange={e => updateModule(i, e.target.value)}
-                      className="flex-1 bg-transparent border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 outline-none focus:border-blue-400 min-w-0"
-                      placeholder="Module title..." />
-                    <button type="button" onClick={() => deleteModule(i)}
-                      className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 hover:text-red-500 hover:border-red-200 transition-colors flex-shrink-0">
+                    <input
+                      type="text"
+                      value={m}
+                      onChange={e => updateModule(i, e.target.value)}
+                      className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 outline-none focus:border-blue-500 min-w-0"
+                      placeholder={`e.g. Module ${i + 1}: Core Concepts & Lab Setup...`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => deleteModule(i)}
+                      className="w-8 h-8 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-red-600 hover:border-red-200 transition-colors shrink-0"
+                    >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 ))}
-                <button type="button" onClick={addModule}
-                  className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-dashed border-slate-300 text-slate-400 hover:bg-slate-50 text-xs transition-colors mt-1">
-                  <Plus className="w-3.5 h-3.5" /> Add module
+
+                <button
+                  type="button"
+                  onClick={addModule}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-dashed border-slate-300 text-slate-600 hover:bg-slate-50 text-xs font-bold transition-all mt-2 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4 text-blue-600" /> Add New Module
                 </button>
               </div>
             </div>
+          )}
 
+          {/* ── STEP 5: REVIEW & PUBLISH ── */}
+          {step === 5 && (
             <div className={card}>
               <div className={cardHead}>
-                <div className={iconBox('bg-rose-50', 'text-rose-600')}><Paperclip className="w-4 h-4" /></div>
+                <div className={iconBox('bg-emerald-50', 'text-emerald-600')}><CheckCircle className="w-4 h-4" /></div>
                 <div>
-                  <p className="text-sm font-medium text-slate-800">Resources & materials</p>
-                  <p className="text-xs text-slate-400">Add links or notes for students</p>
+                  <p className="text-sm font-bold text-slate-900">Review & Confirm</p>
+                  <p className="text-xs text-slate-400">Review all details before publishing</p>
                 </div>
               </div>
-              <div className={cardBody + ' space-y-3'}>
-                <div>
-                  <label className={lbl}>Resource link</label>
-                  <input type="text" value={formData.resourceLink}
-                    onChange={e => set('resourceLink', e.target.value)}
-                    className={inputCls} placeholder="https://..." />
+
+              <div className={cardBody + ' space-y-6'}>
+                
+                {/* Course Details Overview */}
+                <div className="space-y-2.5">
+                  <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">General Information</p>
+                  {[
+                    ['Title', formData.title || 'Untitled'],
+                    ['Slug', formData.slug ? `/courses/${formData.slug}` : 'Auto-generated'],
+                    ['Instructor', formData.instructorName || 'Not assigned'],
+                    ['Category', formData.category],
+                    ['Difficulty Level', formData.level],
+                    ['Tuition Model', formData.type === 'free' ? 'FREE' : `${formData.currency} ${formData.price.toLocaleString()}`],
+                    ['Duration', formData.duration],
+                    ['Start Date', fmtDate(formData.startDate) || 'Unscheduled'],
+                    ['End Date', fmtDate(formData.endDate) || 'Unscheduled'],
+                    ['Max Students', formData.maxStudents ? `${formData.maxStudents} students` : 'Unlimited'],
+                  ].map(([k, v]) => (
+                    <div key={k as string} className="flex justify-between items-center py-2 border-b border-slate-100 last:border-0 text-xs">
+                      <span className="text-slate-500 font-medium">{k}</span>
+                      <span className="font-bold text-slate-900 max-w-[240px] truncate text-right">{v}</span>
+                    </div>
+                  ))}
                 </div>
+
+                {/* Status Selection */}
                 <div>
-                  <label className={lbl}>Notes for students</label>
-                  <textarea rows={3} value={formData.studentNotes}
-                    onChange={e => set('studentNotes', e.target.value)}
-                    className={inputCls + ' resize-none'}
-                    placeholder="Prerequisites, tools needed, preparation instructions..." />
+                  <label className={lbl}>Initial Publication Status</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => set('status', 'published')}
+                      className={`p-3 rounded-xl border text-xs font-bold text-left cursor-pointer transition-all ${
+                        formData.status === 'published'
+                          ? 'border-blue-600 bg-blue-50 text-blue-900 ring-2 ring-blue-500/20'
+                          : 'border-slate-200 bg-white text-slate-700'
+                      }`}
+                    >
+                      <div className="font-extrabold">🚀 Live & Published</div>
+                      <div className="text-[11px] text-slate-500 font-normal mt-0.5">Students can browse & enroll</div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => set('status', 'draft')}
+                      className={`p-3 rounded-xl border text-xs font-bold text-left cursor-pointer transition-all ${
+                        formData.status === 'draft'
+                          ? 'border-blue-600 bg-blue-50 text-blue-900 ring-2 ring-blue-500/20'
+                          : 'border-slate-200 bg-white text-slate-700'
+                      }`}
+                    >
+                      <div className="font-extrabold">📝 Save as Draft</div>
+                      <div className="text-[11px] text-slate-500 font-normal mt-0.5">Hidden until you publish</div>
+                    </button>
+                  </div>
                 </div>
+
               </div>
             </div>
-          </div>
-          <div>
-            <TipsCard tips={[
-              'Keep each module focused on one key topic',
-              '5–8 modules is ideal for most courses',
-              'Include prerequisite info to set student expectations',
-            ]} />
-          </div>
-        </div>
-      )}
+          )}
 
-      {/* ── STEP 4 ── */}
-      {step === 4 && (
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-3 items-start">
+          {/* Stepper Navigation Buttons */}
+          <div className="flex justify-between items-center pt-2">
+            {step === 1 ? (
+              <Link
+                href="/lms/admin"
+                className="px-5 py-2.5 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-xs"
+              >
+                Cancel
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => goTo(step - 1)}
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-xs cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" /> Previous
+              </button>
+            )}
+
+            {step < 5 ? (
+              <button
+                type="button"
+                onClick={() => goTo(step + 1)}
+                className="inline-flex items-center gap-1.5 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+              >
+                Continue <ChevronRight className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handlePublish}
+                disabled={isSubmitting}
+                className="inline-flex items-center gap-2 px-7 py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs sm:text-sm font-extrabold rounded-2xl shadow-md transition-all cursor-pointer disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <><Loader size="sm" /> Publishing Course...</>
+                ) : (
+                  <><Rocket className="w-4 h-4" /> Publish Course Now</>
+                )}
+              </button>
+            )}
+          </div>
+
+        </div>
+
+        {/* Live Sidebar Preview (Interactive) */}
+        <div className="space-y-4">
+          
           <div className={card}>
             <div className={cardHead}>
-              <div className={iconBox('bg-emerald-50', 'text-emerald-600')}><CheckCircle className="w-4 h-4" /></div>
+              <div className={iconBox('bg-blue-50', 'text-blue-600')}><Eye className="w-4 h-4" /></div>
               <div>
-                <p className="text-sm font-medium text-slate-800">Review & confirm</p>
-                <p className="text-xs text-slate-400">Check all details before publishing</p>
+                <p className="text-sm font-bold text-slate-900">Live Preview Card</p>
+                <p className="text-xs text-slate-400">Updates live as you type</p>
               </div>
             </div>
-            <div className={cardBody + ' space-y-5'}>
-              <div>
-                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">General information</p>
-                {[
-                  ['Title',        formData.title || null],
-                  ['Category',     formData.category || null],
-                  ['Level',        formData.level],
-                  ['Start date',   fmtDate(formData.startDate) || null],
-                  ['End date',     fmtDate(formData.endDate) || null],
-                  ['Max students', formData.maxStudents ? formData.maxStudents + ' students' : null],
-                ].map(([k, v]) => (
-                  <div key={k as string} className="flex justify-between items-center py-1.5 border-b border-slate-100 last:border-0 text-xs">
-                    <span className="text-slate-500">{k}</span>
-                    {v ? <span className="font-medium text-slate-800">{v}</span>
-                       : <span className="text-slate-300 italic">Not set</span>}
-                  </div>
-                ))}
-              </div>
-              <div>
-                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">Certificate requirements</p>
-                <div className="flex gap-2">
-                  <span className="px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">
-                    Attendance: {formData.completionCriteria.minAttendancePercent}%
-                  </span>
-                  <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-medium">
-                    Assignment: {formData.completionCriteria.minAssignmentScore}%
-                  </span>
-                  <span className="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-medium">
-                    Quiz: {formData.completionCriteria.minQuizScore}%
-                  </span>
-                </div>
-              </div>
-              {formData.modules.filter(Boolean).length > 0 && (
-                <div>
-                  <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">Modules ({formData.modules.filter(Boolean).length})</p>
-                  <div className="space-y-1">
-                    {formData.modules.filter(Boolean).map((m, i) => (
-                      <div key={i} className="flex items-center gap-2 text-xs text-slate-600">
-                        <span className="w-4 h-4 rounded-full bg-slate-100 text-slate-500 text-[10px] font-semibold flex items-center justify-center">{i+1}</span>
-                        {m}
+
+            <div className="p-4">
+              
+              {/* Preview Card Component */}
+              <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-sm space-y-3">
+                
+                {/* Thumbnail Header */}
+                <div className="relative aspect-video w-full bg-slate-100 overflow-hidden">
+                  {formData.thumbnail ? (
+                    <img
+                      src={formData.thumbnail}
+                      alt="Thumbnail Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-blue-50 via-slate-50 to-blue-100/60 flex flex-col items-center justify-center text-slate-700 p-4 relative select-none">
+                      <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-xs flex items-center justify-center text-blue-600 mb-1">
+                        <BookOpen className="w-5 h-5" />
                       </div>
-                    ))}
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600">Course Preview</span>
+                    </div>
+                  )}
+
+                  <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1">
+                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
+                      formData.type === 'free' ? 'bg-blue-600 text-white' : 'bg-slate-900 text-white'
+                    }`}>
+                      {formData.type === 'free' ? 'FREE' : `${formData.currency} ${formData.price.toLocaleString()}`}
+                    </span>
+                    {formData.isFeatured && (
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500 text-white">
+                        Featured
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="absolute bottom-2.5 left-2.5 z-10">
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/90 backdrop-blur-md text-slate-800 border border-slate-200">
+                      {formData.category}
+                    </span>
                   </div>
                 </div>
-              )}
+
+                {/* Card Body */}
+                <div className="p-4 pt-1 space-y-3">
+                  <div className="space-y-1">
+                    <h3 className="font-bold text-slate-900 text-sm line-clamp-2">
+                      {formData.title || 'Your Course Title Here'}
+                    </h3>
+                    <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                      {formData.shortDescription || formData.description || 'Add a clear description for prospective students.'}
+                    </p>
+                  </div>
+
+                  {/* Instructor (Shown ONLY if selected/assigned) */}
+                  {formData.instructorName ? (
+                    <div className="flex items-center gap-2 pt-2 border-t border-slate-100 text-xs text-slate-600">
+                      <div className="w-5 h-5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-bold text-[10px] flex items-center justify-center shrink-0">
+                        {formData.instructorName.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="truncate">Instructor: <strong className="font-bold text-slate-800">{formData.instructorName}</strong></span>
+                    </div>
+                  ) : null}
+                </div>
+
+              </div>
+
             </div>
           </div>
 
-          <div>
-            <div className={card}>
-              <div className={cardHead}>
-                <div className={iconBox('bg-blue-50', 'text-blue-600')}><Pencil className="w-4 h-4" /></div>
-                <div><p className="text-sm font-medium text-slate-800">Quick edit</p></div>
-              </div>
-              <div className={cardBody + ' space-y-2'}>
-                {[
-                  ['General info', 1],
-                  ['Requirements', 2],
-                  ['Content',      3],
-                ].map(([label, n]) => (
-                  <button key={label as string} type="button" onClick={() => goTo(n as number)}
-                    className="w-full flex items-center gap-2 text-xs text-blue-600 font-medium hover:text-blue-800 transition-colors py-1">
-                    <ChevronLeft className="w-3.5 h-3.5" /> Edit {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <TipsCard tips={[
-              'Double-check dates are correct',
-              'You can edit the course after publishing',
-              'Students will be notified once published',
-            ]} />
-          </div>
+          <TipsCard tips={[
+            'Adding a custom thumbnail increases course enrollment by up to 60%',
+            'Define clear, measurable outcomes in "What You Will Learn"',
+            'You can easily attach video lectures after publishing using the Curriculum Builder',
+          ]} />
+
         </div>
-      )}
 
-      {/* Actions */}
-      <div className="flex justify-end gap-2 pt-1">
-        {step === 1 ? (
-          <Link href="/lms"
-            className="px-4 py-2 text-sm text-slate-500 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-            Cancel
-          </Link>
-        ) : (
-          <button type="button" onClick={() => goTo(step - 1)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm text-slate-500 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-            <ChevronLeft className="w-4 h-4" /> Back
-          </button>
-        )}
-        {step < 4 ? (
-          <button type="button" onClick={() => goTo(step + 1)}
-            className="inline-flex items-center gap-1.5 px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
-            Next step <ChevronRight className="w-4 h-4" />
-          </button>
-        ) : (
-          <button type="button" onClick={handlePublish} disabled={isSubmitting}
-            className="inline-flex items-center gap-1.5 px-5 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors">
-            {isSubmitting ? <><Loader size="sm" /> Publishing...</> : <><Rocket className="w-4 h-4" /> Publish course</>}
-          </button>
-        )}
       </div>
+
     </div>
   );
 }

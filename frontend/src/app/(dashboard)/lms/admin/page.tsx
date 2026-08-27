@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useStore } from "@/store/useStore";
@@ -9,9 +9,11 @@ import {
   CheckCircle, XCircle, Trash2, Eye, MoreVertical, Search,
   BarChart3, TrendingUp, UserCheck, UserX, Clock, Check,
   AlertCircle, Plus, Upload, Play, Edit, ArrowRight, Video,
-  Layers, DollarSign, Sparkles, Filter, X, Send, Loader2
+  Layers, DollarSign, Sparkles, Filter, X, Send, Loader2, Image as ImageIcon
 } from "lucide-react";
 import Loader from "@/components/ui/Loader";
+import CourseThumbnailUpload from "@/components/ui/CourseThumbnailUpload";
+import { formatDuration } from "@/utils/formatDuration";
 import * as lmsService from "@/services/lms.service";
 
 type Tab = "overview" | "registrations" | "courses" | "users" | "certificates";
@@ -33,6 +35,7 @@ export default function AdminDashboardPage() {
   const [courses, setCourses] = useState<any[]>([]);
   const [certs, setCerts] = useState<any[]>([]);
   const [registrations, setRegistrations] = useState<any[]>([]);
+  const [instructors, setInstructors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -56,12 +59,24 @@ export default function AdminDashboardPage() {
     slug: "",
     shortDescription: "",
     description: "",
+    instructor: "",
+    instructorName: "",
+    thumbnail: "",
     type: "free",
     price: 0,
     currency: "PKR",
     category: "Cyber Security",
     level: "Beginner",
     duration: "4 Hours",
+    startDate: "",
+    endDate: "",
+    maxStudents: "",
+    tags: "",
+    completionCriteria: {
+      minAttendancePercent: 75,
+      minAssignmentScore: 60,
+      minQuizScore: 60,
+    },
     status: "published",
     isFeatured: false,
     whatYouWillLearn: "",
@@ -93,18 +108,20 @@ export default function AdminDashboardPage() {
   const fetchAllData = async () => {
     setLoading(true);
     try {
-      const [s, u, c, ce, r] = await Promise.all([
+      const [s, u, c, ce, r, inst] = await Promise.all([
         lmsService.getAdminStats(),
         lmsService.getAdminUsers(),
         lmsService.getAdminCourses(),
         lmsService.getAdminCertificates(),
         lmsService.getAdminRegistrations(),
+        lmsService.getInstructors().catch(() => []),
       ]);
       setStats(s);
       setUsers(u || []);
       setCourses(c || []);
       setCerts(ce || []);
       setRegistrations(r || []);
+      setInstructors(inst || []);
     } catch (e: any) {
       setError(e?.message || "Failed to load admin data.");
     } finally {
@@ -176,12 +193,24 @@ export default function AdminDashboardPage() {
         slug: courseToEdit.slug || "",
         shortDescription: courseToEdit.shortDescription || "",
         description: courseToEdit.description || "",
+        instructor: courseToEdit.instructor?._id || courseToEdit.instructor || "",
+        instructorName: courseToEdit.instructor?.name || courseToEdit.instructorName || "",
+        thumbnail: courseToEdit.thumbnail || "",
         type: courseToEdit.type || "free",
         price: courseToEdit.price || 0,
         currency: courseToEdit.currency || "PKR",
         category: courseToEdit.category || "Cyber Security",
         level: courseToEdit.level || "Beginner",
         duration: courseToEdit.duration || "4 Hours",
+        startDate: courseToEdit.startDate ? new Date(courseToEdit.startDate).toISOString().split('T')[0] : "",
+        endDate: courseToEdit.endDate ? new Date(courseToEdit.endDate).toISOString().split('T')[0] : "",
+        maxStudents: courseToEdit.maxStudents || "",
+        tags: Array.isArray(courseToEdit.tags) ? courseToEdit.tags.join(", ") : "",
+        completionCriteria: {
+          minAttendancePercent: courseToEdit.completionCriteria?.minAttendancePercent ?? 75,
+          minAssignmentScore: courseToEdit.completionCriteria?.minAssignmentScore ?? 60,
+          minQuizScore: courseToEdit.completionCriteria?.minQuizScore ?? 60,
+        },
         status: courseToEdit.status || "published",
         isFeatured: !!courseToEdit.isFeatured,
         whatYouWillLearn: Array.isArray(courseToEdit.whatYouWillLearn)
@@ -195,15 +224,27 @@ export default function AdminDashboardPage() {
         slug: "",
         shortDescription: "",
         description: "",
+        instructor: user?._id || "",
+        instructorName: user?.name || "",
+        thumbnail: "",
         type: "free",
         price: 0,
         currency: "PKR",
         category: "Cyber Security",
         level: "Beginner",
         duration: "4 Hours",
+        startDate: "",
+        endDate: "",
+        maxStudents: "",
+        tags: "",
+        completionCriteria: {
+          minAttendancePercent: 75,
+          minAssignmentScore: 60,
+          minQuizScore: 60,
+        },
         status: "published",
         isFeatured: false,
-        whatYouWillLearn: "Foundational Security Concepts\nPractical Hands-on Exercises\nIndustry Best Practices",
+        whatYouWillLearn: "",
       });
     }
     setCourseModalOpen(true);
@@ -212,13 +253,36 @@ export default function AdminDashboardPage() {
   const handleSaveCourse = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const payload = {
-        ...courseForm,
-        whatYouWillLearn: courseForm.whatYouWillLearn
-          .split("\n")
-          .map((s: string) => s.trim())
-          .filter(Boolean),
+      const payload: any = {
+        title: courseForm.title.trim(),
+        description: courseForm.description.trim(),
+        shortDescription: courseForm.shortDescription.trim() || courseForm.description.trim().substring(0, 140),
+        instructor: courseForm.instructor || undefined,
+        instructorName: courseForm.instructorName || undefined,
+        thumbnail: courseForm.thumbnail || "",
+        type: courseForm.type,
+        price: courseForm.type === 'paid' ? Number(courseForm.price || 0) : 0,
+        currency: courseForm.currency || "PKR",
+        category: courseForm.category,
+        level: courseForm.level,
+        duration: courseForm.duration || "4 Hours",
+        startDate: courseForm.startDate || undefined,
+        endDate: courseForm.endDate || undefined,
+        maxStudents: courseForm.maxStudents ? Number(courseForm.maxStudents) : undefined,
+        tags: typeof courseForm.tags === 'string'
+          ? courseForm.tags.split(',').map((t: string) => t.trim()).filter(Boolean)
+          : courseForm.tags,
+        completionCriteria: courseForm.completionCriteria,
+        status: courseForm.status,
+        isFeatured: !!courseForm.isFeatured,
+        whatYouWillLearn: typeof courseForm.whatYouWillLearn === 'string'
+          ? courseForm.whatYouWillLearn.split("\n").map((s: string) => s.trim()).filter(Boolean)
+          : courseForm.whatYouWillLearn,
       };
+
+      if (courseForm.slug?.trim()) {
+        payload.slug = courseForm.slug.trim();
+      }
 
       if (editingCourse) {
         await lmsService.updateCourse(editingCourse._id, payload);
@@ -277,12 +341,33 @@ export default function AdminDashboardPage() {
     setLectureForm({
       title: "",
       description: "",
-      duration: 600,
+      duration: 0,
       isPreview: false,
       videoUrl: "",
     });
     setVideoFile(null);
     setLectureModalOpen(true);
+  };
+
+  const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setVideoFile(file);
+    if (file) {
+      try {
+        const videoElem = document.createElement("video");
+        videoElem.preload = "metadata";
+        videoElem.onloadedmetadata = () => {
+          window.URL.revokeObjectURL(videoElem.src);
+          const exactDuration = Math.round(videoElem.duration || 0);
+          if (exactDuration > 0) {
+            setLectureForm((prev: any) => ({ ...prev, duration: exactDuration }));
+          }
+        };
+        videoElem.src = URL.createObjectURL(file);
+      } catch (err) {
+        console.warn("Could not extract local video duration:", err);
+      }
+    }
   };
 
   const handleSaveLecture = async (e: React.FormEvent) => {
@@ -291,7 +376,7 @@ export default function AdminDashboardPage() {
 
     setVideoUploading(true);
     try {
-      let videoMetadata = undefined;
+      let videoMetadata: any = undefined;
 
       if (videoFile) {
         const formData = new FormData();
@@ -306,8 +391,13 @@ export default function AdminDashboardPage() {
         };
       }
 
+      const exactDuration = (videoMetadata && typeof videoMetadata.duration === 'number' && videoMetadata.duration > 0)
+        ? Math.round(videoMetadata.duration)
+        : (Number(lectureForm.duration) || 0);
+
       const lecturePayload = {
         ...lectureForm,
+        duration: exactDuration,
         contentUrl: lectureForm.videoUrl?.trim() || "",
         video: videoMetadata,
       };
@@ -656,50 +746,178 @@ export default function AdminDashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCourses.map((c) => (
-              <div key={c._id} className="border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:shadow-lg hover:border-blue-300 transition-all">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                      c.type === "free" ? "bg-blue-100 text-blue-800" : "bg-slate-900 text-white"
-                    }`}>
-                      {c.type === "free" ? "FREE" : `PAID • PKR ${c.price || 0}`}
-                    </span>
-                    <span className="text-[11px] text-slate-400 font-medium capitalize">{c.status}</span>
+            {filteredCourses.map((c) => {
+              const instructorName = c.instructor?.name || c.instructorName;
+              const isFree = c.type === "free";
+
+              return (
+                <div
+                  key={c._id}
+                  className="bg-white border border-slate-200/90 rounded-3xl overflow-hidden flex flex-col justify-between hover:shadow-xl hover:border-blue-300 transition-all group"
+                >
+                  {/* Thumbnail / Header Banner */}
+                  <div className="relative aspect-video w-full bg-slate-100 overflow-hidden">
+                    {c.thumbnail ? (
+                      <img
+                        src={c.thumbnail}
+                        alt={c.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-slate-100 via-blue-50 to-slate-200 flex flex-col items-center justify-center text-slate-600 p-4 relative select-none">
+                        <BookOpen className="w-8 h-8 text-blue-600 mb-1" />
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                          {c.category || "Course"}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Floating Badges */}
+                    <div className="absolute top-2.5 left-2.5 z-10 flex flex-wrap items-center gap-1.5">
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
+                        isFree ? "bg-blue-600 text-white" : "bg-slate-900 text-white"
+                      }`}>
+                        {isFree ? "FREE" : `${c.currency || "PKR"} ${(c.price || 0).toLocaleString()}`}
+                      </span>
+
+                      {c.isFeatured && (
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500 text-white shadow-xs">
+                          Featured
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="absolute top-2.5 right-2.5 z-10">
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold capitalize shadow-xs ${
+                        c.status === "published" || c.status === "active"
+                          ? "bg-emerald-500 text-white"
+                          : c.status === "draft"
+                          ? "bg-amber-500 text-white"
+                          : "bg-slate-700 text-white"
+                      }`}>
+                        {c.status || "draft"}
+                      </span>
+                    </div>
+
+                    <div className="absolute bottom-2.5 left-2.5 z-10 flex items-center gap-1">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/90 backdrop-blur-md text-slate-800 border border-slate-200/80">
+                        {c.category || "General"}
+                      </span>
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/90 backdrop-blur-md text-slate-700 border border-slate-200/80">
+                        {c.level || "Beginner"}
+                      </span>
+                    </div>
                   </div>
 
-                  <h3 className="font-bold text-slate-900 text-base">{c.title}</h3>
-                  <p className="text-xs text-slate-500 line-clamp-2">{c.shortDescription || c.description}</p>
-                </div>
+                  {/* Course Details Content */}
+                  <div className="p-5 space-y-4 flex-1">
+                    <div className="space-y-1">
+                      <h3 className="font-extrabold text-slate-900 text-base line-clamp-1 group-hover:text-blue-600 transition-colors">
+                        {c.title}
+                      </h3>
+                      {c.slug && (
+                        <p className="text-[11px] font-mono text-slate-400 truncate">
+                          /courses/{c.slug}
+                        </p>
+                      )}
+                      <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed pt-1">
+                        {c.shortDescription || c.description || "No description provided."}
+                      </p>
+                    </div>
 
-                <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                  <button
-                    onClick={() => handleOpenBuilder(c)}
-                    className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs rounded-lg shadow-xs flex items-center gap-1 cursor-pointer transition-colors"
-                  >
-                    <Layers className="w-3.5 h-3.5" />
-                    Curriculum Builder
-                  </button>
+                    {/* Instructor Row (Shown ONLY if selected/assigned) */}
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+                      {instructorName ? (
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-6 h-6 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-black text-[10px] flex items-center justify-center shrink-0">
+                            {instructorName.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="truncate">
+                            <span className="text-[10px] text-slate-400 block uppercase font-bold tracking-wider leading-none">Instructor</span>
+                            <span className="font-bold text-slate-800 text-xs truncate block">{instructorName}</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-[11px] text-slate-400 italic">No instructor assigned</span>
+                      )}
 
-                  <div className="flex items-center gap-1">
+                      {c.duration && (
+                        <span className="text-[11px] font-semibold text-slate-600 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200 shrink-0">
+                          {c.duration}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Schedule & Capacity Metrics */}
+                    <div className="grid grid-cols-2 gap-2 p-2.5 bg-slate-50 border border-slate-100 rounded-xl text-[11px] text-slate-600">
+                      <div>
+                        <span className="text-slate-400 block text-[10px] font-bold uppercase">Students</span>
+                        <span className="font-extrabold text-slate-800">
+                          {c.studentCount || 0}
+                          {c.maxStudents ? ` / ${c.maxStudents}` : " (Unlimited)"}
+                        </span>
+                      </div>
+
+                      <div>
+                        <span className="text-slate-400 block text-[10px] font-bold uppercase">Curriculum</span>
+                        <span className="font-extrabold text-slate-800">
+                          {c.moduleCount || 0} Mods • {c.lectureCount || 0} Lecs
+                        </span>
+                      </div>
+
+                      {(c.startDate || c.endDate) && (
+                        <div className="col-span-2 pt-1 border-t border-slate-200/60 flex items-center justify-between text-[10px]">
+                          <span className="text-slate-400 font-bold uppercase">Term:</span>
+                          <span className="text-slate-700 font-semibold">
+                            {c.startDate ? new Date(c.startDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "Anytime"}
+                            {" → "}
+                            {c.endDate ? new Date(c.endDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "Open"}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Tags */}
+                    {Array.isArray(c.tags) && c.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {c.tags.slice(0, 3).map((tag: string, idx: number) => (
+                          <span key={idx} className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-bold rounded-md">
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions Footer */}
+                  <div className="p-4 pt-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between gap-2">
+                    <button
+                      onClick={() => handleOpenBuilder(c)}
+                      className="flex-1 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                    >
+                      <Layers className="w-3.5 h-3.5" />
+                      Curriculum
+                    </button>
+
                     <button
                       onClick={() => handleOpenCourseModal(c)}
-                      className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg cursor-pointer transition-colors"
-                      title="Edit Course"
+                      className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 bg-white border border-slate-200 rounded-xl cursor-pointer transition-colors shadow-xs"
+                      title="Edit Course Details"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
+
                     <button
                       onClick={() => setConfirmAction({ type: "deleteCourse", id: c._id, label: `Delete course "${c.title}"` })}
-                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg cursor-pointer transition-colors"
+                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 bg-white border border-slate-200 rounded-xl cursor-pointer transition-colors shadow-xs"
                       title="Delete Course"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -829,25 +1047,60 @@ export default function AdminDashboardPage() {
       {/* ── MODALS ── */}
 
       {/* Approve Registration Modal */}
+      {/* Approve Registration Modal */}
       {approveModalOpen && selectedReg && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 animate-in zoom-in-95 duration-200">
-            <h3 className="text-lg font-black text-slate-900">Approve Student Enrollment</h3>
-            <p className="text-xs text-slate-600">
-              Are you sure you want to approve enrollment for <strong className="text-slate-900">{selectedReg.userId?.name}</strong> in <strong className="text-slate-900">{selectedReg.courseId?.title}</strong>?
-            </p>
-            <div className="bg-slate-50 p-3 rounded-xl text-xs space-y-1">
-              <div><strong>Payment Ref:</strong> {selectedReg.paymentReference || "None"}</div>
-              <div><strong>Tuition:</strong> PKR {(selectedReg.price || selectedReg.courseId?.price || 0).toLocaleString()}</div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
+                <CheckCircle className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-900">Accept & Unlock Course</h3>
+                <p className="text-xs text-slate-500">Grant full student access and send confirmation email</p>
+              </div>
             </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <button onClick={() => setApproveModalOpen(false)} className="px-4 py-2 text-xs font-bold text-slate-600">Cancel</button>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Are you sure you want to approve enrollment for <strong className="text-slate-900 font-bold">{selectedReg.userId?.name}</strong>?
+            </p>
+
+            <div className="bg-slate-50 border border-slate-200/80 p-4 rounded-2xl text-xs space-y-2 text-slate-600">
+              <div className="flex justify-between">
+                <span>Student:</span>
+                <strong className="text-slate-900 font-bold">{selectedReg.userId?.name} ({selectedReg.userId?.email})</strong>
+              </div>
+              <div className="flex justify-between">
+                <span>Course:</span>
+                <strong className="text-slate-900 font-bold">{selectedReg.courseId?.title}</strong>
+              </div>
+              <div className="flex justify-between">
+                <span>Tuition:</span>
+                <strong className="text-slate-900 font-bold">PKR {(selectedReg.price || selectedReg.courseId?.price || 0).toLocaleString()}</strong>
+              </div>
+              {selectedReg.paymentReference && (
+                <div className="flex justify-between">
+                  <span>Payment Ref:</span>
+                  <span className="font-mono text-slate-800 font-bold">{selectedReg.paymentReference}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-2.5 pt-2">
               <button
+                type="button"
+                onClick={() => setApproveModalOpen(false)}
+                className="px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
                 onClick={handleApproveRegistration}
                 disabled={regSubmitting}
-                className="px-5 py-2 bg-emerald-600 text-white font-bold text-xs rounded-xl"
+                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-50"
               >
-                {regSubmitting ? "Approving..." : "Confirm & Unlock Course"}
+                {regSubmitting ? "Approving & Sending Email..." : "Accept & Unlock Course"}
               </button>
             </div>
           </div>
@@ -856,27 +1109,50 @@ export default function AdminDashboardPage() {
 
       {/* Reject Registration Modal */}
       {rejectModalOpen && selectedReg && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 animate-in zoom-in-95 duration-200">
-            <h3 className="text-lg font-black text-slate-900">Reject Registration</h3>
-            <p className="text-xs text-slate-600">
-              Provide a reason for rejecting <strong className="text-slate-900">{selectedReg.userId?.name}</strong>'s application:
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100">
+                <XCircle className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-900">Decline Student Request</h3>
+                <p className="text-xs text-slate-500">Reject request and notify student with reason</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Decline enrollment request for <strong className="text-slate-900 font-bold">{selectedReg.userId?.name}</strong> in <strong className="text-slate-900 font-bold">{selectedReg.courseId?.title}</strong>.
             </p>
-            <textarea
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              placeholder="e.g. Invalid payment reference or eligibility criteria not met..."
-              rows={3}
-              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs"
-            />
-            <div className="flex justify-end gap-2 pt-2">
-              <button onClick={() => setRejectModalOpen(false)} className="px-4 py-2 text-xs font-bold text-slate-600">Cancel</button>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 block">
+                Decline Reason (Sent to Student via Email)
+              </label>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="e.g. Invalid payment transaction ID or fee transfer not received..."
+                rows={3}
+                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 outline-none"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2.5 pt-2">
               <button
+                type="button"
+                onClick={() => setRejectModalOpen(false)}
+                className="px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
                 onClick={handleRejectRegistration}
                 disabled={regSubmitting}
-                className="px-5 py-2 bg-red-600 text-white font-bold text-xs rounded-xl"
+                className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-50"
               >
-                {regSubmitting ? "Rejecting..." : "Reject Application"}
+                {regSubmitting ? "Declining..." : "Decline Request"}
               </button>
             </div>
           </div>
@@ -962,7 +1238,7 @@ export default function AdminDashboardPage() {
                                 )}
                               </div>
                               <span className="text-[10px] text-slate-400">
-                                {lec.duration ? `${Math.round(lec.duration / 60)} mins` : "Duration unset"}
+                                {lec.duration ? formatDuration(lec.duration) : "Duration unset"}
                               </span>
                             </div>
                           </div>
@@ -1016,10 +1292,13 @@ export default function AdminDashboardPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Estimated Duration (Seconds)</label>
+                  <label className="font-bold text-slate-700 block mb-1">
+                    Duration (Seconds) {lectureForm.duration > 0 && <span className="text-blue-600 font-semibold ml-1">({formatDuration(lectureForm.duration)})</span>}
+                  </label>
                   <input
                     type="number"
-                    value={lectureForm.duration}
+                    value={lectureForm.duration || ""}
+                    placeholder="Auto-detected from video"
                     onChange={(e) => setLectureForm({ ...lectureForm, duration: Number(e.target.value) })}
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   />
@@ -1058,7 +1337,7 @@ export default function AdminDashboardPage() {
                 <input
                   type="file"
                   accept="video/*"
-                  onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
+                  onChange={handleVideoFileChange}
                   className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
                 />
               </div>
@@ -1087,66 +1366,121 @@ export default function AdminDashboardPage() {
       {/* Create / Edit Course Modal */}
       {courseModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 max-h-[90vh] overflow-y-auto space-y-4 animate-in zoom-in-95 duration-200">
-            <h3 className="text-xl font-black text-slate-900">
-              {editingCourse ? "Edit Course" : "Create New Course"}
-            </h3>
+          <div className="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-8 max-h-[90vh] overflow-y-auto space-y-5 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="text-xl font-black text-slate-900">
+                {editingCourse ? "Edit Course" : "Create New Course"}
+              </h3>
+              <button
+                onClick={() => setCourseModalOpen(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-50 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
             <form onSubmit={handleSaveCourse} className="space-y-4 text-xs">
+              {/* Title & Slug */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Course Title</label>
+                  <label className="font-bold text-slate-700 block mb-1">Course Title *</label>
                   <input
                     type="text"
                     required
                     value={courseForm.title}
-                    onChange={(e) => setCourseForm({ ...courseForm, title: e.target.value })}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setCourseForm((prev: any) => ({
+                        ...prev,
+                        title: val,
+                        slug: prev.slug || val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')
+                      }));
+                    }}
                     placeholder="e.g. Certified Ethical Hacker Track"
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
                   />
                 </div>
                 <div>
                   <label className="font-bold text-slate-700 block mb-1">
-                    Course URL Slug <span className="text-[10px] text-slate-400 font-normal">(Auto-generated if left blank)</span>
+                    Course URL Slug <span className="text-[10px] text-slate-400 font-normal">(e.g. /courses/slug)</span>
                   </label>
                   <input
                     type="text"
                     value={courseForm.slug}
-                    onChange={(e) => setCourseForm({ ...courseForm, slug: e.target.value })}
-                    placeholder="e.g. cyber-security"
+                    onChange={(e) => setCourseForm({ ...courseForm, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') })}
+                    placeholder="e.g. ethical-hacking-track"
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs"
                   />
                 </div>
               </div>
 
+              {/* Lead Instructor Dropdown */}
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Short Description</label>
+                <label className="font-bold text-slate-700 block mb-1">
+                  Lead Instructor <span className="text-[10px] text-slate-400 font-normal">(Select registered faculty)</span>
+                </label>
+                <select
+                  value={courseForm.instructor}
+                  onChange={(e) => {
+                    const instId = e.target.value;
+                    const match = instructors.find((i: any) => i._id === instId);
+                    setCourseForm({
+                      ...courseForm,
+                      instructor: instId,
+                      instructorName: match ? match.name : "",
+                    });
+                  }}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium cursor-pointer"
+                >
+                  <option value="">-- No Instructor Assigned --</option>
+                  {instructors.map((inst: any) => (
+                    <option key={inst._id} value={inst._id}>
+                      {inst.name} ({inst.role.toUpperCase()} • {inst.email})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Course Thumbnail Management */}
+              <div className="p-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl">
+                <CourseThumbnailUpload
+                  value={courseForm.thumbnail}
+                  onChange={(url) => setCourseForm((prev: any) => ({ ...prev, thumbnail: url }))}
+                />
+              </div>
+
+              {/* Short & Full Description */}
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Short Description / Tagline</label>
                 <input
                   type="text"
                   value={courseForm.shortDescription}
                   onChange={(e) => setCourseForm({ ...courseForm, shortDescription: e.target.value })}
-                  placeholder="1-2 sentences summarizing the program..."
+                  placeholder="1-2 sentences summarizing the program for catalog cards..."
                   className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
                 />
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Full Description</label>
+                <label className="font-bold text-slate-700 block mb-1">Full Description *</label>
                 <textarea
+                  required
                   value={courseForm.description}
                   onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })}
-                  rows={4}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  rows={3}
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl resize-none"
+                  placeholder="Comprehensive syllabus overview, prerequisites, and learning objectives..."
                 />
               </div>
 
+              {/* Pricing */}
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="font-bold text-slate-700 block mb-1">Course Type</label>
                   <select
                     value={courseForm.type}
-                    onChange={(e) => setCourseForm({ ...courseForm, type: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold"
+                    onChange={(e) => setCourseForm({ ...courseForm, type: e.target.value, price: e.target.value === 'free' ? 0 : courseForm.price })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold cursor-pointer"
                   >
                     <option value="free">Free Course</option>
                     <option value="paid">Paid Track</option>
@@ -1157,10 +1491,11 @@ export default function AdminDashboardPage() {
                   <label className="font-bold text-slate-700 block mb-1">Price</label>
                   <input
                     type="number"
+                    min={0}
                     value={courseForm.price}
                     onChange={(e) => setCourseForm({ ...courseForm, price: Number(e.target.value) })}
                     disabled={courseForm.type === "free"}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl disabled:opacity-50"
                   />
                 </div>
 
@@ -1169,32 +1504,37 @@ export default function AdminDashboardPage() {
                   <input
                     type="text"
                     value={courseForm.currency}
-                    onChange={(e) => setCourseForm({ ...courseForm, currency: e.target.value })}
+                    onChange={(e) => setCourseForm({ ...courseForm, currency: e.target.value.toUpperCase() })}
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
                   />
                 </div>
               </div>
 
+              {/* Category, Level & Status */}
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="font-bold text-slate-700 block mb-1">Category</label>
-                  <input
-                    type="text"
+                  <select
                     value={courseForm.category}
                     onChange={(e) => setCourseForm({ ...courseForm, category: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
-                  />
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium cursor-pointer"
+                  >
+                    {["Cyber Security", "Web Development", "Cloud & DevOps", "Artificial Intelligence", "Data Science", "Mobile Development", "General"].map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="font-bold text-slate-700 block mb-1">Level</label>
                   <select
                     value={courseForm.level}
                     onChange={(e) => setCourseForm({ ...courseForm, level: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold cursor-pointer"
                   >
                     <option value="Beginner">Beginner</option>
                     <option value="Intermediate">Intermediate</option>
                     <option value="Advanced">Advanced</option>
+                    <option value="All levels">All levels</option>
                   </select>
                 </div>
                 <div>
@@ -1202,15 +1542,121 @@ export default function AdminDashboardPage() {
                   <select
                     value={courseForm.status}
                     onChange={(e) => setCourseForm({ ...courseForm, status: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold cursor-pointer"
                   >
                     <option value="published">Published</option>
                     <option value="draft">Draft</option>
+                    <option value="active">Active</option>
                     <option value="archived">Archived</option>
                   </select>
                 </div>
               </div>
 
+              {/* Duration, Capacity & Dates */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Duration</label>
+                  <input
+                    type="text"
+                    value={courseForm.duration}
+                    onChange={(e) => setCourseForm({ ...courseForm, duration: e.target.value })}
+                    placeholder="e.g. 4 Hours / 8 Weeks"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Max Students</label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={courseForm.maxStudents}
+                    onChange={(e) => setCourseForm({ ...courseForm, maxStudents: e.target.value })}
+                    placeholder="Unlimited"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Start Date</label>
+                  <input
+                    type="date"
+                    value={courseForm.startDate}
+                    onChange={(e) => setCourseForm({ ...courseForm, startDate: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">End Date</label>
+                  <input
+                    type="date"
+                    value={courseForm.endDate}
+                    onChange={(e) => setCourseForm({ ...courseForm, endDate: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+              </div>
+
+              {/* Completion Criteria */}
+              <div className="grid grid-cols-3 gap-3 p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl">
+                <div>
+                  <label className="font-bold text-slate-700 block text-[11px] mb-1">Min Attendance (%)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={courseForm.completionCriteria?.minAttendancePercent ?? 75}
+                    onChange={(e) => setCourseForm({
+                      ...courseForm,
+                      completionCriteria: { ...courseForm.completionCriteria, minAttendancePercent: Number(e.target.value) }
+                    })}
+                    className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block text-[11px] mb-1">Min Assignment (%)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={courseForm.completionCriteria?.minAssignmentScore ?? 60}
+                    onChange={(e) => setCourseForm({
+                      ...courseForm,
+                      completionCriteria: { ...courseForm.completionCriteria, minAssignmentScore: Number(e.target.value) }
+                    })}
+                    className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block text-[11px] mb-1">Min Quiz Pass (%)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={courseForm.completionCriteria?.minQuizScore ?? 60}
+                    onChange={(e) => setCourseForm({
+                      ...courseForm,
+                      completionCriteria: { ...courseForm.completionCriteria, minQuizScore: Number(e.target.value) }
+                    })}
+                    className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs"
+                  />
+                </div>
+              </div>
+
+              {/* Tags */}
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Topic Tags (comma-separated)</label>
+                <input
+                  type="text"
+                  value={courseForm.tags}
+                  onChange={(e) => setCourseForm({ ...courseForm, tags: e.target.value })}
+                  placeholder="e.g. cybersecurity, linux, networking, python"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                />
+              </div>
+
+              {/* What You Will Learn */}
               <div>
                 <label className="font-bold text-slate-700 block mb-1">What You Will Learn (1 point per line)</label>
                 <textarea
@@ -1218,19 +1664,21 @@ export default function AdminDashboardPage() {
                   onChange={(e) => setCourseForm({ ...courseForm, whatYouWillLearn: e.target.value })}
                   rows={3}
                   className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  placeholder="Key student learning outcomes..."
                 />
               </div>
 
-              <div className="flex items-center gap-2">
+              {/* Featured toggle */}
+              <div className="flex items-center gap-2 pt-1">
                 <input
                   type="checkbox"
                   id="isFeatured"
                   checked={courseForm.isFeatured}
                   onChange={(e) => setCourseForm({ ...courseForm, isFeatured: e.target.checked })}
-                  className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4"
+                  className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
                 />
-                <label htmlFor="isFeatured" className="font-bold text-slate-800 cursor-pointer">
-                  Feature this course on Homepage
+                <label htmlFor="isFeatured" className="font-bold text-slate-800 cursor-pointer text-xs">
+                  Feature this course on Platform Homepage
                 </label>
               </div>
 

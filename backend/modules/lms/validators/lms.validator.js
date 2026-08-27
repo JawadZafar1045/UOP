@@ -30,6 +30,12 @@ const createCourseVal = [
   body('description')
     .optional()
     .trim(),
+  body('shortDescription')
+    .optional()
+    .trim(),
+  body('slug')
+    .optional()
+    .trim(),
   body('status')
     .optional()
     .isIn(['draft', 'active', 'published', 'completed', 'archived'])
@@ -38,6 +44,30 @@ const createCourseVal = [
     .optional()
     .isIn(['free', 'paid'])
     .withMessage('Type must be free or paid'),
+  body('price')
+    .optional()
+    .isNumeric()
+    .withMessage('Price must be a number'),
+  body('currency')
+    .optional()
+    .trim(),
+  body('category')
+    .optional()
+    .trim(),
+  body('level')
+    .optional()
+    .trim(),
+  body('duration')
+    .optional()
+    .trim(),
+  body('thumbnail')
+    .optional()
+    .trim(),
+  body('instructor')
+    .optional(),
+  body('isFeatured')
+    .optional()
+    .isBoolean(),
 ];
 
 const updateCourseVal = [
@@ -54,6 +84,12 @@ const updateCourseVal = [
   body('description')
     .optional()
     .trim(),
+  body('shortDescription')
+    .optional()
+    .trim(),
+  body('slug')
+    .optional()
+    .trim(),
   body('status')
     .optional()
     .isIn(['draft', 'active', 'published', 'completed', 'archived'])
@@ -62,6 +98,30 @@ const updateCourseVal = [
     .optional()
     .isIn(['free', 'paid'])
     .withMessage('Type must be free or paid'),
+  body('price')
+    .optional()
+    .isNumeric()
+    .withMessage('Price must be a number'),
+  body('currency')
+    .optional()
+    .trim(),
+  body('category')
+    .optional()
+    .trim(),
+  body('level')
+    .optional()
+    .trim(),
+  body('duration')
+    .optional()
+    .trim(),
+  body('thumbnail')
+    .optional()
+    .trim(),
+  body('instructor')
+    .optional(),
+  body('isFeatured')
+    .optional()
+    .isBoolean(),
 ];
 
 const deleteCourseVal = [
