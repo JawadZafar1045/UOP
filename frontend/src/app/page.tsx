@@ -9,13 +9,10 @@ import * as lmsService from '@/services/lms.service';
 import {
   ArrowRight,
   Shield,
-  Code2,
   Terminal,
-  Cpu,
   Sparkles,
   BookOpen,
   Award,
-  Lock,
   Layers,
   Search,
   Check,
@@ -26,10 +23,10 @@ import {
 
 const CATEGORIES = [
   { name: 'All Tracks', filter: '', icon: Layers },
-  { name: 'Cyber Security', filter: 'Cyber Security', icon: Shield },
-  { name: 'Web Development', filter: 'Web Development', icon: Code2 },
-  { name: 'Cloud & Systems', filter: 'Mobile Development', icon: Terminal },
-  { name: 'DevOps & Architecture', filter: 'DevOps', icon: Cpu },
+  { name: 'Certification Bootcamp', filter: 'Certification Bootcamp', icon: Award },
+  { name: 'Specialized Courses', filter: 'Specialized Courses', icon: BookOpen },
+  { name: 'Customized Training', filter: 'Customized Training', icon: Compass },
+  { name: 'Law Enforcement Agencies', filter: 'Law Enforcement Agencies', icon: Shield },
 ];
 
 export default function HomePage() {

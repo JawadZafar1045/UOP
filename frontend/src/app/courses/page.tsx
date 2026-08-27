@@ -36,7 +36,7 @@ function CoursesCatalogContent() {
         ]);
         const courseList = courseRes?.data?.data || courseRes?.data || [];
         setCourses(Array.isArray(courseList) ? courseList : []);
-        setCategories(Array.isArray(catRes) ? catRes : ['Cyber Security', 'Web Development', 'Mobile Development', 'DevOps', 'Artificial Intelligence']);
+        setCategories(Array.isArray(catRes) ? catRes : ['Certification Bootcamp', 'Specialized Courses', 'Customized Training', 'Law Enforcement Agencies']);
       } catch (err) {
         console.error('Failed to load catalog:', err);
       } finally {

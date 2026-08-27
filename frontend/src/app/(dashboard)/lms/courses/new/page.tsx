@@ -32,15 +32,10 @@ const LEVELS = [
 ];
 
 const CATEGORIES = [
-  'Cyber Security',
-  'Web Development',
-  'Cloud & DevOps',
-  'Artificial Intelligence',
-  'Data Science',
-  'Mobile Development',
-  'Software Engineering',
-  'Computer Science',
-  'General',
+  'Certification Bootcamp',
+  'Specialized Courses',
+  'Customized Training',
+  'Law Enforcement Agencies',
 ];
 
 const PRESET_THUMBNAILS = [
@@ -95,7 +90,7 @@ export default function NewCoursePage() {
     type: 'free' as 'free' | 'paid',
     price: 0,
     currency: 'PKR',
-    category: 'Cyber Security',
+    category: 'Certification Bootcamp',
     level: 'Intermediate',
     duration: '4 Hours',
     totalHours: '',

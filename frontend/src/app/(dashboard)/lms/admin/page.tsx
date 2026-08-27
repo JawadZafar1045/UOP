@@ -65,7 +65,7 @@ export default function AdminDashboardPage() {
     type: "free",
     price: 0,
     currency: "PKR",
-    category: "Cyber Security",
+    category: "Certification Bootcamp",
     level: "Beginner",
     duration: "4 Hours",
     startDate: "",
@@ -199,7 +199,7 @@ export default function AdminDashboardPage() {
         type: courseToEdit.type || "free",
         price: courseToEdit.price || 0,
         currency: courseToEdit.currency || "PKR",
-        category: courseToEdit.category || "Cyber Security",
+        category: courseToEdit.category || "Certification Bootcamp",
         level: courseToEdit.level || "Beginner",
         duration: courseToEdit.duration || "4 Hours",
         startDate: courseToEdit.startDate ? new Date(courseToEdit.startDate).toISOString().split('T')[0] : "",
@@ -230,7 +230,7 @@ export default function AdminDashboardPage() {
         type: "free",
         price: 0,
         currency: "PKR",
-        category: "Cyber Security",
+        category: "Certification Bootcamp",
         level: "Beginner",
         duration: "4 Hours",
         startDate: "",
@@ -1519,7 +1519,7 @@ export default function AdminDashboardPage() {
                     onChange={(e) => setCourseForm({ ...courseForm, category: e.target.value })}
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium cursor-pointer"
                   >
-                    {["Cyber Security", "Web Development", "Cloud & DevOps", "Artificial Intelligence", "Data Science", "Mobile Development", "General"].map(cat => (
+                    {["Certification Bootcamp", "Specialized Courses", "Customized Training", "Law Enforcement Agencies"].map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
