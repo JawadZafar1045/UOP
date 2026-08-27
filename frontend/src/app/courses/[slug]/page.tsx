@@ -122,8 +122,10 @@ export default function CourseDetailsPage({
   };
 
   // Paid course registration submission
-  const handlePaidRegisterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handlePaidRegisterSubmit = async (e?: React.FormEvent) => {
+    if (e && typeof e.preventDefault === 'function') {
+      e.preventDefault();
+    }
     if (!user) {
       router.push(`/login?returnUrl=/courses/${slug}`);
       return;
@@ -301,17 +303,21 @@ export default function CourseDetailsPage({
                 </Link>
               ) : isPending ? (
                 <div className="w-full py-3 bg-amber-50 border border-amber-200 text-amber-800 font-bold rounded-xl text-center text-xs space-y-1">
-                  <div>⏳ Registration Under Review</div>
-                  <p className="text-[10px] text-amber-700">Course will unlock once approved by Admin.</p>
+                  <div className="flex items-center justify-center gap-1 font-extrabold">
+                    <Clock3 className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+                    Waiting for approval from admin
+                  </div>
+                  <p className="text-[10px] text-amber-700">An admin will contact you shortly to grant access.</p>
                 </div>
               ) : isRejected ? (
                 <div className="w-full p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-center text-xs space-y-2">
                   <div className="font-bold">❌ Registration Not Approved</div>
                   <button
-                    onClick={() => setRegisterModalOpen(true)}
-                    className="w-full py-2 bg-rose-600 text-white font-bold rounded-lg text-xs"
+                    onClick={() => user ? handlePaidRegisterSubmit() : router.push(`/login?returnUrl=/courses/${slug}`)}
+                    disabled={registerSubmitting}
+                    className="w-full py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg text-xs cursor-pointer"
                   >
-                    Re-apply
+                    {registerSubmitting ? 'Submitting...' : 'Re-apply'}
                   </button>
                 </div>
               ) : isFree ? (
@@ -324,12 +330,19 @@ export default function CourseDetailsPage({
                 </button>
               ) : (
                 <button
-                  onClick={() => user ? setRegisterModalOpen(true) : router.push(`/login?returnUrl=/courses/${slug}`)}
+                  onClick={() => user ? handlePaidRegisterSubmit() : router.push(`/login?returnUrl=/courses/${slug}`)}
+                  disabled={registerSubmitting}
                   className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-extrabold rounded-xl text-center block shadow-xs cursor-pointer transition-all flex items-center justify-center gap-2"
                 >
-                  <Lock className="w-4 h-4 text-amber-400" />
-                  Unlock Course / Register
-                  <ArrowRight className="w-4 h-4" />
+                  {registerSubmitting ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> Submitting Request...</>
+                  ) : (
+                    <>
+                      <Lock className="w-4 h-4 text-amber-400" />
+                      Unlock Course / Register
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
                 </button>
               )}
             </div>
@@ -348,11 +361,11 @@ export default function CourseDetailsPage({
             {/* Status Alert Banner (if user has an ongoing state) */}
             {isPending && (
               <div className="p-5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-4 shadow-xs">
-                <Clock3 className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
+                <Clock3 className="w-6 h-6 text-amber-600 shrink-0 mt-0.5 animate-pulse" />
                 <div>
-                  <h4 className="font-bold text-base">Registration Under Review</h4>
+                  <h4 className="font-bold text-base">Waiting for approval from admin</h4>
                   <p className="text-xs sm:text-sm text-amber-700 mt-1 leading-relaxed">
-                    Your application has been received by CSZone administrators. Once your payment or eligibility is verified, full access to all lectures will be granted automatically.
+                    Your application has been received. An admin will contact you shortly to review your request and unlock full course access.
                   </p>
                 </div>
               </div>
@@ -575,17 +588,17 @@ export default function CourseDetailsPage({
 
               {/* Card Details */}
               <div className="p-6 space-y-6">
-                <div className="space-y-1">
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
-                      {isFree ? 'Tuition' : 'Tuition'}
+                <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                      TUITION
                     </span>
-                    <span className={`text-3xl font-black ${isFree ? 'text-blue-600' : 'text-slate-900'}`}>
+                    <span className={`text-3xl font-black tracking-tight ${isFree ? 'text-blue-600' : 'text-slate-900'}`}>
                       {isFree ? 'FREE' : `${course.currency || 'PKR'} ${(course.price || 0).toLocaleString()}`}
                     </span>
                   </div>
                   {isEnrolled && (
-                    <p className="text-right text-xs font-extrabold uppercase tracking-widest text-emerald-600">
+                    <p className="text-right text-[11px] font-extrabold uppercase tracking-widest text-emerald-600 pt-1">
                       ✓ Unlocked & Enrolled
                     </p>
                   )}
@@ -604,10 +617,10 @@ export default function CourseDetailsPage({
                 ) : isPending ? (
                   <div className="w-full py-3.5 bg-amber-50 border border-amber-200 text-amber-800 font-bold rounded-2xl text-center text-xs space-y-1">
                     <div className="flex items-center justify-center gap-1.5 font-extrabold">
-                      <Clock3 className="w-4 h-4 text-amber-600" />
-                      Registration Under Review
+                      <Clock3 className="w-4 h-4 text-amber-600 animate-pulse" />
+                      Waiting for approval from admin
                     </div>
-                    <p className="text-[11px] text-amber-700">Access will unlock once approved by Admin.</p>
+                    <p className="text-[11px] text-amber-700">An admin will contact you shortly.</p>
                   </div>
                 ) : isRejected ? (
                   <div className="w-full p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-center text-xs space-y-2">
@@ -641,27 +654,34 @@ export default function CourseDetailsPage({
                   </button>
                 ) : (
                   <button
-                    onClick={() => user ? setRegisterModalOpen(true) : router.push(`/login?returnUrl=/courses/${slug}`)}
-                    className="w-full py-4 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-extrabold rounded-2xl shadow-md shadow-slate-900/20 text-center block transition-all cursor-pointer flex items-center justify-center gap-2"
+                    onClick={() => user ? handlePaidRegisterSubmit() : router.push(`/login?returnUrl=/courses/${slug}`)}
+                    disabled={registerSubmitting}
+                    className="w-full py-4 bg-slate-900 hover:bg-slate-800 active:scale-[0.98] text-white font-extrabold rounded-2xl shadow-lg shadow-slate-900/20 text-center block transition-all cursor-pointer flex items-center justify-center gap-2"
                   >
-                    <Lock className="w-4 h-4 text-amber-400" />
-                    Unlock Course / Register
-                    <ArrowRight className="w-5 h-5" />
+                    {registerSubmitting ? (
+                      <><Loader2 className="w-5 h-5 animate-spin text-blue-400" /> Submitting Request...</>
+                    ) : (
+                      <>
+                        <Lock className="w-4 h-4 text-amber-400" />
+                        Unlock Course / Register
+                        <ArrowRight className="w-5 h-5" />
+                      </>
+                    )}
                   </button>
                 )}
 
                 {/* Guarantee / Benefits */}
-                <div className="space-y-3 pt-4 border-t border-slate-100 text-xs text-slate-600">
-                  <div className="flex items-center gap-2.5 font-medium">
-                    <CheckCircle2 className="w-4 h-4 text-blue-600" />
+                <div className="space-y-3 pt-5 border-t border-slate-100 text-xs text-slate-600">
+                  <div className="flex items-center gap-3 font-semibold text-slate-700 bg-slate-50/80 p-2.5 rounded-xl border border-slate-100">
+                    <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
                     <span>Instant access to all modules after enrollment</span>
                   </div>
-                  <div className="flex items-center gap-2.5 font-medium">
-                    <CheckCircle2 className="w-4 h-4 text-blue-600" />
+                  <div className="flex items-center gap-3 font-semibold text-slate-700 bg-slate-50/80 p-2.5 rounded-xl border border-slate-100">
+                    <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
                     <span>Watch recorded video lectures at your own pace</span>
                   </div>
-                  <div className="flex items-center gap-2.5 font-medium">
-                    <CheckCircle2 className="w-4 h-4 text-blue-600" />
+                  <div className="flex items-center gap-3 font-semibold text-slate-700 bg-slate-50/80 p-2.5 rounded-xl border border-slate-100">
+                    <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
                     <span>Track video progress & lecture completions</span>
                   </div>
                 </div>
@@ -857,14 +877,14 @@ export default function CourseDetailsPage({
             </div>
 
             <div className="space-y-2">
-              <span className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 inline-block">
+              <span className="text-[11px] font-extrabold uppercase tracking-widest text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200 inline-block">
                 Request Sent to Admin
               </span>
               <h3 className="text-2xl font-black text-slate-900">
                 Application Submitted!
               </h3>
               <p className="text-sm text-slate-600 leading-relaxed">
-                Your enrollment request has been delivered to the <strong className="text-slate-900 font-bold">Admin</strong>. Once verified, full course access will be unlocked and you will receive a confirmation notification via <strong className="text-slate-900 font-bold">Email</strong>.
+                Your enrollment request has been delivered to the <strong className="text-slate-900 font-bold">Admin</strong>. An admin will contact you shortly to review your request. Once verified, full course access will be unlocked.
               </p>
             </div>
 
@@ -880,8 +900,8 @@ export default function CourseDetailsPage({
               </div>
               <div className="flex justify-between items-center text-slate-500 border-t border-slate-200/60 pt-2">
                 <span>Status:</span>
-                <span className="inline-flex items-center gap-1 font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 text-[11px]">
-                  <Clock3 className="w-3 h-3" /> Under Admin Review
+                <span className="inline-flex items-center gap-1 font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 text-[11px]">
+                  <Clock3 className="w-3 h-3 text-amber-600 animate-pulse" /> Waiting for approval from admin
                 </span>
               </div>
             </div>

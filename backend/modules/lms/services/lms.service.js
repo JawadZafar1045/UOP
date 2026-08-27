@@ -444,10 +444,26 @@ const getPublicCategories = async (tenantId) => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 /**
+ * Helper to resolve course by either ObjectId _id or URL slug
+ */
+const findCourseByIdOrSlug = async (tenantId, courseIdOrSlug) => {
+  const isObjectId = /^[0-9a-fA-F]{24}$/.test(courseIdOrSlug);
+  const filter = {
+    tenantId,
+    ...(isObjectId ? { _id: courseIdOrSlug } : { slug: String(courseIdOrSlug).toLowerCase() })
+  };
+  let course = await Course.findOne(filter);
+  if (!course && !isObjectId) {
+    course = await Course.findOne({ tenantId, _id: courseIdOrSlug }).catch(() => null);
+  }
+  return course;
+};
+
+/**
  * Free course enrollment (or direct enrollment by admin/teacher).
  */
 const enrollFreeCourse = async (tenantId, courseId, userId) => {
-  const course = await Course.findOne({ _id: courseId, tenantId });
+  const course = await findCourseByIdOrSlug(tenantId, courseId);
   if (!course) throw err('Course not found.', 404);
 
   const student = await User.findOne({ _id: userId, tenantId });
@@ -493,7 +509,7 @@ const enrollFreeCourse = async (tenantId, courseId, userId) => {
  * Paid course registration application.
  */
 const registerPaidCourse = async (tenantId, courseId, userId, data = {}) => {
-  const course = await Course.findOne({ _id: courseId, tenantId });
+  const course = await findCourseByIdOrSlug(tenantId, courseId);
   if (!course) throw err('Course not found.', 404);
 
   const student = await User.findOne({ _id: userId, tenantId });
@@ -510,10 +526,10 @@ const registerPaidCourse = async (tenantId, courseId, userId, data = {}) => {
     };
   }
 
-  // Check existing registrations
+  // Check existing registrations by course._id
   const existingPending = await CourseRegistration.findOne({
     tenantId,
-    courseId,
+    courseId: course._id,
     userId,
     status: 'pending'
   });
@@ -522,15 +538,15 @@ const registerPaidCourse = async (tenantId, courseId, userId, data = {}) => {
     return {
       success: true,
       status: 'pending',
-      message: 'Your registration is currently under review by CSZone.',
+      message: 'Your registration is currently under review by CSZone admin.',
       registration: existingPending
     };
   }
 
-  // Create new registration
+  // Create new registration using course._id
   const registration = await CourseRegistration.create({
     tenantId,
-    courseId,
+    courseId: course._id,
     userId,
     status: 'pending',
     paymentReference: data.paymentReference || '',
@@ -543,17 +559,17 @@ const registerPaidCourse = async (tenantId, courseId, userId, data = {}) => {
       await sendEmail(
         student.email,
         `Registration Received: ${course.title}`,
-        `Hello ${student.name},\n\nYour registration for "${course.title}" has been submitted successfully.\nOur team will review your application and grant access upon confirmation.\n\nThank you,\nCSZone LMS Team`,
+        `Hello ${student.name},\n\nYour registration for "${course.title}" has been submitted successfully.\nOur admin team will contact you shortly and grant access upon confirmation.\n\nThank you,\nCSZone LMS Team`,
         `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #4F46E5;">Registration Submitted</h2>
           <p>Hello <strong>${student.name}</strong>,</p>
-          <p>Your registration for <strong>${course.title}</strong> has been received and is currently under review.</p>
+          <p>Your registration for <strong>${course.title}</strong> has been received and is currently under review by admin.</p>
           <p style="background: #F3F4F6; padding: 12px; border-radius: 8px;">
             <strong>Course:</strong> ${course.title}<br/>
             <strong>Type:</strong> Paid Course (${course.currency} ${course.price?.toLocaleString()})<br/>
-            <strong>Status:</strong> Pending Admin Verification
+            <strong>Status:</strong> Waiting for approval from admin
           </p>
-          <p>You will receive an email once your registration is approved and course access is granted.</p>
+          <p>An admin will contact you shortly. You will receive an email once your registration is approved and course access is granted.</p>
           <p>Best regards,<br/><strong>CSZone Learning Platform</strong></p>
         </div>`
       );
@@ -568,13 +584,13 @@ const registerPaidCourse = async (tenantId, courseId, userId, data = {}) => {
     action: 'SUBMIT_COURSE_REGISTRATION',
     entityType: 'CourseRegistration',
     entityId: registration._id,
-    meta: { courseId, courseTitle: course.title }
+    meta: { courseId: course._id, courseTitle: course.title }
   });
 
   return {
     success: true,
     status: 'pending',
-    message: 'Registration submitted successfully. CSZone will review and grant access after approval.',
+    message: 'Registration submitted successfully. An admin will contact you shortly and grant access after approval.',
     registration
   };
 };
@@ -583,7 +599,7 @@ const registerPaidCourse = async (tenantId, courseId, userId, data = {}) => {
  * Get registration / enrollment status for logged in student on a course.
  */
 const getRegistrationStatus = async (tenantId, courseId, userId) => {
-  const course = await Course.findOne({ _id: courseId, tenantId });
+  const course = await findCourseByIdOrSlug(tenantId, courseId);
   if (!course) throw err('Course not found.', 404);
 
   const isEnrolled = (course.enrolledStudents || []).map(String).includes(String(userId));
@@ -593,7 +609,7 @@ const getRegistrationStatus = async (tenantId, courseId, userId) => {
 
   const registration = await CourseRegistration.findOne({
     tenantId,
-    courseId,
+    courseId: course._id,
     userId
   }).sort({ createdAt: -1 });
 

@@ -358,10 +358,13 @@ function LMSContent() {
                           </div>
 
                           {isPending ? (
-                            <div className="w-full py-2.5 bg-amber-50 border border-amber-200 text-amber-800 font-bold text-xs rounded-xl text-center flex items-center justify-center gap-1.5">
-                              <Clock className="w-3.5 h-3.5 text-amber-600" />
-                              Registration Under Review
-                            </div>
+                            <Link
+                              href={`/courses/${safeSlug}`}
+                              className="w-full py-2.5 bg-amber-50 border border-amber-200 hover:bg-amber-100 text-amber-900 font-bold text-xs rounded-xl text-center flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                            >
+                              <Clock className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+                              Waiting for approval from admin
+                            </Link>
                           ) : (
                             <Link
                               href={`/courses/${safeSlug}`}
