@@ -65,6 +65,13 @@ router.patch('/sessions/:id/toggle',                        val.toggleSessionVal
 router.get('/sessions/:id/attendance',                      val.getSessionAttendanceVal, validateResult, authorize('admin', 'teacher'),                     ctrl.getSessionAttendance);
 router.patch('/sessions/:id/attendance/:studentId',         val.overrideAttendanceVal, validateResult, authorize('admin', 'teacher'),                     ctrl.overrideAttendance);
 
+// ── Video Lectures ────────────────────────────────────────────────────────────
+router.get('/courses/:id/lectures',                           authorize('admin', 'teacher', 'student'), ctrl.getCourseVideoLectures);
+router.post('/courses/:id/lectures',                          authorize('admin', 'teacher'), ctrl.createVideoLecture);
+router.patch('/courses/:id/lectures/:lectureId',              authorize('admin', 'teacher'), ctrl.updateVideoLecture);
+router.delete('/courses/:id/lectures/:lectureId',             authorize('admin', 'teacher'), ctrl.deleteVideoLecture);
+router.post('/courses/:id/lectures/:lectureId/progress',      authorize('student'), ctrl.toggleVideoLectureProgress);
+
 // ── Student Self-Mark ──────────────────────────────────────────────────────────
 router.post('/sessions/:id/attend',                         val.markSelfAttendanceVal, validateResult, authorize('student'),                              ctrl.markSelfAttendance);
 router.get('/courses/:courseId/attendance/mine',            val.getMyAttendanceSummaryVal, validateResult, authorize('student'),                              ctrl.getMyAttendanceSummary);
@@ -81,12 +88,16 @@ router.get('/assignments/:id/submissions',                  val.getAssignmentSub
 router.get('/assignments/:id/submissions/mine',             val.getMySubmissionVal, validateResult, authorize('student'),                             ctrl.getMySubmission);
 
 // ── Quizzes ────────────────────────────────────────────────────────────────────
-router.post('/courses/:courseId/quizzes',     val.createQuizVal, validateResult, authorize('admin', 'teacher'),                                  ctrl.createQuiz);
+router.get('/quizzes/template',                               authorize('admin', 'teacher'),                                                     ctrl.downloadQuizTemplate);
+router.post('/courses/:courseId/quizzes/validate-excel',      authorize('admin', 'teacher'), upload.single('file'), val.validateQuizExcelVal, validateResult, ctrl.validateQuizExcel);
+router.post('/courses/:courseId/quizzes/bulk-create',         authorize('admin', 'teacher'), val.bulkCreateQuizVal, validateResult,              ctrl.bulkCreateQuiz);
+router.post('/courses/:courseId/quizzes',                     val.createQuizVal, validateResult, authorize('admin', 'teacher'),                  ctrl.createQuiz);
 router.get('/courses/:courseId/quizzes',      val.getCourseQuizzesVal, validateResult, authorize('admin', 'teacher', 'student'),                       ctrl.getCourseQuizzes);
 router.patch('/quizzes/:id',                  val.updateQuizVal, validateResult, authorize('admin', 'teacher'),                                  ctrl.updateQuiz);
 router.get('/quizzes/:id/questions',          val.getQuizResultsVal, validateResult, authorize('admin', 'teacher'),                                  ctrl.getQuizQuestions);
 router.post('/quizzes/:id/questions',         val.addQuizQuestionVal, validateResult, authorize('admin', 'teacher'),                                  ctrl.addQuizQuestion);
 router.patch('/questions/:id',                val.updateQuizQuestionVal, validateResult, authorize('admin', 'teacher'),                                  ctrl.updateQuizQuestion);
+router.delete('/questions/:id',               val.deleteCourseVal, validateResult, authorize('admin', 'teacher'),                                        ctrl.deleteQuizQuestion);
 router.patch('/quizzes/:id/publish',          val.publishQuizVal, validateResult, authorize('admin', 'teacher'),                                  ctrl.publishQuiz);
 router.post('/quizzes/:id/start',             val.startQuizAttemptVal, validateResult, authorize('student'),                                           ctrl.startQuizAttempt);
 router.post('/quizzes/:id/submit',            val.submitQuizAttemptVal, validateResult, authorize('student'),                                           ctrl.submitQuizAttempt);
@@ -121,4 +132,27 @@ router.delete('/admin/courses/:id',                 val.deleteCourseVal, validat
 router.get('/admin/certificates',                   authorize('admin'), ctrl.getAdminCertificates);
 router.patch('/admin/certificates/:id/revoke',      val.deleteCourseVal, validateResult, authorize('admin'), ctrl.revokeCertificate);
 
+// ── Academic Programs (Degrees) ───────────────────────────────────────────────
+router.get('/programs',                                    authorize('admin', 'teacher', 'student'),  ctrl.getPrograms);
+router.post('/programs',                                   val.createProgramVal, validateResult, authorize('admin'), ctrl.createProgram);
+router.get('/programs/tree',                               authorize('admin', 'teacher', 'student'),  ctrl.getAcademicTree);
+router.get('/programs/:id',                                val.academicIdParamVal, validateResult, authorize('admin', 'teacher', 'student'), ctrl.getProgram);
+router.patch('/programs/:id',                              val.updateProgramVal, validateResult, authorize('admin'), ctrl.updateProgram);
+router.delete('/programs/:id',                             val.academicIdParamVal, validateResult, authorize('admin'), ctrl.deleteProgram);
+
+// ── Academic Majors (Specializations) ─────────────────────────────────────────
+router.get('/majors',                                      authorize('admin', 'teacher', 'student'), ctrl.getMajors);
+router.post('/majors',                                     val.createMajorVal, validateResult, authorize('admin'), ctrl.createMajor);
+router.patch('/majors/:id',                                val.updateMajorVal, validateResult, authorize('admin'), ctrl.updateMajor);
+router.delete('/majors/:id',                               val.academicIdParamVal, validateResult, authorize('admin'), ctrl.deleteMajor);
+
+// ── Academic Degree Performance ───────────────────────────────────────────────
+// Admin/Teacher: overview of all students in a program
+router.get('/programs/:programId/performance',             val.programPerformanceVal, validateResult, authorize('admin', 'teacher'), ctrl.getProgramPerformanceOverview);
+// Admin/Teacher: specific student
+router.get('/programs/:programId/performance/:studentId',  val.studentDegreePerformanceVal, validateResult, authorize('admin', 'teacher'), ctrl.getStudentDegreePerformance);
+// Student: own degree performance
+router.get('/programs/:programId/performance/mine',        val.programPerformanceVal, validateResult, authorize('student'), ctrl.getStudentDegreePerformance);
+
 module.exports = router;
+

@@ -76,6 +76,10 @@ interface Quiz {
   maxAttempts: number;
   shuffleQuestions: boolean;
   showResultImmediately: boolean;
+  enableNegativeMarking?: boolean;
+  correctMark?: number;
+  negativeMark?: number;
+  unattemptedMark?: number;
   status: 'draft' | 'published' | 'closed';
   questionCount?: number;
   myAttempts?: number;

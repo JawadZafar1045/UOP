@@ -11,17 +11,28 @@ const quizAttemptSchema = new mongoose.Schema(
     answers: [
       {
         questionId:    { type: mongoose.Schema.Types.ObjectId, ref: 'QuizQuestion' },
-        selectedIndex: { type: Number },   // the option index the student chose
+        selectedIndex: { type: Number },   // the option index the student chose (-1 if unattempted)
         isCorrect:     { type: Boolean },
         marksAwarded:  { type: Number },
+        status:        { type: String, enum: ['correct', 'wrong', 'unattempted'], default: 'unattempted' },
       },
     ],
 
-    // ── Aggregate scoring ────────────────────────────────────────────────────────
+    // ── Aggregate scoring & Negative Marking Breakdown ───────────────────────────
+    correctCount:     { type: Number, default: 0 },
+    wrongCount:       { type: Number, default: 0 },
+    unattemptedCount: { type: Number, default: 0 },
     totalMarks:       { type: Number },
     maxMarks:         { type: Number },
     percentScore:     { type: Number },
     passed:           { type: Boolean },
+
+    markingScheme: {
+      enableNegativeMarking: { type: Boolean, default: false },
+      correctMark:           { type: Number, default: 1 },
+      negativeMark:          { type: Number, default: 0 },
+      unattemptedMark:       { type: Number, default: 0 },
+    },
 
     // ── Timing ───────────────────────────────────────────────────────────────────
     startedAt:        { type: Date },

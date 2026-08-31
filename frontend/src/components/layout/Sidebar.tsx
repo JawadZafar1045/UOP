@@ -104,7 +104,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     href="/lms" 
                     className={`block px-3 py-2 rounded-md text-sm transition-colors ${pathname === '/lms' ? 'text-blue-700 font-medium bg-blue-50/50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
                   >
-                    My Courses
+                    My Majors
+                  </Link>
+                  <Link 
+                    href="/lms/programs" 
+                    className={`block px-3 py-2 rounded-md text-sm transition-colors ${pathname.startsWith('/lms/programs') ? 'text-blue-700 font-medium bg-blue-50/50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
+                  >
+                    Academic Structure
                   </Link>
                   <Link 
                     href="/lms/certificates" 

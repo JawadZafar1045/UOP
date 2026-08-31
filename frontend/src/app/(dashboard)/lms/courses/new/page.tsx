@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLmsStore } from '@/store/lmsStore';
 import {
@@ -12,6 +12,7 @@ import {
 import Loader from '@/components/ui/Loader';
 import Link from 'next/link';
 import api from '@/services/api';
+import * as lmsService from '@/services/lms.service';
 
 const STEPS = [
   { id: 1, label: 'General info' },
@@ -71,6 +72,24 @@ export default function NewCoursePage() {
   });
 
   const [tagInput, setTagInput] = useState('');
+
+  // ── Academic hierarchy state ────────────────────────────────────
+  const [programs, setPrograms] = useState<any[]>([]);
+  const [majors, setMajors] = useState<any[]>([]);
+  const [academicData, setAcademicData] = useState({
+    programId: '',
+    majorId: '',
+    isCommon: false,
+    courseCode: '',
+    creditHours: 3,
+  });
+
+  useEffect(() => {
+    lmsService.getPrograms().then(p => setPrograms(p || [])).catch(() => {});
+    lmsService.getMajors().then(m => setMajors(m || [])).catch(() => {});
+  }, []);
+
+  const filteredMajors = majors.filter(m => !academicData.programId || String(m.programId?._id || m.programId) === academicData.programId);
 
   const goTo = (n: number) => {
     if (n > maxVisited + 1) return;
@@ -137,44 +156,51 @@ export default function NewCoursePage() {
   try {
     // Complete payload
     const payload = {
-  title: formData.title,
-  description: formData.description,
-  startDate: formData.startDate,
-  endDate: formData.endDate,
+    title: formData.title,
+    description: formData.description,
+    startDate: formData.startDate,
+    endDate: formData.endDate,
 
-  category: formData.category,
-  maxStudents: formData.maxStudents,
-  level: formData.level,
-  tags: formData.tags,
+    category: formData.category,
+    maxStudents: formData.maxStudents,
+    level: formData.level,
+    tags: formData.tags,
 
-  completionCriteria: {
-    minAttendancePercent:
-      formData.completionCriteria.minAttendancePercent,
+    completionCriteria: {
+      minAttendancePercent:
+        formData.completionCriteria.minAttendancePercent,
 
-    minAssignmentScore:
-      formData.completionCriteria.minAssignmentScore,
+      minAssignmentScore:
+        formData.completionCriteria.minAssignmentScore,
 
-    minQuizScore:
-      formData.completionCriteria.minQuizScore,
-  },
+      minQuizScore:
+        formData.completionCriteria.minQuizScore,
+    },
 
-  totalHours: formData.totalHours,
-  sessionsPerWeek: formData.sessionsPerWeek,
-  sessionDuration: formData.sessionDuration,
+    totalHours: formData.totalHours,
+    sessionsPerWeek: formData.sessionsPerWeek,
+    sessionDuration: formData.sessionDuration,
 
-  // FIX HERE
-  modules: formData.modules
-    .map((module) => module.trim())
-    .filter(Boolean)
-    .map((module) => ({
-      title: module,
-    })),
+    // FIX HERE
+    modules: formData.modules
+      .map((module) => module.trim())
+      .filter(Boolean)
+      .map((module) => ({
+        title: module,
+      })),
 
-  resourceLink: formData.resourceLink,
-  studentNotes: formData.studentNotes,
+    resourceLink: formData.resourceLink,
+    studentNotes: formData.studentNotes,
 
-  status: formData.status,
-    };
+    status: formData.status,
+
+    // Academic hierarchy
+    ...(academicData.programId ? { programId: academicData.programId } : {}),
+    ...(academicData.majorId && !academicData.isCommon ? { majorId: academicData.majorId } : {}),
+    isCommon: academicData.isCommon,
+    ...(academicData.courseCode ? { courseCode: academicData.courseCode } : {}),
+    creditHours: academicData.creditHours,
+  };
 
     // API call
     const res = await api.post('/lms/courses', payload);
@@ -427,6 +453,7 @@ export default function NewCoursePage() {
                     ))}
                   </div>
                 </div>
+                {/* Tags */}
                 <div>
                   <label className={lbl}>Tags</label>
                   <input type="text" value={tagInput} onChange={e => setTagInput(e.target.value)}
@@ -444,6 +471,64 @@ export default function NewCoursePage() {
                     </div>
                   )}
                 </div>
+
+                {/* ── Academic Hierarchy ── */}
+                {programs.length > 0 && (
+                  <div className="border border-indigo-100 bg-indigo-50/40 rounded-xl p-4 space-y-3">
+                    <p className="text-xs font-bold text-indigo-700 uppercase tracking-wide flex items-center gap-1.5">
+                      🎓 Academic Structure (Optional)
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className={lbl}>Degree / Program</label>
+                        <select value={academicData.programId}
+                          onChange={e => setAcademicData(prev => ({ ...prev, programId: e.target.value, majorId: '' }))}
+                          className={inputCls}>
+                          <option value="">None</option>
+                          {programs.map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className={lbl}>Course Code</label>
+                        <input value={academicData.courseCode}
+                          onChange={e => setAcademicData(prev => ({ ...prev, courseCode: e.target.value }))}
+                          className={inputCls + ' uppercase font-mono'} placeholder="e.g. SOIL-201" />
+                      </div>
+                    </div>
+                    {academicData.programId && (
+                      <div>
+                        <label className={lbl}>Common Subject?</label>
+                        <div className="flex items-center gap-3">
+                          <button type="button" onClick={() => setAcademicData(prev => ({ ...prev, isCommon: !prev.isCommon, majorId: '' }))}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${ academicData.isCommon ? 'bg-emerald-500' : 'bg-slate-200'}`}>
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${ academicData.isCommon ? 'translate-x-6' : 'translate-x-1'}`} />
+                          </button>
+                          <span className="text-xs text-slate-600">
+                            {academicData.isCommon ? 'Yes – shared across all majors' : 'No – belongs to a specific major'}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    {academicData.programId && !academicData.isCommon && filteredMajors.length > 0 && (
+                      <div>
+                        <label className={lbl}>Major / Specialization</label>
+                        <select value={academicData.majorId}
+                          onChange={e => setAcademicData(prev => ({ ...prev, majorId: e.target.value }))}
+                          className={inputCls}>
+                          <option value="">Select major (optional)</option>
+                          {filteredMajors.map(m => <option key={m._id} value={m._id}>{m.name}</option>)}
+                        </select>
+                      </div>
+                    )}
+                    <div>
+                      <label className={lbl}>Credit Hours</label>
+                      <input type="number" min={0} max={10} step={0.5} value={academicData.creditHours}
+                        onChange={e => setAcademicData(prev => ({ ...prev, creditHours: +e.target.value }))}
+                        className={inputCls} placeholder="e.g. 3" />
+                      <p className="text-[11px] text-indigo-500 mt-1">Used in weighted degree performance calculation</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

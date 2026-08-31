@@ -277,6 +277,44 @@ const createQuizVal = [
     .optional()
     .isNumeric()
     .withMessage('Pass mark must be a number'),
+  body('enableNegativeMarking')
+    .optional()
+    .isBoolean()
+    .withMessage('enableNegativeMarking must be a boolean'),
+  body('correctMark')
+    .optional()
+    .isNumeric()
+    .withMessage('correctMark must be a number'),
+  body('negativeMark')
+    .optional()
+    .isNumeric()
+    .withMessage('negativeMark must be a number'),
+  body('unattemptedMark')
+    .optional()
+    .isNumeric()
+    .withMessage('unattemptedMark must be a number'),
+];
+
+const validateQuizExcelVal = [
+  param('courseId')
+    .custom(isObjectId)
+    .withMessage('Invalid course ID format'),
+];
+
+const bulkCreateQuizVal = [
+  param('courseId')
+    .custom(isObjectId)
+    .withMessage('Invalid course ID format'),
+  body('quiz')
+    .isObject()
+    .withMessage('Quiz configuration object is required'),
+  body('quiz.title')
+    .trim()
+    .notEmpty()
+    .withMessage('Quiz title is required'),
+  body('questions')
+    .isArray({ min: 1 })
+    .withMessage('At least one question is required'),
 ];
 
 const getCourseQuizzesVal = [
@@ -298,6 +336,22 @@ const updateQuizVal = [
     .optional()
     .isNumeric()
     .withMessage('Pass mark must be a number'),
+  body('enableNegativeMarking')
+    .optional()
+    .isBoolean()
+    .withMessage('enableNegativeMarking must be a boolean'),
+  body('correctMark')
+    .optional()
+    .isNumeric()
+    .withMessage('correctMark must be a number'),
+  body('negativeMark')
+    .optional()
+    .isNumeric()
+    .withMessage('negativeMark must be a number'),
+  body('unattemptedMark')
+    .optional()
+    .isNumeric()
+    .withMessage('unattemptedMark must be a number'),
 ];
 
 const addQuizQuestionVal = [
@@ -428,7 +482,49 @@ const signFileUrlVal = [
     .withMessage('URL must be a string'),
 ];
 
+// ── Academic Validators ────────────────────────────────────────────────────────
+const academicIdParamVal = [
+  param('id').custom(isObjectId).withMessage('Invalid ID format'),
+];
+
+const createProgramVal = [
+  body('name').trim().notEmpty().withMessage('Program name is required').isLength({ max: 150 }).withMessage('Program name max 150 chars'),
+  body('code').optional().trim().isLength({ max: 20 }).withMessage('Code max 20 chars'),
+  body('degreeLevel').optional().isIn(['undergraduate', 'postgraduate', 'diploma', 'certificate', 'other']).withMessage('Invalid degree level'),
+  body('totalCreditHours').optional().isFloat({ min: 0 }).withMessage('Credit hours must be >= 0'),
+  body('passingGradePercent').optional().isFloat({ min: 0, max: 100 }).withMessage('Passing grade must be 0–100'),
+];
+
+const updateProgramVal = [
+  param('id').custom(isObjectId).withMessage('Invalid program ID'),
+  body('name').optional().trim().isLength({ min: 2, max: 150 }).withMessage('Program name must be 2–150 chars'),
+  body('degreeLevel').optional().isIn(['undergraduate', 'postgraduate', 'diploma', 'certificate', 'other']).withMessage('Invalid degree level'),
+  body('status').optional().isIn(['active', 'archived']).withMessage('Status must be active or archived'),
+];
+
+const createMajorVal = [
+  body('programId').custom(isObjectId).withMessage('Valid programId is required'),
+  body('name').trim().notEmpty().withMessage('Major name is required').isLength({ max: 150 }).withMessage('Major name max 150 chars'),
+  body('code').optional().trim().isLength({ max: 20 }).withMessage('Code max 20 chars'),
+];
+
+const updateMajorVal = [
+  param('id').custom(isObjectId).withMessage('Invalid major ID'),
+  body('name').optional().trim().isLength({ min: 2, max: 150 }).withMessage('Major name must be 2–150 chars'),
+  body('status').optional().isIn(['active', 'archived']).withMessage('Status must be active or archived'),
+];
+
+const programPerformanceVal = [
+  param('programId').custom(isObjectId).withMessage('Invalid program ID'),
+];
+
+const studentDegreePerformanceVal = [
+  param('programId').custom(isObjectId).withMessage('Invalid program ID'),
+  param('studentId').optional().custom(isObjectId).withMessage('Invalid student ID'),
+];
+
 module.exports = {
+
   verifyCertificateVal,
   getCourseVal,
   createCourseVal,
@@ -458,6 +554,8 @@ module.exports = {
   getAssignmentSubmissionsVal,
   getMySubmissionVal,
   createQuizVal,
+  validateQuizExcelVal,
+  bulkCreateQuizVal,
   getCourseQuizzesVal,
   updateQuizVal,
   addQuizQuestionVal,
@@ -475,5 +573,14 @@ module.exports = {
   getCertificateAccessVal,
   getCertificateTemplateVal,
   saveCertificateTemplateVal,
-  signFileUrlVal
+  signFileUrlVal,
+  // Academic validators
+  createProgramVal,
+  updateProgramVal,
+  createMajorVal,
+  updateMajorVal,
+  academicIdParamVal,
+  programPerformanceVal,
+  studentDegreePerformanceVal,
 };
+

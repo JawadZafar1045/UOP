@@ -197,7 +197,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
 import api from "@/services/api";
-import { Mail, Lock, ArrowRight, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { Mail, Lock, ArrowRight, ShieldCheck, CheckCircle2, Clock } from "lucide-react";
 import Loader from "@/components/ui/Loader";
 
 export default function LoginPage() {
@@ -206,7 +206,7 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [tenantId, setTenantId] = useState("default");
+  const [tenantId, setTenantId] = useState("iub");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -288,12 +288,22 @@ export default function LoginPage() {
 
           <form onSubmit={handleLogin} className="space-y-5">
             {error && (
-              <div className="bg-red-50 border border-red-100 p-4 rounded-xl text-sm text-red-600 flex gap-3 items-start">
-                <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">
-                  !
+              error.toLowerCase().includes("pending admin approval") || error.toLowerCase().includes("pending approval") ? (
+                <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl text-sm text-amber-900 flex gap-3 items-start shadow-sm">
+                  <Clock className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold block text-amber-900 mb-0.5">Registration Pending Approval</span>
+                    <p className="text-xs text-amber-800 leading-relaxed">{error}</p>
+                  </div>
                 </div>
-                {error}
-              </div>
+              ) : (
+                <div className="bg-red-50 border border-red-100 p-4 rounded-xl text-sm text-red-600 flex gap-3 items-start">
+                  <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">
+                    !
+                  </div>
+                  {error}
+                </div>
+              )
             )}
 
             <div className="space-y-2">
@@ -310,7 +320,7 @@ export default function LoginPage() {
                   value={tenantId}
                   onChange={(e) => setTenantId(e.target.value)}
                   className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
-                  placeholder="e.g. default"
+                  placeholder="e.g. iub"
                 />
               </div>
             </div>

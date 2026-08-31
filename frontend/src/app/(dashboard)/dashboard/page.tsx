@@ -207,7 +207,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-slate-900 leading-none">{stats?.stats?.courses || lmsStats.total}</p>
-                  <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-1.5">LMS Courses</p>
+                  <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-1.5">LMS Majors</p>
                 </div>
               </div>
             </div>
@@ -309,9 +309,9 @@ export default function DashboardPage() {
               <div>
                 <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2">
                   <BarChart3 className="w-5 h-5 text-blue-500 shrink-0" />
-                  Course Performance
+                  Major Performance
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5 font-medium uppercase tracking-wider">Top 6 courses by enrollment</p>
+                <p className="text-xs text-slate-400 mt-0.5 font-medium uppercase tracking-wider">Top 6 majors by enrollment</p>
               </div>
               <select className="text-xs font-bold text-slate-500 bg-slate-50 border-none rounded-lg py-2 px-3 focus:ring-0 cursor-pointer w-full sm:w-auto">
                 <option>Top Enrolled</option>
@@ -331,14 +331,14 @@ export default function DashboardPage() {
             <div className="mb-8">
               <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2">
                 <PieChart className="w-5 h-5 text-emerald-500" />
-                Published Courses
+                Published Majors
               </h3>
               <p className="text-xs text-slate-400 mt-0.5 font-medium uppercase tracking-wider">Publication status ratio</p>
             </div>
             {lmsStats.total === 0 ? (
               <div className="h-[240px] flex flex-col items-center justify-center text-center gap-3">
                 <PieChart className="w-10 h-10 text-slate-200" />
-                <p className="text-sm font-medium text-slate-400">No courses created yet</p>
+                <p className="text-sm font-medium text-slate-400">No majors created yet</p>
               </div>
             ) : (
               <>
@@ -381,7 +381,7 @@ export default function DashboardPage() {
               <h3 className="font-bold text-slate-900 text-xl tracking-tight">Continue Learning</h3>
               <p className="text-sm text-slate-500 mt-1">Pick up right where you left off</p>
             </div>
-            <Link href="/lms" className="text-sm font-bold text-blue-600 hover:text-blue-700 whitespace-nowrap">View All Courses</Link>
+            <Link href="/lms" className="text-sm font-bold text-blue-600 hover:text-blue-700 whitespace-nowrap">View All Majors</Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {courses.slice(0, 4).map((course) => (

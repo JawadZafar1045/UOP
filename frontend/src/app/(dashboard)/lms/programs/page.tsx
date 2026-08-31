@@ -1,0 +1,642 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useStore } from "@/store/useStore";
+import {
+  GraduationCap, BookOpen, Users, Plus, Pencil, Trash2,
+  ChevronRight, ChevronDown, School, Layers, FolderOpen,
+  X, Check, AlertCircle, Search, BarChart3, Sparkles
+} from "lucide-react";
+import Loader from "@/components/ui/Loader";
+import * as lmsService from "@/services/lms.service";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+interface Program {
+  _id: string;
+  name: string;
+  code?: string;
+  school?: string;
+  faculty?: string;
+  description?: string;
+  degreeLevel?: string;
+  totalCreditHours?: number;
+  passingGradePercent?: number;
+  status: string;
+}
+
+interface Major {
+  _id: string;
+  programId: any;
+  name: string;
+  code?: string;
+  description?: string;
+  status: string;
+}
+
+interface AcademicNode {
+  _id: string;
+  name: string;
+  code?: string;
+  school?: string;
+  degreeLevel?: string;
+  status: string;
+  commonSubjects: any[];
+  majors: Array<{ _id: string; name: string; code?: string; subjects: any[] }>;
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+const levelColors: Record<string, string> = {
+  undergraduate: "bg-blue-100 text-blue-700 border-blue-200",
+  postgraduate:  "bg-purple-100 text-purple-700 border-purple-200",
+  diploma:       "bg-amber-100 text-amber-700 border-amber-200",
+  certificate:   "bg-emerald-100 text-emerald-700 border-emerald-200",
+  other:         "bg-slate-100 text-slate-600 border-slate-200",
+};
+
+const emptyProg = (): Partial<Program> => ({
+  name: "", code: "", school: "", faculty: "", description: "",
+  degreeLevel: "undergraduate", totalCreditHours: 120, passingGradePercent: 60,
+});
+const emptyMajor = (programId = ""): Partial<Major & { programId: string }> => ({
+  name: "", code: "", description: "", programId,
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// MAIN PAGE
+// ══════════════════════════════════════════════════════════════════════════════
+export default function AcademicProgramsPage() {
+  const router = useRouter();
+  const { user } = useStore();
+
+  const [tree, setTree] = useState<AcademicNode[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
+  const [majors, setMajors] = useState<Major[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+
+  // Expanded nodes in tree
+  const [expandedPrograms, setExpandedPrograms] = useState<Set<string>>(new Set());
+
+  // Modals
+  const [progModal, setProgModal] = useState<{ open: boolean; editing: Partial<Program> | null }>({ open: false, editing: null });
+  const [majorModal, setMajorModal] = useState<{ open: boolean; editing: Partial<Major & { programId: string }> | null; defaultProgramId: string }>({ open: false, editing: null, defaultProgramId: "" });
+  const [saving, setSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<{ type: "program" | "major"; id: string; label: string } | null>(null);
+
+  const isAdmin = user?.role === "admin";
+
+  const fetchAll = async () => {
+    setLoading(true);
+    try {
+      const [t, p, m] = await Promise.all([
+        lmsService.getAcademicTree(),
+        lmsService.getPrograms(),
+        lmsService.getMajors(),
+      ]);
+      setTree(t || []);
+      setPrograms(p || []);
+      setMajors(m || []);
+      // Auto-expand all programs if few
+      if ((t || []).length <= 5) {
+        setExpandedPrograms(new Set((t || []).map((n: AcademicNode) => n._id)));
+      }
+    } catch (e: any) {
+      setError(e?.message || "Failed to load academic structure.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchAll(); }, []);
+
+  const toggleExpand = (id: string) => {
+    setExpandedPrograms(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  // ── Program Modal Submit ──────────────────────────────────────────────────
+  const handleSaveProgram = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const data = progModal.editing!;
+      if (data._id) {
+        await lmsService.updateProgram(data._id, data);
+      } else {
+        await lmsService.createProgram(data);
+      }
+      setProgModal({ open: false, editing: null });
+      await fetchAll();
+    } catch (err: any) {
+      alert(err?.response?.data?.message || err?.message || "Failed to save program.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // ── Major Modal Submit ────────────────────────────────────────────────────
+  const handleSaveMajor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const data = majorModal.editing!;
+      if ((data as any)._id) {
+        await lmsService.updateMajor((data as any)._id, data);
+      } else {
+        await lmsService.createMajor(data);
+      }
+      setMajorModal({ open: false, editing: null, defaultProgramId: "" });
+      await fetchAll();
+    } catch (err: any) {
+      alert(err?.response?.data?.message || err?.message || "Failed to save major.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // ── Delete Confirm ────────────────────────────────────────────────────────
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+    setSaving(true);
+    try {
+      if (confirmDelete.type === "program") await lmsService.deleteProgram(confirmDelete.id);
+      else await lmsService.deleteMajor(confirmDelete.id);
+      setConfirmDelete(null);
+      await fetchAll();
+    } catch (err: any) {
+      alert(err?.response?.data?.message || err?.message || "Failed to delete.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // ── Seed Demo ────────────────────────────────────────────────────────────
+  const handleSeedDemo = async () => {
+    setSaving(true);
+    try {
+      const prog = await lmsService.createProgram({
+        name: "BSc Agriculture",
+        code: "BSC-AGRI",
+        school: "School of Agriculture",
+        degreeLevel: "undergraduate",
+        totalCreditHours: 136,
+        passingGradePercent: 60,
+        description: "Bachelor of Science in Agriculture – a 4-year undergraduate program.",
+      });
+      await Promise.all([
+        lmsService.createMajor({ programId: prog._id, name: "Agronomy", code: "AGRON", description: "Study of crops and soil management." }),
+        lmsService.createMajor({ programId: prog._id, name: "Entomology", code: "ENTO", description: "Study of insects and pest management." }),
+        lmsService.createMajor({ programId: prog._id, name: "Agricultural Extension", code: "AGEXT", description: "Bridging research and farming communities." }),
+      ]);
+      await fetchAll();
+    } catch (err: any) {
+      alert(err?.response?.data?.message || err?.message || "Seed failed.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const filteredTree = tree.filter(n =>
+    n.name.toLowerCase().includes(search.toLowerCase()) ||
+    n.school?.toLowerCase().includes(search.toLowerCase()) ||
+    n.majors.some(m => m.name.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  const totalMajors = tree.reduce((s, n) => s + n.majors.length, 0);
+  const totalSubjects = tree.reduce((s, n) => s + n.commonSubjects.length + n.majors.reduce((ms, m) => ms + m.subjects.length, 0), 0);
+
+  if (!user) return null;
+
+  return (
+    <div className="space-y-6 max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+      {/* ── Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="mb-2">
+            <Link
+              href="/lms"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
+            >
+              ← Back to Learning Hub
+            </Link>
+          </div>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+              <GraduationCap className="w-5 h-5 text-white" />
+            </div>
+            Academic Structure
+          </h1>
+          <p className="text-slate-500 mt-1 text-sm">
+            {isAdmin
+              ? "Manage degree programs, majors, and subject hierarchy"
+              : "Explore degree programs, majors, and academic hierarchy"}
+          </p>
+        </div>
+        {isAdmin && (
+          <div className="flex items-center gap-2 flex-wrap">
+            {tree.length === 0 && (
+              <button onClick={handleSeedDemo} disabled={saving}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-amber-700 bg-amber-50 border border-amber-200 hover:bg-amber-100 rounded-xl transition-all">
+                <Sparkles className="w-4 h-4" />
+                Seed Agriculture Demo
+              </button>
+            )}
+            <button onClick={() => setMajorModal({ open: true, editing: emptyMajor(programs[0]?._id || ""), defaultProgramId: programs[0]?._id || "" })}
+              disabled={programs.length === 0}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+              <Plus className="w-4 h-4" />
+              Add Major
+            </button>
+            <button onClick={() => setProgModal({ open: true, editing: emptyProg() })}
+              className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-[#440C57] hover:bg-[#350944] active:scale-[0.98] rounded-xl transition-all shadow-md shadow-[#440C57]/25 hover:shadow-lg hover:shadow-[#440C57]/30">
+              <Plus className="w-4 h-4" />
+              Add Program
+            </button>
+          </div>
+        )}
+      </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          {error}
+        </div>
+      )}
+
+      {/* ── Stats Row ── */}
+      <div className="grid grid-cols-3 gap-4">
+        {[
+          { label: "Programs", value: programs.length, icon: <GraduationCap className="w-5 h-5" />, color: "indigo" },
+          { label: "Majors", value: totalMajors, icon: <Layers className="w-5 h-5" />, color: "purple" },
+          { label: "Subjects", value: totalSubjects, icon: <BookOpen className="w-5 h-5" />, color: "emerald" },
+        ].map(s => (
+          <div key={s.label} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 bg-${s.color}-100 rounded-xl flex items-center justify-center text-${s.color}-600`}>
+                {s.icon}
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-slate-900">{loading ? "..." : s.value}</p>
+                <p className={`text-[10px] font-bold text-${s.color}-600 uppercase tracking-widest`}>{s.label}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Search ── */}
+      <div className="relative max-w-sm">
+        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+        <input value={search} onChange={e => setSearch(e.target.value)}
+          className="w-full pl-9 pr-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white"
+          placeholder="Search programs, majors..." />
+      </div>
+
+      {/* ── Academic Tree ── */}
+      {loading ? (
+        <div className="flex justify-center py-20"><Loader size="md" text="Loading academic structure..." /></div>
+      ) : filteredTree.length === 0 ? (
+        <div className="text-center py-20 border-2 border-dashed border-slate-200 rounded-2xl">
+          <GraduationCap className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+          <p className="text-slate-500 font-medium">No programs found.</p>
+          {isAdmin && (
+            <div className="mt-4 flex items-center justify-center gap-3">
+              <button onClick={() => setProgModal({ open: true, editing: emptyProg() })}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-[#440C57] hover:bg-[#350944] active:scale-[0.98] rounded-xl transition-all shadow-md shadow-[#440C57]/20">
+                <Plus className="w-4 h-4" />
+                Add Program
+              </button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filteredTree.map(program => {
+            const isExpanded = expandedPrograms.has(program._id);
+            return (
+              <div key={program._id} className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition-all">
+                {/* Program Header */}
+                <div className="flex items-center gap-4 p-5 cursor-pointer group" onClick={() => toggleExpand(program._id)}>
+                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center shrink-0">
+                    <School className="w-6 h-6 text-indigo-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="text-lg font-bold text-slate-900">{program.name}</h2>
+                      {program.code && (
+                        <span className="text-xs font-bold font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md border border-slate-200">
+                          {program.code}
+                        </span>
+                      )}
+                      {program.degreeLevel && (
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${levelColors[program.degreeLevel] || levelColors.other}`}>
+                          {program.degreeLevel}
+                        </span>
+                      )}
+                      {program.status === "archived" && (
+                        <span className="text-xs font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full border border-slate-200">Archived</span>
+                      )}
+                    </div>
+                    {program.school && (
+                      <p className="text-sm text-slate-500 mt-0.5">{program.school}</p>
+                    )}
+                    <div className="flex items-center gap-4 mt-1">
+                      <span className="text-xs text-slate-400">{program.majors.length} majors</span>
+                      <span className="text-xs text-slate-400">{program.commonSubjects.length} common subjects</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {isAdmin && (
+                      <>
+                        <Link href={`/lms/programs/${program._id}/performance`}
+                          onClick={e => e.stopPropagation()}
+                          className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors">
+                          <BarChart3 className="w-3.5 h-3.5" />Performance
+                        </Link>
+                        <button onClick={e => { e.stopPropagation(); setMajorModal({ open: true, editing: emptyMajor(program._id), defaultProgramId: program._id }); }}
+                          className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition-colors">
+                          <Plus className="w-3.5 h-3.5" />Major
+                        </button>
+                        <button onClick={e => { e.stopPropagation(); setProgModal({ open: true, editing: { ...program } }); }}
+                          className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button onClick={e => { e.stopPropagation(); setConfirmDelete({ type: "program", id: program._id, label: program.name }); }}
+                          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </>
+                    )}
+                    {isExpanded
+                      ? <ChevronDown className="w-5 h-5 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                      : <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                    }
+                  </div>
+                </div>
+
+                {/* Expanded Content */}
+                {isExpanded && (
+                  <div className="border-t border-slate-100 bg-slate-50/50 p-5 space-y-4">
+                    {/* Common Subjects */}
+                    {program.commonSubjects.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-5 h-5 bg-emerald-100 rounded flex items-center justify-center">
+                            <BookOpen className="w-3 h-3 text-emerald-600" />
+                          </div>
+                          <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Common Subjects</span>
+                          <span className="text-xs text-slate-400">({program.commonSubjects.length})</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2 ml-7">
+                          {program.commonSubjects.map((s: any) => (
+                            <Link key={s._id} href={`/lms/courses/${s._id}`}
+                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 rounded-lg transition-all">
+                              <BookOpen className="w-3 h-3 text-emerald-500" />
+                              {s.title}
+                              {s.courseCode && <span className="font-mono text-slate-400">{s.courseCode}</span>}
+                              {s.creditHours && <span className="text-slate-400">{s.creditHours} Cr</span>}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Majors */}
+                    {program.majors.length > 0 ? (
+                      <div className="space-y-3">
+                        {program.majors.map(major => (
+                          <div key={major._id} className="bg-white border border-slate-200 rounded-xl p-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-2">
+                                <div className="w-7 h-7 bg-purple-100 rounded-lg flex items-center justify-center">
+                                  <FolderOpen className="w-3.5 h-3.5 text-purple-600" />
+                                </div>
+                                <span className="font-bold text-slate-800 text-sm">{major.name}</span>
+                                {major.code && (
+                                  <span className="text-xs font-mono font-bold bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded border border-purple-100">
+                                    {major.code}
+                                  </span>
+                                )}
+                                <span className="text-xs text-slate-400">{major.subjects.length} subjects</span>
+                              </div>
+                              {isAdmin && (
+                                <div className="flex items-center gap-1">
+                                  <button onClick={() => setMajorModal({ open: true, editing: { ...(major as any) }, defaultProgramId: program._id })}
+                                    className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
+                                    <Pencil className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button onClick={() => setConfirmDelete({ type: "major", id: major._id, label: major.name })}
+                                    className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                            {major.subjects.length > 0 ? (
+                              <div className="flex flex-wrap gap-2 ml-9">
+                                {major.subjects.map((s: any) => (
+                                  <Link key={s._id} href={`/lms/courses/${s._id}`}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-50 border border-slate-200 hover:border-purple-300 hover:bg-purple-50 rounded-lg transition-all">
+                                    <BookOpen className="w-3 h-3 text-purple-400" />
+                                    {s.title}
+                                    {s.courseCode && <span className="font-mono text-slate-400">{s.courseCode}</span>}
+                                    {s.creditHours && <span className="text-slate-400">{s.creditHours} Cr</span>}
+                                  </Link>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-xs text-slate-400 ml-9">No subjects assigned yet.</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-slate-400 italic">No majors defined yet.</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ═══════════════ PROGRAM MODAL ═══════════════ */}
+      {progModal.open && progModal.editing && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
+              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <GraduationCap className="w-5 h-5 text-indigo-600" />
+                {progModal.editing._id ? "Edit Program" : "New Academic Program"}
+              </h3>
+              <button onClick={() => setProgModal({ open: false, editing: null })} className="p-1 hover:bg-slate-100 rounded-lg">
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+            <form onSubmit={handleSaveProgram} className="overflow-y-auto flex-1">
+              <div className="px-6 py-5 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="col-span-2">
+                    <label className="block text-xs font-bold text-slate-600 mb-1.5">Program Name *</label>
+                    <input required value={progModal.editing.name || ""} onChange={e => setProgModal(prev => ({ ...prev, editing: { ...prev.editing!, name: e.target.value } }))}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                      placeholder="e.g. BSc Agriculture" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 mb-1.5">Code</label>
+                    <input value={progModal.editing.code || ""} onChange={e => setProgModal(prev => ({ ...prev, editing: { ...prev.editing!, code: e.target.value } }))}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 font-mono uppercase"
+                      placeholder="BSC-AGRI" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 mb-1.5">Degree Level</label>
+                    <select value={progModal.editing.degreeLevel || "undergraduate"} onChange={e => setProgModal(prev => ({ ...prev, editing: { ...prev.editing!, degreeLevel: e.target.value } }))}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                      {["undergraduate", "postgraduate", "diploma", "certificate", "other"].map(l => (
+                        <option key={l} value={l}>{l.charAt(0).toUpperCase() + l.slice(1)}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs font-bold text-slate-600 mb-1.5">School / Faculty</label>
+                    <input value={progModal.editing.school || ""} onChange={e => setProgModal(prev => ({ ...prev, editing: { ...prev.editing!, school: e.target.value } }))}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                      placeholder="e.g. School of Agriculture" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 mb-1.5">Total Credit Hours</label>
+                    <input type="number" min={0} value={progModal.editing.totalCreditHours ?? 120} onChange={e => setProgModal(prev => ({ ...prev, editing: { ...prev.editing!, totalCreditHours: +e.target.value } }))}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 mb-1.5">Passing Grade (%)</label>
+                    <input type="number" min={0} max={100} value={progModal.editing.passingGradePercent ?? 60} onChange={e => setProgModal(prev => ({ ...prev, editing: { ...prev.editing!, passingGradePercent: +e.target.value } }))}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs font-bold text-slate-600 mb-1.5">Description</label>
+                    <textarea rows={2} value={progModal.editing.description || ""} onChange={e => setProgModal(prev => ({ ...prev, editing: { ...prev.editing!, description: e.target.value } }))}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
+                      placeholder="Brief description..." />
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-3 px-6 py-4 border-t border-slate-100 shrink-0">
+                <button type="button" onClick={() => setProgModal({ open: false, editing: null })}
+                  className="flex-1 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">
+                  Cancel
+                </button>
+                <button type="submit" disabled={saving}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-white bg-[#440C57] hover:bg-[#350944] active:scale-[0.98] rounded-xl transition-all disabled:opacity-50 shadow-md shadow-[#440C57]/20">
+                  {saving ? <Loader size="sm" /> : <Check className="w-4 h-4" />}
+                  {progModal.editing._id ? "Save Changes" : "Create Program"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════ MAJOR MODAL ═══════════════ */}
+      {majorModal.open && majorModal.editing && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-slate-200">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <Layers className="w-5 h-5 text-purple-600" />
+                {(majorModal.editing as any)._id ? "Edit Major" : "New Major / Specialization"}
+              </h3>
+              <button onClick={() => setMajorModal({ open: false, editing: null, defaultProgramId: "" })} className="p-1 hover:bg-slate-100 rounded-lg">
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+            <form onSubmit={handleSaveMajor}>
+              <div className="px-6 py-5 space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5">Program (Degree) *</label>
+                  <select required value={majorModal.editing.programId || ""} onChange={e => setMajorModal(prev => ({ ...prev, editing: { ...prev.editing!, programId: e.target.value } }))}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300">
+                    <option value="">Select program...</option>
+                    {programs.map(p => (
+                      <option key={p._id} value={p._id}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="col-span-2">
+                    <label className="block text-xs font-bold text-slate-600 mb-1.5">Major Name *</label>
+                    <input required value={majorModal.editing.name || ""} onChange={e => setMajorModal(prev => ({ ...prev, editing: { ...prev.editing!, name: e.target.value } }))}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
+                      placeholder="e.g. Agronomy" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 mb-1.5">Code</label>
+                    <input value={majorModal.editing.code || ""} onChange={e => setMajorModal(prev => ({ ...prev, editing: { ...prev.editing!, code: e.target.value } }))}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 font-mono uppercase"
+                      placeholder="AGRON" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 mb-1.5">Status</label>
+                    <select value={majorModal.editing.status || "active"} onChange={e => setMajorModal(prev => ({ ...prev, editing: { ...prev.editing!, status: e.target.value } }))}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300">
+                      <option value="active">Active</option>
+                      <option value="archived">Archived</option>
+                    </select>
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs font-bold text-slate-600 mb-1.5">Description</label>
+                    <textarea rows={2} value={majorModal.editing.description || ""} onChange={e => setMajorModal(prev => ({ ...prev, editing: { ...prev.editing!, description: e.target.value } }))}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 resize-none"
+                      placeholder="Brief description..." />
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-3 px-6 py-4 border-t border-slate-100">
+                <button type="button" onClick={() => setMajorModal({ open: false, editing: null, defaultProgramId: "" })}
+                  className="flex-1 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">
+                  Cancel
+                </button>
+                <button type="submit" disabled={saving}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 rounded-xl transition-all disabled:opacity-50">
+                  {saving ? <Loader size="sm" /> : <Check className="w-4 h-4" />}
+                  {(majorModal.editing as any)._id ? "Save Changes" : "Create Major"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════ DELETE CONFIRM ═══════════════ */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 border border-slate-200">
+            <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mb-4 mx-auto">
+              <Trash2 className="w-6 h-6 text-red-600" />
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 text-center mb-2">Delete {confirmDelete.type === "program" ? "Program" : "Major"}?</h3>
+            <p className="text-sm text-slate-500 text-center mb-6">
+              Delete <strong>&quot;{confirmDelete.label}&quot;</strong>?
+              {confirmDelete.type === "program"
+                ? " This will also delete all majors under it. Courses will be unlinked."
+                : " Courses under this major will be unlinked."}
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmDelete(null)} className="flex-1 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">Cancel</button>
+              <button onClick={handleDelete} disabled={saving} className="flex-1 py-2.5 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors disabled:opacity-50">
+                {saving ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

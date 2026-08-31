@@ -10,10 +10,14 @@ const QuizQuestion = require('../models/quizQuestion.model');
 const QuizAttempt = require('../models/quizAttempt.model');
 const Certificate = require('../models/certificate.model');
 const CertificateTemplate = require('../models/certificateTemplate.model');
+const Program = require('../models/program.model');
+const Major   = require('../models/major.model');
+const VideoLecture = require('../models/videoLecture.model');
 const certificateGenerator = require('../utils/certificateGenerator');
 const { uploadFile, deleteFile } = require('../../shared/services/fileService');
 const { sendNotification } = require('../../shared/services/notification.service');
 const { logActivity } = require('../../shared/services/activityLogger.service');
+const { generateQuizTemplate, parseAndValidateQuizExcel } = require('../utils/quizExcelParser');
 
 // ── Helper ─────────────────────────────────────────────────────────────────────
 const err = (msg, code = 400) => Object.assign(new Error(msg), { statusCode: code });
@@ -126,7 +130,9 @@ const updateCourse = async (tenantId, courseId, data, userId, userRole) => {
   const ALLOWED_UPDATE_FIELDS = [
     'title', 'description', 'startDate', 'endDate',
     'status', 'completionCriteria', 'category',
-    'level', 'maxStudents', 'thumbnail'
+    'level', 'maxStudents', 'thumbnail',
+    // Academic hierarchy
+    'programId', 'majorId', 'isCommon', 'courseCode', 'creditHours', 'weight',
   ];
 
   const safeUpdate = {};
@@ -679,9 +685,106 @@ const createQuiz = async (tenantId, courseId, data, userId, role) => {
     throw err('You do not have permission to create quizzes for this course.', 403);
   }
 
-  const quiz = await Quiz.create({ tenantId, courseId, createdBy: userId, ...data });
+  const quiz = await Quiz.create({
+    tenantId,
+    courseId,
+    createdBy: userId,
+    title: data.title,
+    instructions: data.instructions,
+    timeLimit: data.timeLimit ? parseInt(data.timeLimit, 10) : null,
+    passMark: data.passMark !== undefined ? Number(data.passMark) : 60,
+    maxAttempts: data.maxAttempts !== undefined ? Number(data.maxAttempts) : 1,
+    shuffleQuestions: !!data.shuffleQuestions,
+    showResultImmediately: data.showResultImmediately !== undefined ? !!data.showResultImmediately : true,
+    enableNegativeMarking: !!data.enableNegativeMarking,
+    correctMark: data.correctMark !== undefined ? Number(data.correctMark) : 1,
+    negativeMark: data.negativeMark !== undefined ? Math.abs(Number(data.negativeMark)) : (data.enableNegativeMarking ? 0.25 : 0),
+    unattemptedMark: data.unattemptedMark !== undefined ? Number(data.unattemptedMark) : 0,
+    status: data.status || 'draft',
+  });
   await logActivity({ userId, tenantId, action: 'CREATE_QUIZ', entityType: 'Quiz', entityId: quiz._id });
   return quiz;
+};
+
+const generateQuizExcelTemplate = () => {
+  return generateQuizTemplate();
+};
+
+const validateQuizExcel = (buffer, options) => {
+  return parseAndValidateQuizExcel(buffer, options);
+};
+
+const createQuizBulk = async (tenantId, courseId, quizData, questions, userId, role) => {
+  const course = await Course.findOne({ _id: courseId, tenantId });
+  if (!course) throw err('Course not found.', 404);
+  if (role !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to create quizzes for this course.', 403);
+  }
+
+  if (!quizData || !quizData.title || !String(quizData.title).trim()) {
+    throw err('Quiz title is required.', 400);
+  }
+
+  if (!Array.isArray(questions) || questions.length === 0) {
+    throw err('At least one valid question is required to create a quiz.', 400);
+  }
+
+  // Double-check question data validity before DB insert
+  questions.forEach((q, idx) => {
+    if (!q.question || !String(q.question).trim()) {
+      throw err(`Question at position ${idx + 1} has no question text.`, 400);
+    }
+    if (!Array.isArray(q.options) || q.options.length !== 4) {
+      throw err(`Question at position ${idx + 1} must contain exactly 4 options.`, 400);
+    }
+    if (q.correctIndex === undefined || q.correctIndex < 0 || q.correctIndex > 3) {
+      throw err(`Question at position ${idx + 1} has an invalid correct option index.`, 400);
+    }
+  });
+
+  const quiz = await Quiz.create({
+    tenantId,
+    courseId,
+    createdBy: userId,
+    title: String(quizData.title).trim(),
+    instructions: quizData.instructions ? String(quizData.instructions).trim() : '',
+    timeLimit: quizData.timeLimit ? parseInt(quizData.timeLimit, 10) : null,
+    passMark: quizData.passMark !== undefined ? Number(quizData.passMark) : 60,
+    maxAttempts: quizData.maxAttempts !== undefined ? Number(quizData.maxAttempts) : 1,
+    shuffleQuestions: !!quizData.shuffleQuestions,
+    showResultImmediately: quizData.showResultImmediately !== undefined ? !!quizData.showResultImmediately : true,
+    enableNegativeMarking: !!quizData.enableNegativeMarking,
+    correctMark: quizData.correctMark !== undefined ? Number(quizData.correctMark) : 1,
+    negativeMark: quizData.negativeMark !== undefined ? Math.abs(Number(quizData.negativeMark)) : (quizData.enableNegativeMarking ? 0.25 : 0),
+    unattemptedMark: quizData.unattemptedMark !== undefined ? Number(quizData.unattemptedMark) : 0,
+    status: quizData.status || 'draft',
+  });
+
+  const questionDocs = questions.map((q, idx) => ({
+    tenantId,
+    quizId: quiz._id,
+    question: String(q.question).trim(),
+    options: q.options.map(opt => String(opt).trim()),
+    correctIndex: Number(q.correctIndex),
+    explanation: q.explanation ? String(q.explanation).trim() : '',
+    marks: q.marks !== undefined && Number(q.marks) > 0 ? Number(q.marks) : 1,
+    order: idx + 1,
+  }));
+
+  await QuizQuestion.insertMany(questionDocs);
+
+  await logActivity({
+    userId,
+    tenantId,
+    action: 'CREATE_QUIZ_BULK',
+    entityType: 'Quiz',
+    entityId: quiz._id,
+    metadata: { questionCount: questionDocs.length }
+  });
+
+  const quizObj = quiz.toObject();
+  quizObj.questionCount = questionDocs.length;
+  return quizObj;
 };
 
 const getCourseQuizzes = async (tenantId, courseId, userRole, userId) => {
@@ -742,7 +845,18 @@ const updateQuiz = async (tenantId, quizId, data, userId, userRole) => {
     throw err('You do not have permission to update this quiz.', 403);
   }
 
-  const updatedQuiz = await Quiz.findOneAndUpdate({ _id: quizId, tenantId }, data, { new: true, runValidators: true }).lean();
+  const updateData = { ...data };
+  if (updateData.timeLimit !== undefined) {
+    updateData.timeLimit = updateData.timeLimit ? parseInt(updateData.timeLimit, 10) : null;
+  }
+  if (updateData.passMark !== undefined) updateData.passMark = Number(updateData.passMark);
+  if (updateData.maxAttempts !== undefined) updateData.maxAttempts = Number(updateData.maxAttempts);
+  if (updateData.enableNegativeMarking !== undefined) updateData.enableNegativeMarking = !!updateData.enableNegativeMarking;
+  if (updateData.correctMark !== undefined) updateData.correctMark = Number(updateData.correctMark);
+  if (updateData.negativeMark !== undefined) updateData.negativeMark = Math.abs(Number(updateData.negativeMark));
+  if (updateData.unattemptedMark !== undefined) updateData.unattemptedMark = Number(updateData.unattemptedMark);
+
+  const updatedQuiz = await Quiz.findOneAndUpdate({ _id: quizId, tenantId }, updateData, { new: true, runValidators: true }).lean();
   if (updatedQuiz) {
     updatedQuiz.questionCount = await QuizQuestion.countDocuments({ quizId, tenantId });
   }
@@ -767,6 +881,25 @@ const updateQuizQuestion = async (tenantId, questionId, data, userId, userRole) 
   const updatedQuestion = await QuizQuestion.findOneAndUpdate({ _id: questionId, tenantId }, data, { new: true, runValidators: true });
   await logActivity({ userId, tenantId, action: 'UPDATE_QUIZ_QUESTION', entityType: 'QuizQuestion', entityId: questionId });
   return updatedQuestion;
+};
+
+const deleteQuizQuestion = async (tenantId, questionId, userId, userRole) => {
+  const question = await QuizQuestion.findOne({ _id: questionId, tenantId });
+  if (!question) throw err('Question not found.', 404);
+
+  const quiz = await Quiz.findOne({ _id: question.quizId, tenantId });
+  if (!quiz) throw err('Quiz associated with question not found.', 404);
+
+  const course = await Course.findOne({ _id: quiz.courseId, tenantId });
+  if (!course) throw err('Course associated with quiz not found.', 404);
+
+  if (userRole !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to delete this question.', 403);
+  }
+
+  await QuizQuestion.deleteOne({ _id: questionId, tenantId });
+  await logActivity({ userId, tenantId, action: 'DELETE_QUIZ_QUESTION', entityType: 'QuizQuestion', entityId: questionId });
+  return { message: 'Question deleted successfully' };
 };
 
 const publishQuiz = async (tenantId, quizId, userId, role) => {
@@ -815,24 +948,124 @@ const submitQuizAttempt = async (tenantId, quizId, studentId, answers) => {
   }
 
   const questions = await QuizQuestion.find({ tenantId, quizId }).lean();
-  const qMap = Object.fromEntries(questions.map(q => [String(q._id), q]));
-  let totalMarks = 0, maxMarks = 0;
-  const breakdown = [];
-  const gradedAnswers = (answers || []).map(a => {
-    const q = qMap[String(a.questionId)];
-    if (!q) return { ...a, isCorrect: false, marksAwarded: 0 };
-    const isCorrect = a.selectedIndex === q.correctIndex;
-    const awarded = isCorrect ? (q.marks || 1) : 0;
-    totalMarks += awarded; maxMarks += q.marks || 1;
-    breakdown.push({ questionId: q._id, question: q.question, selectedIndex: a.selectedIndex, correctAnswer: q.correctIndex, explanation: q.explanation, isCorrect, marksAwarded: awarded });
-    return { questionId: a.questionId, selectedIndex: a.selectedIndex, isCorrect, marksAwarded: awarded };
+  
+  // Build lookup map of answers submitted by student
+  const studentAnsMap = new Map();
+  (answers || []).forEach(a => {
+    if (a && a.questionId) {
+      studentAnsMap.set(String(a.questionId), a.selectedIndex);
+    }
   });
-  const percentScore = maxMarks === 0 ? 0 : Math.round((totalMarks / maxMarks) * 100);
-  const passed = percentScore >= quiz.passMark;
-  Object.assign(attempt, { answers: gradedAnswers, totalMarks, maxMarks, percentScore, passed, submittedAt: new Date(), timeTakenSeconds: attempt.startedAt ? Math.round((Date.now() - attempt.startedAt.getTime()) / 1000) : null });
+
+  const enableNeg = !!quiz.enableNegativeMarking;
+  const correctMarkVal = quiz.correctMark !== undefined && quiz.correctMark !== null ? Number(quiz.correctMark) : null;
+  const negativeMarkVal = enableNeg ? (quiz.negativeMark !== undefined ? Math.abs(Number(quiz.negativeMark)) : 0.25) : 0;
+  const unattemptedMarkVal = quiz.unattemptedMark !== undefined ? Number(quiz.unattemptedMark) : 0;
+
+  let correctCount = 0;
+  let wrongCount = 0;
+  let unattemptedCount = 0;
+  let totalMarks = 0;
+  let maxMarks = 0;
+  const breakdown = [];
+  const gradedAnswers = [];
+
+  questions.forEach(q => {
+    const qCorrectMark = correctMarkVal !== null ? correctMarkVal : (Number(q.marks) || 1);
+    maxMarks += qCorrectMark;
+
+    const selectedIdx = studentAnsMap.has(String(q._id)) ? studentAnsMap.get(String(q._id)) : -1;
+    const isAnswered = selectedIdx !== undefined && selectedIdx !== null && selectedIdx >= 0 && selectedIdx <= 3;
+
+    let isCorrect = false;
+    let marksAwarded = 0;
+    let status = 'unattempted';
+
+    if (isAnswered) {
+      if (selectedIdx === q.correctIndex) {
+        isCorrect = true;
+        status = 'correct';
+        marksAwarded = qCorrectMark;
+        correctCount += 1;
+      } else {
+        isCorrect = false;
+        status = 'wrong';
+        marksAwarded = -negativeMarkVal;
+        wrongCount += 1;
+      }
+    } else {
+      isCorrect = false;
+      status = 'unattempted';
+      marksAwarded = unattemptedMarkVal;
+      unattemptedCount += 1;
+    }
+
+    totalMarks += marksAwarded;
+
+    const roundedMarks = Math.round(marksAwarded * 100) / 100;
+    const gradedItem = {
+      questionId: q._id,
+      question: q.question,
+      options: q.options,
+      selectedIndex: selectedIdx,
+      correctAnswer: q.correctIndex,
+      explanation: q.explanation,
+      isCorrect,
+      status,
+      marksAwarded: roundedMarks
+    };
+
+    breakdown.push(gradedItem);
+    gradedAnswers.push({
+      questionId: q._id,
+      selectedIndex: selectedIdx,
+      isCorrect,
+      status,
+      marksAwarded: roundedMarks
+    });
+  });
+
+  totalMarks = Math.round(totalMarks * 100) / 100;
+  maxMarks = Math.round(maxMarks * 100) / 100;
+  const rawPercent = maxMarks > 0 ? (totalMarks / maxMarks) * 100 : 0;
+  const percentScore = Math.round(rawPercent * 10) / 10;
+  const passed = percentScore >= (quiz.passMark || 60);
+
+  const markingScheme = {
+    enableNegativeMarking: enableNeg,
+    correctMark: correctMarkVal !== null ? correctMarkVal : 1,
+    negativeMark: negativeMarkVal,
+    unattemptedMark: unattemptedMarkVal
+  };
+
+  Object.assign(attempt, {
+    answers: gradedAnswers,
+    correctCount,
+    wrongCount,
+    unattemptedCount,
+    totalMarks,
+    maxMarks,
+    percentScore,
+    passed,
+    markingScheme,
+    submittedAt: new Date(),
+    timeTakenSeconds: attempt.startedAt ? Math.round((Date.now() - attempt.startedAt.getTime()) / 1000) : null
+  });
+
   await attempt.save();
-  const result = { score: percentScore, passed, totalMarks, maxMarks };
-  if (quiz.showResultImmediately) result.breakdown = breakdown;
+
+  const result = {
+    score: percentScore,
+    percentScore,
+    passed,
+    totalMarks,
+    maxMarks,
+    correctCount,
+    wrongCount,
+    unattemptedCount,
+    markingScheme,
+    breakdown
+  };
   return result;
 };
 
@@ -846,7 +1079,7 @@ const getQuizResults = async (tenantId, quizId, userId, role) => {
     throw err('You do not have permission to view results for this quiz.', 403);
   }
 
-  return QuizAttempt.find({ tenantId, quizId }).populate('studentId', 'name email');
+  return QuizAttempt.find({ tenantId, quizId }).populate('studentId', 'name email').sort({ submittedAt: -1, createdAt: -1 });
 };
 
 const getMyQuizAttempts = async (tenantId, quizId, studentId) => {
@@ -858,7 +1091,31 @@ const getMyQuizAttempts = async (tenantId, quizId, studentId) => {
     throw err('You are not enrolled in this course.', 403);
   }
 
-  return QuizAttempt.find({ tenantId, quizId, studentId });
+  const attempts = await QuizAttempt.find({ tenantId, quizId, studentId })
+    .populate('answers.questionId')
+    .sort({ submittedAt: -1, createdAt: -1 })
+    .lean();
+
+  return attempts.map(attempt => {
+    const breakdown = (attempt.answers || []).map(ans => {
+      const q = ans.questionId;
+      return {
+        questionId: q?._id || ans.questionId,
+        question: q?.question || '',
+        options: q?.options || [],
+        selectedIndex: ans.selectedIndex,
+        correctAnswer: q?.correctIndex,
+        explanation: q?.explanation || '',
+        isCorrect: ans.isCorrect,
+        status: ans.status,
+        marksAwarded: ans.marksAwarded
+      };
+    });
+    return {
+      ...attempt,
+      breakdown
+    };
+  });
 };
 
 // ── Performance + Certificates ────────────────────────────────────────────────
@@ -1195,29 +1452,10 @@ const approveUser = async (tenantId, targetUserId) => {
   const User = require('../../auth/models/user.model');
   const user = await User.findOneAndUpdate(
     { _id: targetUserId, tenantId },
-    { isApproved: true },
+    { isApproved: true, isActive: true },
     { new: true }
   ).select('name email role isApproved isActive createdAt');
   if (!user) throw err('User not found.', 404);
-  
-  // Send email
-  try {
-    const { Resend } = require('resend');
-    if (process.env.RESEND_API_KEY) {
-      const resend = new Resend(process.env.RESEND_API_KEY);
-      await resend.emails.send({
-        from: 'UOP Space <onboarding@resend.dev>',
-        to: user.email,
-        subject: 'Your Account Has Been Approved',
-        html: `<p>Hello ${user.name},</p><p>Your account has been approved by the admin. You can now log in to the UOP Space platform.</p>`
-      });
-    } else {
-      console.log(`[DEV MODE] Approval email for ${user.email} would be sent here.`);
-    }
-  } catch (emailErr) {
-    console.error('Error sending approval email:', emailErr);
-    // don't throw, let the approval succeed
-  }
   
   return user;
 };
@@ -1276,6 +1514,432 @@ const revokeCertificate = async (tenantId, certId) => {
   return cert;
 };
 
+// ══════════════════════════════════════════════════════════════════════════════
+// ACADEMIC STRUCTURE – Programs (Degrees) & Majors (Specializations)
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── Programs ───────────────────────────────────────────────────────────────────
+const getPrograms = async (tenantId) => {
+  return Program.find({ tenantId }).sort({ name: 1 }).lean();
+};
+
+const getProgramById = async (tenantId, programId) => {
+  const program = await Program.findOne({ _id: programId, tenantId }).lean();
+  if (!program) throw err('Program not found.', 404);
+  return program;
+};
+
+const createProgram = async (tenantId, data) => {
+  if (!data.name || data.name.trim().length < 2)
+    throw err('Program name is required (min 2 characters).', 400);
+  return Program.create({ tenantId, ...data });
+};
+
+const updateProgram = async (tenantId, programId, data) => {
+  const ALLOWED = ['name', 'code', 'school', 'faculty', 'description', 'degreeLevel', 'totalCreditHours', 'passingGradePercent', 'status'];
+  const update = {};
+  ALLOWED.forEach(f => { if (data[f] !== undefined) update[f] = data[f]; });
+  const updated = await Program.findOneAndUpdate({ _id: programId, tenantId }, { $set: update }, { new: true, runValidators: true });
+  if (!updated) throw err('Program not found.', 404);
+  return updated;
+};
+
+const deleteProgram = async (tenantId, programId) => {
+  const prog = await Program.findOneAndDelete({ _id: programId, tenantId });
+  if (!prog) throw err('Program not found.', 404);
+  // Cascade: remove majors in this program, null-out courses
+  await Major.deleteMany({ tenantId, programId });
+  await Course.updateMany({ tenantId, programId }, { $set: { programId: null, majorId: null, isCommon: false } });
+  return { success: true };
+};
+
+// ── Majors ─────────────────────────────────────────────────────────────────────
+const getMajors = async (tenantId, programId) => {
+  const filter = { tenantId };
+  if (programId) filter.programId = programId;
+  return Major.find(filter).populate('programId', 'name code').sort({ name: 1 }).lean();
+};
+
+const createMajor = async (tenantId, data) => {
+  if (!data.programId) throw err('programId is required.', 400);
+  if (!data.name || data.name.trim().length < 2) throw err('Major name is required (min 2 characters).', 400);
+  const program = await Program.findOne({ _id: data.programId, tenantId });
+  if (!program) throw err('Program not found.', 404);
+  return Major.create({ tenantId, ...data });
+};
+
+const updateMajor = async (tenantId, majorId, data) => {
+  const ALLOWED = ['name', 'code', 'description', 'coordinator', 'status'];
+  const update = {};
+  ALLOWED.forEach(f => { if (data[f] !== undefined) update[f] = data[f]; });
+  const updated = await Major.findOneAndUpdate({ _id: majorId, tenantId }, { $set: update }, { new: true, runValidators: true });
+  if (!updated) throw err('Major not found.', 404);
+  return updated;
+};
+
+const deleteMajor = async (tenantId, majorId) => {
+  const major = await Major.findOneAndDelete({ _id: majorId, tenantId });
+  if (!major) throw err('Major not found.', 404);
+  // Null-out courses linked to this major
+  await Course.updateMany({ tenantId, majorId }, { $set: { majorId: null } });
+  return { success: true };
+};
+
+// ── Academic Hierarchy Tree ───────────────────────────────────────────────────
+const getAcademicHierarchyTree = async (tenantId) => {
+  const [programs, majors, courses] = await Promise.all([
+    Program.find({ tenantId }).sort({ name: 1 }).lean(),
+    Major.find({ tenantId }).sort({ name: 1 }).lean(),
+    Course.find({ tenantId }).select('title courseCode creditHours programId majorId isCommon status').lean(),
+  ]);
+
+  return programs.map(prog => {
+    const progMajors = majors.filter(m => String(m.programId) === String(prog._id));
+    const progCourses = courses.filter(c => String(c.programId) === String(prog._id));
+    const commonSubjects = progCourses.filter(c => c.isCommon || !c.majorId);
+
+    return {
+      ...prog,
+      commonSubjects,
+      majors: progMajors.map(maj => ({
+        ...maj,
+        subjects: progCourses.filter(c => String(c.majorId) === String(maj._id)),
+      })),
+    };
+  });
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// MULTI-LEVEL WEIGHTED PERFORMANCE ENGINE
+// ══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Calculate a student's course-level performance score (0–100).
+ * Composite: 40% quiz avg + 40% assignment avg + 20% attendance %
+ * Falls back gracefully if some data is missing.
+ */
+const _calcCourseScore = async (tenantId, courseId, studentId) => {
+  const [quizAttempts, submissions, sessionsAll, attendanceRecs] = await Promise.all([
+    QuizAttempt.find({ tenantId, courseId, studentId, status: 'submitted' }).select('percentScore').lean(),
+    Assignment.aggregate([
+      { $match: { tenantId, courseId } },
+      { $lookup: { from: 'assignmentsubmissions', localField: '_id', foreignField: 'assignmentId', as: 'subs' } },
+      { $unwind: '$subs' },
+      { $match: { 'subs.studentId': require('mongoose').Types.ObjectId.isValid(studentId) ? new (require('mongoose').Types.ObjectId)(studentId) : studentId } },
+      { $project: { grade: '$subs.grade', maxMarks: 1 } },
+    ]),
+    Session.countDocuments({ tenantId, courseId }),
+    Attendance.find({ tenantId, courseId, studentId }).lean(),
+  ]);
+
+  const quizAvg = quizAttempts.length
+    ? quizAttempts.reduce((s, a) => s + (a.percentScore || 0), 0) / quizAttempts.length
+    : null;
+
+  const assignAvg = submissions.length
+    ? submissions.reduce((s, sub) => {
+        const pct = sub.maxMarks > 0 ? (sub.grade / sub.maxMarks) * 100 : sub.grade;
+        return s + pct;
+      }, 0) / submissions.length
+    : null;
+
+  const attendedCount = attendanceRecs.filter(a => a.status === 'present').length;
+  const attendPct = sessionsAll > 0 ? (attendedCount / sessionsAll) * 100 : null;
+
+  // Weighted composite with graceful fallback
+  const parts = [];
+  const weights = [];
+  if (quizAvg !== null)  { parts.push(quizAvg  * 0.4); weights.push(0.4); }
+  if (assignAvg !== null) { parts.push(assignAvg * 0.4); weights.push(0.4); }
+  if (attendPct !== null) { parts.push(attendPct * 0.2); weights.push(0.2); }
+
+  if (parts.length === 0) return { score: 0, quizAvg: 0, assignAvg: 0, attendPct: 0, dataAvailable: false };
+
+  const totalWeight = weights.reduce((s, w) => s + w, 0);
+  const rawScore = parts.reduce((s, p) => s + p, 0);
+  const score = totalWeight > 0 ? (rawScore / totalWeight) : 0;
+
+  return {
+    score: Math.round(score * 100) / 100,
+    quizAvg: quizAvg !== null ? Math.round(quizAvg * 100) / 100 : null,
+    assignAvg: assignAvg !== null ? Math.round(assignAvg * 100) / 100 : null,
+    attendPct: attendPct !== null ? Math.round(attendPct * 100) / 100 : null,
+    dataAvailable: true,
+  };
+};
+
+/**
+ * Weighted average helper.
+ * @param {Array<{score, creditHours, weight}>} courses
+ */
+const _weightedAvg = (courses) => {
+  const totalW = courses.reduce((s, c) => s + (c.creditHours * c.weight), 0);
+  if (totalW === 0) return 0;
+  const weighted = courses.reduce((s, c) => s + (c.score * c.creditHours * c.weight), 0);
+  return Math.round((weighted / totalW) * 100) / 100;
+};
+
+/**
+ * Get a student's full multi-level academic performance breakdown.
+ * Returns: degree summary, major performance, common subjects performance, per-course detail.
+ */
+const getStudentDegreePerformance = async (tenantId, studentId, programId) => {
+  const User = require('../../auth/models/user.model');
+  const student = await User.findOne({ _id: studentId, tenantId }).lean();
+  if (!student) throw err('Student not found.', 404);
+
+  const effectiveProgramId = programId || student.programId;
+  if (!effectiveProgramId) throw err('Student has no program assigned. Provide programId.', 400);
+
+  const program = await Program.findOne({ _id: effectiveProgramId, tenantId }).lean();
+  if (!program) throw err('Program not found.', 404);
+
+  // Get all courses student is enrolled in under this program
+  const enrolledCourses = await Course.find({
+    tenantId,
+    programId: effectiveProgramId,
+    enrolledStudents: studentId,
+  }).lean();
+
+  if (enrolledCourses.length === 0) {
+    return {
+      student: { _id: student._id, name: student.name, email: student.email, rollNumber: student.rollNumber },
+      program: { _id: program._id, name: program.name, school: program.school },
+      degreePerformance: 0,
+      majorPerformance: null,
+      commonSubjectsPerformance: null,
+      courses: [],
+      message: 'No enrolled courses found under this program.',
+    };
+  }
+
+  // Calculate per-course score
+  const courseDetails = await Promise.all(
+    enrolledCourses.map(async (course) => {
+      const perf = await _calcCourseScore(tenantId, String(course._id), String(studentId));
+      return {
+        _id: course._id,
+        title: course.title,
+        courseCode: course.courseCode,
+        creditHours: course.creditHours || 3,
+        weight: course.weight || 1,
+        majorId: course.majorId,
+        isCommon: course.isCommon,
+        score: perf.score,
+        quizAvg: perf.quizAvg,
+        assignAvg: perf.assignAvg,
+        attendPct: perf.attendPct,
+        dataAvailable: perf.dataAvailable,
+      };
+    })
+  );
+
+  const commonCourses = courseDetails.filter(c => c.isCommon || !c.majorId);
+  const majorCourses  = courseDetails.filter(c => !c.isCommon && c.majorId);
+
+  // Group major courses by majorId
+  const majorGroups = {};
+  for (const c of majorCourses) {
+    const key = String(c.majorId);
+    if (!majorGroups[key]) majorGroups[key] = [];
+    majorGroups[key].push(c);
+  }
+
+  // Enrich major groups with major info
+  const majorIds = Object.keys(majorGroups);
+  const majorDocs = majorIds.length > 0
+    ? await Major.find({ _id: { $in: majorIds }, tenantId }).lean()
+    : [];
+
+  const majorBreakdown = majorDocs.map(maj => ({
+    majorId: maj._id,
+    majorName: maj.name,
+    majorCode: maj.code,
+    courses: majorGroups[String(maj._id)] || [],
+    performance: _weightedAvg(majorGroups[String(maj._id)] || []),
+  }));
+
+  // Student's own major performance (based on student.majorId or first major found)
+  const studentMajorId = student.majorId ? String(student.majorId) : majorIds[0];
+  const studentMajorBreakdown = majorBreakdown.find(m => String(m.majorId) === studentMajorId) || majorBreakdown[0] || null;
+
+  const commonSubjectsPerformance = commonCourses.length > 0 ? _weightedAvg(commonCourses) : null;
+  const majorPerformance = studentMajorBreakdown ? studentMajorBreakdown.performance : null;
+  const degreePerformance = _weightedAvg(courseDetails);
+
+  return {
+    student: { _id: student._id, name: student.name, email: student.email, rollNumber: student.rollNumber },
+    program: { _id: program._id, name: program.name, school: program.school, passingGradePercent: program.passingGradePercent },
+    degreePerformance,
+    majorPerformance,
+    commonSubjectsPerformance,
+    majorBreakdown,
+    commonCourses,
+    courses: courseDetails,
+    isPassing: degreePerformance >= (program.passingGradePercent || 60),
+  };
+};
+
+/**
+ * Get program-level performance overview for admin/teacher.
+ * Shows per-major and per-student aggregates.
+ */
+const getProgramPerformanceOverview = async (tenantId, programId) => {
+  const program = await Program.findOne({ _id: programId, tenantId }).lean();
+  if (!program) throw err('Program not found.', 404);
+
+  const majors = await Major.find({ tenantId, programId }).lean();
+  const courses = await Course.find({ tenantId, programId }).lean();
+
+  // Get all enrolled students across all courses in this program
+  const studentSet = new Set();
+  courses.forEach(c => (c.enrolledStudents || []).forEach(sid => studentSet.add(String(sid))));
+  const studentIds = [...studentSet];
+
+  const User = require('../../auth/models/user.model');
+  const students = await User.find({ _id: { $in: studentIds }, tenantId }).select('name email rollNumber programId majorId').lean();
+
+  const studentPerformances = await Promise.all(
+    students.map(async (student) => {
+      try {
+        const perf = await getStudentDegreePerformance(tenantId, String(student._id), programId);
+        return {
+          studentId: student._id,
+          name: student.name,
+          email: student.email,
+          rollNumber: student.rollNumber,
+          degreePerformance: perf.degreePerformance,
+          majorPerformance: perf.majorPerformance,
+          commonSubjectsPerformance: perf.commonSubjectsPerformance,
+          isPassing: perf.isPassing,
+        };
+      } catch {
+        return { studentId: student._id, name: student.name, email: student.email, degreePerformance: 0, isPassing: false };
+      }
+    })
+  );
+
+  const classAvg = studentPerformances.length
+    ? Math.round(studentPerformances.reduce((s, p) => s + p.degreePerformance, 0) / studentPerformances.length * 100) / 100
+    : 0;
+
+  return {
+    program: { _id: program._id, name: program.name, school: program.school },
+    majors,
+    totalStudents: studentPerformances.length,
+    classAvgPerformance: classAvg,
+    students: studentPerformances,
+    courses: courses.map(c => ({ _id: c._id, title: c.title, courseCode: c.courseCode, creditHours: c.creditHours, isCommon: c.isCommon, majorId: c.majorId })),
+  };
+};
+
+function extractYouTubeId(url) {
+  if (!url) return '';
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+  const match = String(url).match(regExp);
+  return (match && match[2].length === 11) ? match[2] : '';
+}
+
+// ── Video Lectures ────────────────────────────────────────────────────────────
+const getCourseVideoLectures = async (tenantId, courseId, userId, userRole) => {
+  const course = await Course.findOne({ _id: courseId, tenantId });
+  if (!course) throw err('Course not found.', 404);
+
+  const filter = { tenantId, courseId };
+  if (userRole === 'student') {
+    filter.isPublished = true;
+  }
+
+  const lectures = await VideoLecture.find(filter).sort({ order: 1, createdAt: 1 }).lean();
+
+  return lectures.map(l => ({
+    ...l,
+    isCompleted: (l.completedStudents || []).map(String).includes(String(userId)),
+    completedCount: (l.completedStudents || []).length
+  }));
+};
+
+const createVideoLecture = async (tenantId, courseId, userId, data) => {
+  const course = await Course.findOne({ _id: courseId, tenantId });
+  if (!course) throw err('Course not found.', 404);
+
+  const ytId = extractYouTubeId(data.videoUrl);
+  const lectureCount = await VideoLecture.countDocuments({ tenantId, courseId });
+
+  const lecture = await VideoLecture.create({
+    tenantId,
+    courseId,
+    createdBy: userId,
+    title: String(data.title).trim(),
+    description: data.description ? String(data.description).trim() : '',
+    moduleName: data.moduleName ? String(data.moduleName).trim() : 'General',
+    videoUrl: String(data.videoUrl).trim(),
+    youtubeVideoId: ytId || (data.youtubeVideoId ? String(data.youtubeVideoId).trim() : ''),
+    durationMinutes: Number(data.durationMinutes) || 0,
+    order: data.order !== undefined ? Number(data.order) : lectureCount + 1,
+    notes: data.notes ? String(data.notes).trim() : '',
+    resources: Array.isArray(data.resources) ? data.resources : [],
+    isPublished: data.isPublished !== undefined ? !!data.isPublished : true,
+  });
+
+  return lecture;
+};
+
+const updateVideoLecture = async (tenantId, courseId, lectureId, userId, userRole, data) => {
+  const lecture = await VideoLecture.findOne({ _id: lectureId, courseId, tenantId });
+  if (!lecture) throw err('Video lecture not found.', 404);
+
+  const update = {};
+  if (data.title !== undefined) update.title = String(data.title).trim();
+  if (data.description !== undefined) update.description = String(data.description).trim();
+  if (data.moduleName !== undefined) update.moduleName = String(data.moduleName).trim();
+  if (data.videoUrl !== undefined) {
+    update.videoUrl = String(data.videoUrl).trim();
+    update.youtubeVideoId = extractYouTubeId(data.videoUrl);
+  }
+  if (data.durationMinutes !== undefined) update.durationMinutes = Number(data.durationMinutes) || 0;
+  if (data.order !== undefined) update.order = Number(data.order);
+  if (data.notes !== undefined) update.notes = String(data.notes).trim();
+  if (data.resources !== undefined) update.resources = Array.isArray(data.resources) ? data.resources : [];
+  if (data.isPublished !== undefined) update.isPublished = !!data.isPublished;
+
+  const updated = await VideoLecture.findOneAndUpdate(
+    { _id: lectureId, tenantId },
+    { $set: update },
+    { new: true, runValidators: true }
+  );
+
+  return updated;
+};
+
+const deleteVideoLecture = async (tenantId, courseId, lectureId, userId, userRole) => {
+  const lecture = await VideoLecture.findOneAndDelete({ _id: lectureId, courseId, tenantId });
+  if (!lecture) throw err('Video lecture not found.', 404);
+  return { message: 'Video lecture deleted successfully.' };
+};
+
+const toggleVideoLectureProgress = async (tenantId, courseId, lectureId, studentId) => {
+  const lecture = await VideoLecture.findOne({ _id: lectureId, courseId, tenantId });
+  if (!lecture) throw err('Video lecture not found.', 404);
+
+  const isCompleted = (lecture.completedStudents || []).map(String).includes(String(studentId));
+
+  if (isCompleted) {
+    lecture.completedStudents = (lecture.completedStudents || []).filter(id => String(id) !== String(studentId));
+  } else {
+    if (!lecture.completedStudents) lecture.completedStudents = [];
+    lecture.completedStudents.push(studentId);
+  }
+
+  await lecture.save();
+
+  return {
+    lectureId,
+    isCompleted: !isCompleted,
+    completedCount: lecture.completedStudents.length
+  };
+};
+
 module.exports = {
   getCourses, getCourseById, createCourse, updateCourse, saveDraft, deleteCourse, enrollStudent, unenrollStudent, getTenantStudents,
   markAttendance, getCourseAttendance,
@@ -1284,8 +1948,15 @@ module.exports = {
   markSelfAttendance, getMyAttendanceSummary,
   uploadCourseDocument, getCourseDocuments, deleteCourseDocument, getLmsDocumentById, getCourseDocumentAccess,
   gradeSubmission, getAssignmentSubmissions, getMySubmission,
-  createQuiz, getCourseQuizzes, addQuizQuestion, getQuizQuestions, updateQuiz, updateQuizQuestion, publishQuiz, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
+  createQuiz, createQuizBulk, generateQuizExcelTemplate, validateQuizExcel, getCourseQuizzes, addQuizQuestion, getQuizQuestions, updateQuiz, updateQuizQuestion, deleteQuizQuestion, publishQuiz, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
   getCoursePerformance, getMyPerformance, checkEligibility, generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate, getCertificateById,
   getCertificateTemplate, saveCertificateTemplate,
   getAdminStats, getAdminUsers, updateUserRole, deactivateUser, activateUser, deleteUser, approveUser, getAdminCourses, deleteAdminCourse, getAdminCertificates, revokeCertificate,
+  // Academic hierarchy
+  getPrograms, getProgramById, createProgram, updateProgram, deleteProgram,
+  getMajors, createMajor, updateMajor, deleteMajor,
+  getAcademicHierarchyTree,
+  getStudentDegreePerformance, getProgramPerformanceOverview,
+  // Video lectures
+  getCourseVideoLectures, createVideoLecture, updateVideoLecture, deleteVideoLecture, toggleVideoLectureProgress,
 };

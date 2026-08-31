@@ -276,12 +276,49 @@ const getAssignmentSubmissions = async (req, res, next) => { try { res.json({ su
 const getMySubmission         = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getMySubmission(req.tenantId, req.params.id, req.user._id) }); } catch (e) { next(e); } };
 
 // ── Quizzes ────────────────────────────────────────────────────────────────────
+const downloadQuizTemplate = async (req, res, next) => {
+  try {
+    const buffer = lmsService.generateQuizExcelTemplate();
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="Quiz_Question_Template.xlsx"');
+    res.setHeader('Content-Length', buffer.length);
+    return res.end(buffer);
+  } catch (e) { next(e); }
+};
+
+const validateQuizExcel = async (req, res, next) => {
+  try {
+    if (!req.file || !req.file.buffer) {
+      return res.status(400).json({ success: false, message: 'Please upload an Excel file (.xlsx or .xls).' });
+    }
+    const maxQuestions = req.query.maxQuestions ? parseInt(req.query.maxQuestions, 10) : undefined;
+    const result = lmsService.validateQuizExcel(req.file.buffer, { maxQuestions });
+    res.json({ success: true, data: result });
+  } catch (e) { next(e); }
+};
+
+const bulkCreateQuiz = async (req, res, next) => {
+  try {
+    const { quiz, questions } = req.body;
+    const created = await lmsService.createQuizBulk(
+      req.tenantId,
+      req.params.courseId,
+      quiz,
+      questions,
+      req.user._id,
+      req.user.role
+    );
+    res.status(201).json({ success: true, message: 'Quiz and questions created successfully.', data: created });
+  } catch (e) { next(e); }
+};
+
 const createQuiz        = async (req, res, next) => { try { const q = await lmsService.createQuiz(req.tenantId, req.params.courseId, req.body, req.user._id, req.user.role); res.status(201).json({ success: true, data: q }); } catch (e) { next(e); } };
 const getCourseQuizzes  = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getCourseQuizzes(req.tenantId, req.params.courseId, req.user.role, req.user._id) }); } catch (e) { next(e); } };
 const getQuizQuestions  = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getQuizQuestions(req.tenantId, req.params.id, req.user._id, req.user.role) }); } catch (e) { next(e); } };
 const addQuizQuestion   = async (req, res, next) => { try { const q = await lmsService.addQuizQuestion(req.tenantId, req.params.id, req.body, req.user._id, req.user.role); res.status(201).json({ success: true, data: q }); } catch (e) { next(e); } };
 const updateQuiz         = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.updateQuiz(req.tenantId, req.params.id, req.body, req.user._id, req.user.role) }); } catch (e) { next(e); } };
 const updateQuizQuestion = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.updateQuizQuestion(req.tenantId, req.params.id, req.body, req.user._id, req.user.role) }); } catch (e) { next(e); } };
+const deleteQuizQuestion = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.deleteQuizQuestion(req.tenantId, req.params.id, req.user._id, req.user.role) }); } catch (e) { next(e); } };
 const publishQuiz       = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.publishQuiz(req.tenantId, req.params.id, req.user._id, req.user.role) }); } catch (e) { next(e); } };
 const startQuizAttempt  = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.startQuizAttempt(req.tenantId, req.params.id, req.user._id) }); } catch (e) { next(e); } };
 const submitQuizAttempt = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.submitQuizAttempt(req.tenantId, req.params.id, req.user._id, req.body.answers) }); } catch (e) { next(e); } };
@@ -537,7 +574,134 @@ const revokeCertificate = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
+// ══════════════════════════════════════════════════════════════════════════════
+// ACADEMIC STRUCTURE – Programs & Majors Controllers
+// ══════════════════════════════════════════════════════════════════════════════
+
+const getPrograms = async (req, res, next) => {
+  try {
+    const data = await lmsService.getPrograms(req.tenantId);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const getProgram = async (req, res, next) => {
+  try {
+    const data = await lmsService.getProgramById(req.tenantId, req.params.id);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const createProgram = async (req, res, next) => {
+  try {
+    const data = await lmsService.createProgram(req.tenantId, req.body);
+    res.status(201).json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const updateProgram = async (req, res, next) => {
+  try {
+    const data = await lmsService.updateProgram(req.tenantId, req.params.id, req.body);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const deleteProgram = async (req, res, next) => {
+  try {
+    const data = await lmsService.deleteProgram(req.tenantId, req.params.id);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const getMajors = async (req, res, next) => {
+  try {
+    const data = await lmsService.getMajors(req.tenantId, req.query.programId);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const createMajor = async (req, res, next) => {
+  try {
+    const data = await lmsService.createMajor(req.tenantId, req.body);
+    res.status(201).json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const updateMajor = async (req, res, next) => {
+  try {
+    const data = await lmsService.updateMajor(req.tenantId, req.params.id, req.body);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const deleteMajor = async (req, res, next) => {
+  try {
+    const data = await lmsService.deleteMajor(req.tenantId, req.params.id);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const getAcademicTree = async (req, res, next) => {
+  try {
+    const data = await lmsService.getAcademicHierarchyTree(req.tenantId);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const getStudentDegreePerformance = async (req, res, next) => {
+  try {
+    const { programId, studentId } = req.params;
+    const sid = studentId || req.user._id;
+    const data = await lmsService.getStudentDegreePerformance(req.tenantId, sid, programId);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const getProgramPerformanceOverview = async (req, res, next) => {
+  try {
+    const data = await lmsService.getProgramPerformanceOverview(req.tenantId, req.params.programId);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+// ── Video Lectures ────────────────────────────────────────────────────────────
+const getCourseVideoLectures = async (req, res, next) => {
+  try {
+    const data = await lmsService.getCourseVideoLectures(req.tenantId, req.params.id, req.user._id, req.user.role);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const createVideoLecture = async (req, res, next) => {
+  try {
+    const data = await lmsService.createVideoLecture(req.tenantId, req.params.id, req.user._id, req.body);
+    res.status(201).json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const updateVideoLecture = async (req, res, next) => {
+  try {
+    const data = await lmsService.updateVideoLecture(req.tenantId, req.params.id, req.params.lectureId, req.user._id, req.user.role, req.body);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const deleteVideoLecture = async (req, res, next) => {
+  try {
+    const data = await lmsService.deleteVideoLecture(req.tenantId, req.params.id, req.params.lectureId, req.user._id, req.user.role);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const toggleVideoLectureProgress = async (req, res, next) => {
+  try {
+    const data = await lmsService.toggleVideoLectureProgress(req.tenantId, req.params.id, req.params.lectureId, req.user._id);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
 module.exports = {
+
   getCourses, getCourse, createCourse, updateCourse, saveDraft, deleteCourse, enrollStudent, unenrollStudent, getTenantStudents,
   markAttendance, getCourseAttendance,
   createAssignment, updateAssignment, deleteAssignment, submitAssignment, getCourseAssignments,
@@ -545,9 +709,17 @@ module.exports = {
   markSelfAttendance, getMyAttendanceSummary,
   uploadCourseDocument, getCourseDocuments, deleteCourseDocument, getCourseDocumentAccess,
   gradeSubmission, getAssignmentSubmissions, getMySubmission,
-  createQuiz, updateQuiz, getCourseQuizzes, addQuizQuestion, getQuizQuestions, updateQuizQuestion, publishQuiz, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
+  createQuiz, bulkCreateQuiz, downloadQuizTemplate, validateQuizExcel, updateQuiz, getCourseQuizzes, addQuizQuestion, getQuizQuestions, updateQuizQuestion, deleteQuizQuestion, publishQuiz, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
   getCoursePerformance, getMyPerformance,
   generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate, getCertificatePdfPublic, getCertificateAccess, signFileUrl,
   getAdminStats, getAdminUsers, updateUserRole, deactivateUser, activateUser, deleteUser, approveUser, getAdminCourses, deleteAdminCourse, getAdminCertificates, revokeCertificate,
-  getCertificateTemplate, saveCertificateTemplate
+  getCertificateTemplate, saveCertificateTemplate,
+  // Academic hierarchy
+  getPrograms, getProgram, createProgram, updateProgram, deleteProgram,
+  getMajors, createMajor, updateMajor, deleteMajor,
+  getAcademicTree,
+  getStudentDegreePerformance, getProgramPerformanceOverview,
+  // Video lectures
+  getCourseVideoLectures, createVideoLecture, updateVideoLecture, deleteVideoLecture, toggleVideoLectureProgress,
 };
+

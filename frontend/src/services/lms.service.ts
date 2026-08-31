@@ -203,6 +203,39 @@ export const getQuizQuestions = async (quizId: string) => {
   return res.data?.data ?? res.data;
 };
 
+export const downloadQuizTemplate = async () => {
+  const token = useStore.getState().accessToken;
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+  const response = await axios.get(`${baseUrl}/lms/quizzes/template`, {
+    responseType: 'blob',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    withCredentials: true,
+  });
+
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', 'Quiz_Question_Template.xlsx');
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
+
+export const validateQuizExcel = async (courseId: string, file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const res: any = await api.post(`/lms/courses/${courseId}/quizzes/validate-excel`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res?.data ?? res;
+};
+
+export const bulkCreateQuiz = async (courseId: string, data: { quiz: any; questions: any[] }) => {
+  const res: any = await api.post(`/lms/courses/${courseId}/quizzes/bulk-create`, data);
+  return res?.data ?? res;
+};
+
 export const createQuiz = async (courseId: string, data: any) => {
   const res = await api.post(`/lms/courses/${courseId}/quizzes`, data);
   return res.data?.data ?? res.data;
@@ -225,6 +258,11 @@ export const updateQuiz = async (quizId: string, data: any) => {
 
 export const updateQuizQuestion = async (questionId: string, data: any) => {
   const res = await api.patch(`/lms/questions/${questionId}`, data);
+  return res.data?.data ?? res.data;
+};
+
+export const deleteQuizQuestion = async (questionId: string) => {
+  const res = await api.delete(`/lms/questions/${questionId}`);
   return res.data?.data ?? res.data;
 };
 
@@ -378,4 +416,99 @@ export const saveCertificateTemplate = async (courseId: string, formData: FormDa
   });
   return res.data?.data ?? res.data;
 };
+
+// ── Academic Programs (Degrees) ───────────────────────────────────────────────
+export const getPrograms = async () => {
+  const res = await api.get('/lms/programs');
+  return res.data?.data ?? res.data;
+};
+
+export const getProgramById = async (id: string) => {
+  const res = await api.get(`/lms/programs/${id}`);
+  return res.data?.data ?? res.data;
+};
+
+export const createProgram = async (data: any) => {
+  const res = await api.post('/lms/programs', data);
+  return res.data?.data ?? res.data;
+};
+
+export const updateProgram = async (id: string, data: any) => {
+  const res = await api.patch(`/lms/programs/${id}`, data);
+  return res.data?.data ?? res.data;
+};
+
+export const deleteProgram = async (id: string) => {
+  const res = await api.delete(`/lms/programs/${id}`);
+  return res.data?.data ?? res.data;
+};
+
+// ── Academic Majors (Specializations) ─────────────────────────────────────────
+export const getMajors = async (programId?: string) => {
+  const res = await api.get('/lms/majors', { params: programId ? { programId } : {} });
+  return res.data?.data ?? res.data;
+};
+
+export const createMajor = async (data: any) => {
+  const res = await api.post('/lms/majors', data);
+  return res.data?.data ?? res.data;
+};
+
+export const updateMajor = async (id: string, data: any) => {
+  const res = await api.patch(`/lms/majors/${id}`, data);
+  return res.data?.data ?? res.data;
+};
+
+export const deleteMajor = async (id: string) => {
+  const res = await api.delete(`/lms/majors/${id}`);
+  return res.data?.data ?? res.data;
+};
+
+// ── Academic Hierarchy Tree ───────────────────────────────────────────────────
+export const getAcademicTree = async () => {
+  const res = await api.get('/lms/programs/tree');
+  return res.data?.data ?? res.data;
+};
+
+// ── Degree Performance ────────────────────────────────────────────────────────
+export const getProgramPerformanceOverview = async (programId: string) => {
+  const res = await api.get(`/lms/programs/${programId}/performance`);
+  return res.data?.data ?? res.data;
+};
+
+export const getStudentDegreePerformance = async (programId: string, studentId?: string) => {
+  const url = studentId
+    ? `/lms/programs/${programId}/performance/${studentId}`
+    : `/lms/programs/${programId}/performance/mine`;
+  const res = await api.get(url);
+  return res.data?.data ?? res.data;
+};
+
+// ── Video Lectures ────────────────────────────────────────────────────────────
+export const getVideoLectures = async (courseId: string) => {
+  const res = await api.get(`/lms/courses/${courseId}/lectures`);
+  return res.data?.data ?? res.data;
+};
+
+export const createVideoLecture = async (courseId: string, data: any) => {
+  const res = await api.post(`/lms/courses/${courseId}/lectures`, data);
+  return res.data?.data ?? res.data;
+};
+
+export const updateVideoLecture = async (courseId: string, lectureId: string, data: any) => {
+  const res = await api.patch(`/lms/courses/${courseId}/lectures/${lectureId}`, data);
+  return res.data?.data ?? res.data;
+};
+
+export const deleteVideoLecture = async (courseId: string, lectureId: string) => {
+  const res = await api.delete(`/lms/courses/${courseId}/lectures/${lectureId}`);
+  return res.data?.data ?? res.data;
+};
+
+export const toggleVideoLectureProgress = async (courseId: string, lectureId: string) => {
+  const res = await api.post(`/lms/courses/${courseId}/lectures/${lectureId}/progress`);
+  return res.data?.data ?? res.data;
+};
+
+
 

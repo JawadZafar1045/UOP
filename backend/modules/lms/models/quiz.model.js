@@ -15,6 +15,12 @@ const quizSchema = new mongoose.Schema(
     shuffleQuestions:      { type: Boolean, default: false },
     showResultImmediately: { type: Boolean, default: true },
 
+    // ── Negative marking / Scoring settings (e.g. PPSC style) ───────────────────
+    enableNegativeMarking: { type: Boolean, default: false },
+    correctMark:           { type: Number, default: 1 },    // Marks for correct answer (+1)
+    negativeMark:          { type: Number, default: 0 },    // Marks deducted for wrong answer (e.g. 0.25)
+    unattemptedMark:       { type: Number, default: 0 },    // Marks for unattempted question (e.g. 0)
+
     status: {
       type:    String,
       enum:    ['draft', 'published', 'closed'],

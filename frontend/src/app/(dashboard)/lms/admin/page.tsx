@@ -33,9 +33,10 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Search
+  // Search & Filter
   const [userSearch, setUserSearch] = useState("");
   const [courseSearch, setCourseSearch] = useState("");
+  const [userStatusFilter, setUserStatusFilter] = useState<"all" | "pending" | "active" | "inactive">("all");
 
   // Confirm dialogs
   const [confirmAction, setConfirmAction] = useState<null | {
@@ -68,11 +69,19 @@ export default function AdminDashboardPage() {
     fetchAll();
   }, [user]);
 
+  const pendingUsersCount = useMemo(() => users.filter(u => u.isApproved === false).length, [users]);
+
   const filteredUsers = useMemo(() =>
-    users.filter(u =>
-      u.name?.toLowerCase().includes(userSearch.toLowerCase()) ||
-      u.email?.toLowerCase().includes(userSearch.toLowerCase())
-    ), [users, userSearch]);
+    users.filter(u => {
+      const matchesSearch =
+        u.name?.toLowerCase().includes(userSearch.toLowerCase()) ||
+        u.email?.toLowerCase().includes(userSearch.toLowerCase());
+      if (!matchesSearch) return false;
+      if (userStatusFilter === "pending") return u.isApproved === false;
+      if (userStatusFilter === "active") return u.isActive && u.isApproved !== false;
+      if (userStatusFilter === "inactive") return !u.isActive;
+      return true;
+    }), [users, userSearch, userStatusFilter]);
 
   const filteredCourses = useMemo(() =>
     courses.filter(c =>
@@ -194,97 +203,153 @@ export default function AdminDashboardPage() {
 
       {/* ── TAB 2: USERS ── */}
       {activeTab === "users" && (
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-slate-100 flex items-center gap-3">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input value={userSearch} onChange={e => setUserSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300"
-                placeholder="Search by name or email..." />
-            </div>
-            <span className="text-xs text-slate-400 font-medium">{filteredUsers.length} users</span>
-          </div>
-          {loading ? (
-            <div className="p-8 flex justify-center"><Loader size="md" text="Loading users..." /></div>
-          ) : filteredUsers.length === 0 ? (
-            <div className="p-8 text-center text-slate-400">No users found.</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-slate-50 border-b border-slate-100">
-                  <tr>
-                    {["Name", "Email", "Role", "Status", "Joined", "Actions"].map(h => (
-                      <th key={h} className="text-left px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {filteredUsers.map(u => (
-                    <tr key={u._id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs">
-                            {u.name?.[0]?.toUpperCase() || "U"}
-                          </div>
-                          <span className="font-semibold text-slate-900">{u.name}</span>
-                        </div>
-                      </td>
-                      <td className="px-5 py-4 text-slate-500">{u.email}</td>
-                      <td className="px-5 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold border ${u.role === 'admin' ? 'bg-purple-50 text-purple-700 border-purple-200' : u.role === 'teacher' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-slate-50 text-slate-700 border-slate-200'}`}>
-                          {u.role ? u.role.charAt(0).toUpperCase() + u.role.slice(1) : 'Unknown'}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4">
-                        {u.isActive ? (
-                          u.isApproved === false ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-700 text-xs font-bold rounded-full border border-amber-100">
-                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />Pending Approval
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-100">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />Active
-                            </span>
-                          )
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 text-slate-500 text-xs font-bold rounded-full border border-slate-200">
-                            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />Inactive
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-5 py-4 text-slate-400 text-xs">{new Date(u.createdAt).toLocaleDateString()}</td>
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-2">
-                          {u.isActive && u.isApproved !== false && (
-                            <button onClick={() => setConfirmAction({ type: "deactivate", id: u._id, label: u.name })}
-                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 rounded-lg transition-colors">
-                              <UserX className="w-3.5 h-3.5" />Deactivate
-                            </button>
-                          )}
-                          {!u.isActive && u.isApproved !== false && (
-                            <button onClick={() => setConfirmAction({ type: "activate", id: u._id, label: u.name })}
-                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 rounded-lg transition-colors">
-                              <UserCheck className="w-3.5 h-3.5" />Activate
-                            </button>
-                          )}
-                          {(u.role === 'teacher' || u.role === 'student') && u.isApproved === false && (
-                            <button onClick={() => setConfirmAction({ type: "approveUser", id: u._id, label: u.name })}
-                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 rounded-lg transition-colors">
-                              <UserCheck className="w-3.5 h-3.5" />Approve
-                            </button>
-                          )}
-                          <button onClick={() => setConfirmAction({ type: "deleteUser", id: u._id, label: u.name })}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 rounded-lg transition-colors">
-                            <Trash2 className="w-3.5 h-3.5" />Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        <div className="space-y-4">
+          {/* Pending Approval Notice Banner */}
+          {pendingUsersCount > 0 && (
+            <div className="bg-amber-50 border border-amber-200/80 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-700 shrink-0 font-bold">
+                  {pendingUsersCount}
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900 text-sm">
+                    {pendingUsersCount} Pending Registration {pendingUsersCount === 1 ? 'Request' : 'Requests'}
+                  </h4>
+                  <p className="text-xs text-slate-600 mt-0.5">
+                    New students or teachers have registered and are waiting for your approval to log in.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setUserStatusFilter("pending")}
+                className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm shrink-0"
+              >
+                View Pending Requests
+              </button>
             </div>
           )}
+
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="relative w-full sm:max-w-sm">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input value={userSearch} onChange={e => setUserSearch(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  placeholder="Search by name or email..." />
+              </div>
+
+              {/* Status Filter Buttons */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {(
+                  [
+                    { id: "all", label: `All (${users.length})` },
+                    { id: "pending", label: `Pending (${pendingUsersCount})`, highlight: pendingUsersCount > 0 },
+                    { id: "active", label: "Active" },
+                    { id: "inactive", label: "Inactive" },
+                  ] as const
+                ).map((f) => (
+                  <button
+                    key={f.id}
+                    onClick={() => setUserStatusFilter(f.id)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      userStatusFilter === f.id
+                        ? "bg-slate-900 text-white shadow-sm"
+                        : f.highlight
+                        ? "bg-amber-100 text-amber-800 border border-amber-200 hover:bg-amber-200"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {loading ? (
+              <div className="p-8 flex justify-center"><Loader size="md" text="Loading users..." /></div>
+            ) : filteredUsers.length === 0 ? (
+              <div className="p-12 text-center text-slate-400">
+                <Users className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                <p className="text-sm font-medium">No users found matching current criteria.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-50 border-b border-slate-100">
+                    <tr>
+                      {["Name", "Email", "Role", "Status", "Joined", "Actions"].map(h => (
+                        <th key={h} className="text-left px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {filteredUsers.map(u => (
+                      <tr key={u._id} className={`hover:bg-slate-50/50 transition-colors ${u.isApproved === false ? 'bg-amber-50/30' : ''}`}>
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs">
+                              {u.name?.[0]?.toUpperCase() || "U"}
+                            </div>
+                            <span className="font-semibold text-slate-900">{u.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 text-slate-500">{u.email}</td>
+                        <td className="px-5 py-4">
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold border ${u.role === 'admin' ? 'bg-purple-50 text-purple-700 border-purple-200' : u.role === 'teacher' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-slate-50 text-slate-700 border-slate-200'}`}>
+                            {u.role ? u.role.charAt(0).toUpperCase() + u.role.slice(1) : 'Unknown'}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4">
+                          {u.isActive ? (
+                            u.isApproved === false ? (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full border border-amber-200">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />Pending Approval
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-100">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />Active
+                              </span>
+                            )
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 text-slate-500 text-xs font-bold rounded-full border border-slate-200">
+                              <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />Inactive
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-5 py-4 text-slate-400 text-xs">{new Date(u.createdAt).toLocaleDateString()}</td>
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-2">
+                            {(u.role === 'teacher' || u.role === 'student') && u.isApproved === false && (
+                              <button onClick={() => setConfirmAction({ type: "approveUser", id: u._id, label: u.name })}
+                                className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm rounded-lg transition-colors active:scale-95">
+                                <UserCheck className="w-3.5 h-3.5" />Accept / Approve
+                              </button>
+                            )}
+                            {u.isActive && u.isApproved !== false && (
+                              <button onClick={() => setConfirmAction({ type: "deactivate", id: u._id, label: u.name })}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 rounded-lg transition-colors">
+                                <UserX className="w-3.5 h-3.5" />Deactivate
+                              </button>
+                            )}
+                            {!u.isActive && u.isApproved !== false && (
+                              <button onClick={() => setConfirmAction({ type: "activate", id: u._id, label: u.name })}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 rounded-lg transition-colors">
+                                <UserCheck className="w-3.5 h-3.5" />Activate
+                              </button>
+                            )}
+                            <button onClick={() => setConfirmAction({ type: "deleteUser", id: u._id, label: u.name })}
+                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 rounded-lg transition-colors">
+                              <Trash2 className="w-3.5 h-3.5" />{u.isApproved === false ? "Reject" : "Delete"}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

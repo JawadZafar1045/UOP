@@ -1,10 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
-const { Resend } = require('resend');
 const User = require('../models/user.model');
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
  * Generate access + refresh JWT token pair.
@@ -135,57 +132,29 @@ const registerUser = async ({ tenantId, name, email, password, role }) => {
   });
   if (existing) throw Object.assign(new Error('Email already registered.'), { statusCode: 400 });
 
-  const verificationCode = crypto.randomInt(100000, 999999).toString();
-  const verificationCodeExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
-
   const user = await User.create({ 
     tenantId, 
     name, 
     email: normalizedEmail, 
     password, 
     role,
-    isVerified: false,
-    isApproved: (role === 'teacher' || role === 'student') ? false : true,
-    verificationCode,
-    verificationCodeExpires
+    isActive: true,
+    isVerified: true,
+    isApproved: false // Requires admin panel approval
   });
-
-  try {
-    if (process.env.RESEND_API_KEY) {
-      await resend.emails.send({
-        from: `UOP LMS <${process.env.RESEND_FROM_EMAIL}>`, // or your verified domain
-        to: normalizedEmail,
-        subject: 'Verify your UOP Space account',
-        html: `<p>Hello ${name},</p><p>Your verification code is: <strong>${verificationCode}</strong></p><p>This code will expire in 15 minutes.</p>`
-      });
-    } else {
-      console.log(`[DEV MODE] Verification code for ${normalizedEmail} is ${verificationCode}`);
-    }
-  } catch (err) {
-    console.error('Error sending verification email:', err);
-    // Don't fail the registration if email fails, but it might be a good idea depending on requirements.
-  }
 
   return user;
 };
 
 /**
- * Verify Email with OTP
+ * Verify Email with OTP (Legacy / optional fallback)
  */
 const verifyEmail = async (email, code, tenantId) => {
   const normalizedEmail = email ? email.toLowerCase().trim() : '';
   const user = await User.findOne({ tenantId, email: normalizedEmail });
 
   if (!user) throw Object.assign(new Error('User not found.'), { statusCode: 404 });
-  if (user.isVerified) throw Object.assign(new Error('Email already verified.'), { statusCode: 400 });
-
-  if (user.verificationCode !== code) {
-    throw Object.assign(new Error('Invalid verification code.'), { statusCode: 400 });
-  }
-
-  if (new Date() > user.verificationCodeExpires) {
-    throw Object.assign(new Error('Verification code has expired. Please request a new one.'), { statusCode: 400 });
-  }
+  if (user.isVerified) return true;
 
   user.isVerified = true;
   user.verificationCode = undefined;
@@ -203,8 +172,9 @@ const loginUser = async ({ tenantId, email, password }) => {
   const user = await User.findOne({ tenantId, email: normalizedEmail }).select('+password');
   if (!user) throw Object.assign(new Error('Invalid credentials.'), { statusCode: 401 });
   if (!user.isActive) throw Object.assign(new Error('Account is deactivated.'), { statusCode: 403 });
-  if ((user.role === 'teacher' || user.role === 'student') && !user.isApproved) throw Object.assign(new Error('Your registration request is pending admin approval. You can login once the admin approves it.'), { statusCode: 403 });
-  if (!user.isVerified) throw Object.assign(new Error('Please verify your email before logging in.'), { statusCode: 403 });
+  if ((user.role === 'teacher' || user.role === 'student') && !user.isApproved) {
+    throw Object.assign(new Error('Your registration request is pending admin approval. Please wait a few minutes for the admin to accept your request before logging in.'), { statusCode: 403 });
+  }
 
   const isMatch = await user.comparePassword(password);
   if (!isMatch) throw Object.assign(new Error('Invalid credentials.'), { statusCode: 401 });

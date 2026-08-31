@@ -29,7 +29,7 @@ if (typeof window !== "undefined") {
   );
 }
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState, use, useRef } from "react";
 import { useLmsStore } from "@/store/lmsStore";
 import { useStore } from "@/store/useStore";
 import {
@@ -46,8 +46,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import * as lmsService from "@/services/lms.service";
-import { useRef } from "react";
-import { Edit2, Settings } from "lucide-react";
+import { Edit2, Settings, Video } from "lucide-react";
 import Loader from "@/components/ui/Loader";
 
 export default function CourseOverviewPage({
@@ -253,6 +252,12 @@ export default function CourseOverviewPage({
   }
 
   const navigationTabs = [
+    {
+      name: "Video Lectures",
+      icon: Video,
+      href: `/lms/courses/${courseId}/lectures`,
+      color: "from-rose-600 to-red-600",
+    },
     {
       name: "Sessions",
       icon: Calendar,

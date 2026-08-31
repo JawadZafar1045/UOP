@@ -65,12 +65,12 @@ export default function LMSPage() {
   if (user?.role === 'student' && visibleCourses.length === 0 && !isLoading && !error) {
     return (
       <div className="text-center py-20">
-        <div className="text-4xl mb-4">📚</div>
+        <div className="text-4xl mb-4">🎓</div>
         <h3 className="text-lg font-semibold text-gray-800 mb-2">
-          No Courses Yet
+          No Majors Yet
         </h3>
         <p className="text-gray-500 text-sm">
-          You are not enrolled in any courses.
+          You are not enrolled in any majors.
           Contact your teacher or admin to get enrolled.
         </p>
       </div>
@@ -359,13 +359,13 @@ export default function LMSPage() {
                 </div>
                 <h1 className="text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight mb-3">
                   {isTeacherOrAdmin
-                    ? "Course Management"
+                    ? "Major Management"
                     : "My Learning Journey"}
                 </h1>
                 <p className="text-lg text-slate-600 max-w-2xl leading-relaxed">
                   {isTeacherOrAdmin
-                    ? "Create, manage, and track educational content. Empower learners with engaging course experiences."
-                    : "Continue your educational journey. Access your enrolled courses and track your progress."}
+                    ? "Create, manage, and track educational content. Empower learners with engaging major subjects and courses."
+                    : "Continue your educational journey. Access your enrolled majors and track your progress."}
                 </p>
 
                 {/* Quick Stats for Teacher/Admin */}
@@ -374,7 +374,7 @@ export default function LMSPage() {
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-blue-500"></div>
                       <span className="text-sm font-semibold text-slate-700">
-                        {courses.length} Course{courses.length !== 1 ? "s" : ""}
+                        {courses.length} Major{courses.length !== 1 ? "s" : ""}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -403,22 +403,30 @@ export default function LMSPage() {
                 )}
               </div>
 
-              {isTeacherOrAdmin && (
-                <Link href="/lms/courses/new">
-                  <button className="inline-flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:from-blue-700 hover:to-blue-800 transition-all duration-200 active:scale-[0.98] border border-blue-500/20">
-                    <Plus className="w-5 h-5" />
-                    Create New Course
-                    <Sparkles className="w-4 h-4 ml-1" />
+              <div className="flex items-center gap-3 flex-wrap">
+                {isTeacherOrAdmin && (
+                  <Link href="/lms/courses/new">
+                    <button className="inline-flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:from-blue-700 hover:to-blue-800 transition-all duration-200 active:scale-[0.98] border border-blue-500/20">
+                      <Plus className="w-5 h-5" />
+                      Create New Major
+                      <Sparkles className="w-4 h-4 ml-1" />
+                    </button>
+                  </Link>
+                )}
+                <Link href="/lms/programs">
+                  <button className="inline-flex items-center gap-2 px-5 py-3.5 bg-white/80 backdrop-blur border border-indigo-200 text-indigo-700 text-sm font-bold rounded-xl shadow-md hover:shadow-lg hover:bg-indigo-50 transition-all duration-200 active:scale-[0.98]">
+                    <GraduationCap className="w-5 h-5" />
+                    Academic Structure
                   </button>
                 </Link>
-              )}
+              </div>
             </div>
           </div>
         </div>
 
         {isLoading ? (
           <div className="min-h-[400px] flex items-center justify-center">
-            <Loader size="lg" text="Loading courses..." />
+            <Loader size="lg" text="Loading majors..." />
           </div>
         ) : error ? (
           <div className="bg-gradient-to-br from-red-50 to-rose-50 border border-red-100 p-12 rounded-3xl flex flex-col items-center justify-center text-center shadow-lg">
@@ -445,18 +453,18 @@ export default function LMSPage() {
               </div>
             </div>
             <h3 className="text-3xl font-bold text-slate-900 mb-3">
-              No courses yet
+              No majors yet
             </h3>
             <p className="text-slate-500 text-lg max-w-md leading-relaxed mb-8">
               {isTeacherOrAdmin
-                ? "Start your teaching journey. Create engaging courses and share your expertise with learners worldwide."
-                : "Your learning adventure awaits. Enroll in courses to unlock new skills and knowledge."}
+                ? "Start your teaching journey. Create engaging majors and share your expertise with learners worldwide."
+                : "Your learning adventure awaits. Enroll in majors to unlock new skills and knowledge."}
             </p>
             {isTeacherOrAdmin && (
               <Link href="/lms/courses/new">
                 <button className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-base font-bold rounded-xl hover:from-blue-700 hover:to-blue-800 shadow-xl shadow-blue-500/30 transition-all active:scale-[0.98]">
                   <Plus className="w-5 h-5" />
-                  Create Your First Course
+                  Create Your First Major
                   <ArrowRight className="w-5 h-5 ml-1" />
                 </button>
               </Link>
@@ -468,12 +476,12 @@ export default function LMSPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
-                  {user?.role === 'teacher' ? 'My Courses' :
-                   user?.role === 'admin'   ? 'All Courses' :
-                                              'My Enrolled Courses'}
+                  {user?.role === 'teacher' ? 'My Majors' :
+                   user?.role === 'admin'   ? 'All Majors' :
+                                              'My Enrolled Majors'}
                 </h2>
                 <p className="text-slate-500 mt-1">
-                  {visibleCourses.length} course{visibleCourses.length !== 1 ? "s" : ""}{" "}
+                  {visibleCourses.length} major{visibleCourses.length !== 1 ? "s" : ""}{" "}
                   available
                 </p>
               </div>

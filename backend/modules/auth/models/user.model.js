@@ -23,6 +23,11 @@ const userSchema = new mongoose.Schema(
     verificationCodeExpires: { type: Date },
     refreshToken: { type: String, default: null }, // Store hashed refresh token
     lastLogin:    { type: Date },
+
+    // ── Academic Profile (for students) ──────────────────────────────────────────
+    programId:  { type: require('mongoose').Schema.Types.ObjectId, ref: 'Program', default: null }, // Degree/Program enrolled in
+    majorId:    { type: require('mongoose').Schema.Types.ObjectId, ref: 'Major',   default: null }, // Major/Specialization
+    rollNumber: { type: String, trim: true },  // Student roll number / reg. number
   },
   { timestamps: true }
 );

@@ -61,6 +61,14 @@ const courseSchema = new mongoose.Schema(
       },
     ],
 
+    // ── Academic Hierarchy ───────────────────────────────────────────────────────
+    programId:  { type: mongoose.Schema.Types.ObjectId, ref: 'Program', default: null },  // Degree/Program (e.g. BSc Agriculture)
+    majorId:    { type: mongoose.Schema.Types.ObjectId, ref: 'Major',   default: null },  // Specialization (e.g. Agronomy); null if common subject
+    isCommon:   { type: Boolean, default: false },                                          // true = direct child of degree (shared across all majors)
+    courseCode: { type: String, trim: true, uppercase: true, maxlength: 20 },               // e.g. "AGR-101", "SOIL-201"
+    creditHours: { type: Number, default: 3, min: 0 },                                      // used in weighted GPA/performance calculation
+    weight:      { type: Number, default: 1, min: 0 },                                      // additional assessment weight multiplier
+
     // ── Students (enrolled) ──────────────────────────────────────────────────────
     enrolledStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', alias: 'students' }],
   },
