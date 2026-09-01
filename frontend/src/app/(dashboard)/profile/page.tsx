@@ -50,8 +50,8 @@ function Toggle({
     <button
       type="button"
       onClick={() => onChange(!enabled)}
-      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-        enabled ? "bg-indigo-600" : "bg-slate-200"
+      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
+        enabled ? "bg-green-600" : "bg-slate-200"
       }`}
     >
       <span
@@ -75,7 +75,7 @@ function StatCard({
 }) {
   return (
     <div className="flex flex-col items-center justify-center bg-slate-50 rounded-2xl p-4 gap-1 hover:-translate-y-0.5 transition-transform duration-200 cursor-default">
-      <div className="text-indigo-500 mb-1">{icon}</div>
+      <div className="text-green-600 mb-1">{icon}</div>
       <span className="text-xl font-bold text-slate-800">{value}</span>
       <span className="text-[11px] text-slate-400 font-medium tracking-wide text-center">
         {label}
@@ -108,7 +108,7 @@ function Toast({
       }`}
     >
       {type === "success" ? (
-        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+        <CheckCircle2 className="w-4 h-4 text-green-400" />
       ) : (
         <AlertCircle className="w-4 h-4" />
       )}
@@ -303,7 +303,7 @@ export default function ProfilePage() {
           {/* Avatar + Info Card */}
           <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
             {/* Top gradient band */}
-            <div className="h-20 bg-gradient-to-br from-indigo-500 to-violet-600 relative">
+            <div className="h-20 bg-gradient-to-br from-green-600 to-green-700 relative">
               <div className="absolute bottom-0 left-0 right-0 h-8 bg-white rounded-t-[20px]" />
             </div>
 
@@ -313,7 +313,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => setShowAvatarModal(true)}
-                  className="rounded-full ring-4 ring-white shadow-lg overflow-hidden flex hover:opacity-90 transition-opacity bg-gradient-to-br from-indigo-500 to-violet-600 w-20 h-20 items-center justify-center"
+                  className="rounded-full ring-4 ring-white shadow-lg overflow-hidden flex hover:opacity-90 transition-opacity bg-gradient-to-br from-green-600 to-green-700 w-20 h-20 items-center justify-center"
                 >
                   {avatarSrc?.startsWith("nice:") ? (
                     <NiceAvatar className="w-20 h-20" style={{ width: '5rem', height: '5rem' }} {...(PRESETS.find(p => p.url === avatarSrc)?.config || genConfig(avatarSrc))} />
@@ -333,7 +333,7 @@ export default function ProfilePage() {
               </div>
 
               <h2 className="font-semibold text-slate-900 text-base">{user.name}</h2>
-              <span className="mt-1.5 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full">
+              <span className="mt-1.5 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-green-600 bg-green-50 border border-green-100 px-3 py-1 rounded-full">
                 {user.role}
               </span>
 
@@ -350,12 +350,12 @@ export default function ProfilePage() {
           </div>
 
           {/* Security Note */}
-          <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4">
-            <div className="flex items-center gap-2 text-indigo-700 mb-1.5">
+          <div className="bg-green-50 border border-green-100 rounded-2xl p-4">
+            <div className="flex items-center gap-2 text-green-700 mb-1.5">
               <Shield className="w-4 h-4" />
               <span className="text-sm font-semibold">Security note</span>
             </div>
-            <p className="text-xs text-indigo-600/80 leading-relaxed">
+            <p className="text-xs text-green-600/80 leading-relaxed">
               Your email is used for authentication across all enrolled courses and cannot be changed.
             </p>
           </div>
@@ -372,7 +372,7 @@ export default function ProfilePage() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-1.5 text-sm px-4 py-4 border-b-2 -mb-px font-medium transition-colors duration-150 ${
                   activeTab === tab.id
-                    ? "border-indigo-600 text-indigo-600"
+                    ? "border-green-600 text-green-600"
                     : "border-transparent text-slate-500 hover:text-slate-700"
                 }`}
               >

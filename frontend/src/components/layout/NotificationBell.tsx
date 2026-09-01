@@ -52,7 +52,7 @@ export default function NotificationBell() {
       case 'error': return <XCircle className="w-4 h-4 text-red-500" />;
       case 'info':
       default:
-        return <Info className="w-4 h-4 text-blue-500" />;
+        return <Info className="w-4 h-4 text-green-500" />;
     }
   };
 
@@ -80,7 +80,7 @@ export default function NotificationBell() {
                   e.stopPropagation();
                   markAllRead();
                 }}
-                className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1"
+                className="text-xs font-medium text-green-600 hover:text-green-800 transition-colors flex items-center gap-1"
               >
                 <Check className="w-3 h-3" />
                 Mark all read
@@ -110,7 +110,7 @@ export default function NotificationBell() {
                     key={notif._id}
                     onClick={() => handleNotificationClick(notif._id, notif.isRead)}
                     className={`p-4 cursor-pointer hover:bg-slate-50 transition-colors flex gap-3 ${
-                      !notif.isRead ? "bg-blue-50/30" : "bg-white"
+                      !notif.isRead ? "bg-green-50/30" : "bg-white"
                     }`}
                   >
                     <div className={`mt-0.5 w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${

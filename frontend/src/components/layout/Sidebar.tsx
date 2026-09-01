@@ -48,9 +48,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     <aside className={`w-[260px] bg-white border-r border-slate-200 h-[100dvh] fixed top-0 left-0 flex flex-col shadow-sm z-40 transition-transform duration-300 lg:translate-x-0 ${
       isOpen ? "translate-x-0" : "-translate-x-full"
     }`}>
-      <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100">
+      <div className="h-16 flex items-center justify-center px-6 border-b border-slate-100">
         <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-90 transition-opacity cursor-pointer">
-          <img src="/acrotyx-logo.png" alt="Logo" className="h-8 w-auto object-contain" />
+          <img src="/agree-logo.jpg" alt="Logo" className="h-8 w-auto object-contain" />
         </Link>
         <button
           onClick={onClose}
@@ -71,7 +71,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             href="/lms/admin"
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
               pathname.startsWith('/lms/admin')
-                ? 'bg-indigo-50 text-indigo-700 font-semibold border border-indigo-100'
+                ? 'bg-green-50 text-green-700 font-semibold border border-green-100'
                 : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
             }`}
           >
@@ -90,7 +90,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 href={item.href}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   isActive
-                    ? "bg-blue-50 text-blue-700"
+                    ? "bg-green-50 text-green-700"
                     : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                 }`}
               >
@@ -102,19 +102,19 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 <div className="ml-9 mt-1 mb-2 space-y-1 border-l-2 border-slate-100 pl-2">
                   <Link 
                     href="/lms" 
-                    className={`block px-3 py-2 rounded-md text-sm transition-colors ${pathname === '/lms' ? 'text-blue-700 font-medium bg-blue-50/50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
+                    className={`block px-3 py-2 rounded-md text-sm transition-colors ${pathname === '/lms' ? 'text-green-700 font-medium bg-green-50/50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
                   >
                     My Majors
                   </Link>
                   <Link 
                     href="/lms/programs" 
-                    className={`block px-3 py-2 rounded-md text-sm transition-colors ${pathname.startsWith('/lms/programs') ? 'text-blue-700 font-medium bg-blue-50/50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
+                    className={`block px-3 py-2 rounded-md text-sm transition-colors ${pathname.startsWith('/lms/programs') ? 'text-green-700 font-medium bg-green-50/50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
                   >
                     Academic Structure
                   </Link>
                   <Link 
                     href="/lms/certificates" 
-                    className={`block px-3 py-2 rounded-md text-sm transition-colors ${pathname.startsWith('/lms/certificates') ? 'text-blue-700 font-medium bg-blue-50/50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
+                    className={`block px-3 py-2 rounded-md text-sm transition-colors ${pathname.startsWith('/lms/certificates') ? 'text-green-700 font-medium bg-green-50/50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
                   >
                     Certificates
                   </Link>

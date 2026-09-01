@@ -34,8 +34,6 @@ export default function LMSPage() {
     if (!courses) return [];
     if (user?.role !== 'student') return courses;
 
-    // Defense in depth — filter even if backend
-    // already filtered correctly
     return courses.filter(course => {
       const studentsList = course.students || course.enrolledStudents;
       if (!studentsList || !Array.isArray(studentsList)) return false;
@@ -78,7 +76,7 @@ export default function LMSPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
+    <div className="min-h-screen bg-green-50/30">
       <div className="space-y-8 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
 
         {/* Elevated Hero Header */}
@@ -105,7 +103,7 @@ export default function LMSPage() {
                       cx={col * 46 + 23}
                       cy={row * 28 + 14}
                       r="1.5"
-                      fill="#93c5fd"
+                      fill="#81C784"
                       opacity="0.25"
                     />
                   )),
@@ -117,7 +115,7 @@ export default function LMSPage() {
                   cy="60"
                   r="90"
                   fill="none"
-                  stroke="#818cf8"
+                  stroke="#4CAF50"
                   strokeWidth="0.8"
                   opacity="0.25"
                 />
@@ -126,7 +124,7 @@ export default function LMSPage() {
                   cy="60"
                   r="130"
                   fill="none"
-                  stroke="#818cf8"
+                  stroke="#4CAF50"
                   strokeWidth="0.6"
                   opacity="0.15"
                 />
@@ -135,7 +133,7 @@ export default function LMSPage() {
                   cy="60"
                   r="170"
                   fill="none"
-                  stroke="#818cf8"
+                  stroke="#4CAF50"
                   strokeWidth="0.5"
                   opacity="0.10"
                 />
@@ -145,7 +143,7 @@ export default function LMSPage() {
                   cx="120"
                   cy="240"
                   r="70"
-                  fill="#dbeafe"
+                  fill="#C8E6C9"
                   opacity="0.20"
                 />
                 <circle
@@ -153,196 +151,46 @@ export default function LMSPage() {
                   cy="240"
                   r="110"
                   fill="none"
-                  stroke="#93c5fd"
+                  stroke="#81C784"
                   strokeWidth="0.6"
                   opacity="0.15"
                 />
 
                 {/* Node graph — top-right cluster */}
-                <line
-                  x1="920"
-                  y1="40"
-                  x2="1010"
-                  y2="80"
-                  stroke="#6366f1"
-                  strokeWidth="0.8"
-                  opacity="0.35"
-                />
-                <line
-                  x1="1010"
-                  y1="80"
-                  x2="1090"
-                  y2="55"
-                  stroke="#6366f1"
-                  strokeWidth="0.8"
-                  opacity="0.35"
-                />
-                <line
-                  x1="1010"
-                  y1="80"
-                  x2="1020"
-                  y2="150"
-                  stroke="#6366f1"
-                  strokeWidth="0.8"
-                  opacity="0.25"
-                />
-                <line
-                  x1="1090"
-                  y1="55"
-                  x2="1140"
-                  y2="110"
-                  stroke="#6366f1"
-                  strokeWidth="0.7"
-                  opacity="0.25"
-                />
-                <line
-                  x1="1020"
-                  y1="150"
-                  x2="1100"
-                  y2="170"
-                  stroke="#6366f1"
-                  strokeWidth="0.7"
-                  opacity="0.20"
-                />
-                <line
-                  x1="920"
-                  y1="40"
-                  x2="860"
-                  y2="100"
-                  stroke="#6366f1"
-                  strokeWidth="0.7"
-                  opacity="0.20"
-                />
+                <line x1="920" y1="40" x2="1010" y2="80" stroke="#2E7D32" strokeWidth="0.8" opacity="0.35" />
+                <line x1="1010" y1="80" x2="1090" y2="55" stroke="#2E7D32" strokeWidth="0.8" opacity="0.35" />
+                <line x1="1010" y1="80" x2="1020" y2="150" stroke="#2E7D32" strokeWidth="0.8" opacity="0.25" />
+                <line x1="1090" y1="55" x2="1140" y2="110" stroke="#2E7D32" strokeWidth="0.7" opacity="0.25" />
+                <line x1="1020" y1="150" x2="1100" y2="170" stroke="#2E7D32" strokeWidth="0.7" opacity="0.20" />
+                <line x1="920" y1="40" x2="860" y2="100" stroke="#2E7D32" strokeWidth="0.7" opacity="0.20" />
 
-                <circle cx="920" cy="40" r="5" fill="#3b82f6" opacity="0.55" />
-                <circle cx="1010" cy="80" r="7" fill="#6366f1" opacity="0.60" />
-                <circle cx="1090" cy="55" r="5" fill="#3b82f6" opacity="0.50" />
-                <circle
-                  cx="1140"
-                  cy="110"
-                  r="4"
-                  fill="#818cf8"
-                  opacity="0.45"
-                />
-                <circle
-                  cx="1020"
-                  cy="150"
-                  r="5"
-                  fill="#6366f1"
-                  opacity="0.45"
-                />
-                <circle
-                  cx="1100"
-                  cy="170"
-                  r="3.5"
-                  fill="#818cf8"
-                  opacity="0.35"
-                />
-                <circle
-                  cx="860"
-                  cy="100"
-                  r="3.5"
-                  fill="#93c5fd"
-                  opacity="0.40"
-                />
+                <circle cx="920" cy="40" r="5" fill="#2E7D32" opacity="0.55" />
+                <circle cx="1010" cy="80" r="7" fill="#2E7D32" opacity="0.60" />
+                <circle cx="1090" cy="55" r="5" fill="#2E7D32" opacity="0.50" />
+                <circle cx="1140" cy="110" r="4" fill="#66BB6A" opacity="0.45" />
+                <circle cx="1020" cy="150" r="5" fill="#2E7D32" opacity="0.45" />
+                <circle cx="1100" cy="170" r="3.5" fill="#66BB6A" opacity="0.35" />
+                <circle cx="860" cy="100" r="3.5" fill="#81C784" opacity="0.40" />
 
                 {/* Pulse rings on anchor node */}
-                <circle
-                  cx="1010"
-                  cy="80"
-                  r="16"
-                  fill="none"
-                  stroke="#6366f1"
-                  strokeWidth="0.6"
-                  opacity="0.25"
-                />
-                <circle
-                  cx="1010"
-                  cy="80"
-                  r="26"
-                  fill="none"
-                  stroke="#6366f1"
-                  strokeWidth="0.5"
-                  opacity="0.15"
-                />
+                <circle cx="1010" cy="80" r="16" fill="none" stroke="#2E7D32" strokeWidth="0.6" opacity="0.25" />
+                <circle cx="1010" cy="80" r="26" fill="none" stroke="#2E7D32" strokeWidth="0.5" opacity="0.15" />
 
                 {/* Node graph — bottom-left scatter */}
-                <line
-                  x1="80"
-                  y1="180"
-                  x2="180"
-                  y2="210"
-                  stroke="#6366f1"
-                  strokeWidth="0.7"
-                  opacity="0.25"
-                />
-                <line
-                  x1="180"
-                  y1="210"
-                  x2="260"
-                  y2="190"
-                  stroke="#6366f1"
-                  strokeWidth="0.7"
-                  opacity="0.25"
-                />
-                <line
-                  x1="80"
-                  y1="180"
-                  x2="100"
-                  y2="260"
-                  stroke="#6366f1"
-                  strokeWidth="0.6"
-                  opacity="0.20"
-                />
-                <line
-                  x1="260"
-                  y1="190"
-                  x2="320"
-                  y2="240"
-                  stroke="#6366f1"
-                  strokeWidth="0.6"
-                  opacity="0.18"
-                />
+                <line x1="80" y1="180" x2="180" y2="210" stroke="#2E7D32" strokeWidth="0.7" opacity="0.25" />
+                <line x1="180" y1="210" x2="260" y2="190" stroke="#2E7D32" strokeWidth="0.7" opacity="0.25" />
+                <line x1="80" y1="180" x2="100" y2="260" stroke="#2E7D32" strokeWidth="0.6" opacity="0.20" />
+                <line x1="260" y1="190" x2="320" y2="240" stroke="#2E7D32" strokeWidth="0.6" opacity="0.18" />
 
-                <circle
-                  cx="80"
-                  cy="180"
-                  r="4.5"
-                  fill="#3b82f6"
-                  opacity="0.45"
-                />
-                <circle cx="180" cy="210" r="6" fill="#6366f1" opacity="0.50" />
-                <circle cx="260" cy="190" r="4" fill="#3b82f6" opacity="0.40" />
-                <circle
-                  cx="100"
-                  cy="260"
-                  r="3.5"
-                  fill="#818cf8"
-                  opacity="0.35"
-                />
-                <circle cx="320" cy="240" r="3" fill="#93c5fd" opacity="0.35" />
+                <circle cx="80" cy="180" r="4.5" fill="#2E7D32" opacity="0.45" />
+                <circle cx="180" cy="210" r="6" fill="#2E7D32" opacity="0.50" />
+                <circle cx="260" cy="190" r="4" fill="#2E7D32" opacity="0.40" />
+                <circle cx="100" cy="260" r="3.5" fill="#66BB6A" opacity="0.35" />
+                <circle cx="320" cy="240" r="3" fill="#81C784" opacity="0.35" />
 
                 {/* Decorative rotated rect accent */}
-                <rect
-                  x="430"
-                  y="20"
-                  width="22"
-                  height="22"
-                  rx="4"
-                  fill="#dbeafe"
-                  opacity="0.45"
-                  transform="rotate(20 441 31)"
-                />
-                <rect
-                  x="700"
-                  y="240"
-                  width="16"
-                  height="16"
-                  rx="3"
-                  fill="#e0e7ff"
-                  opacity="0.40"
-                  transform="rotate(-15 708 248)"
-                />
+                <rect x="430" y="20" width="22" height="22" rx="4" fill="#C8E6C9" opacity="0.45" transform="rotate(20 441 31)" />
+                <rect x="700" y="240" width="16" height="16" rx="3" fill="#E8F5E9" opacity="0.40" transform="rotate(-15 708 248)" />
               </g>
             </svg>
           </div>
@@ -351,9 +199,9 @@ export default function LMSPage() {
           <div className="relative z-10 px-8 py-10 lg:px-12 lg:py-12">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
               <div className="flex-1">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-100 rounded-full mb-4">
-                  <GraduationCap className="w-4 h-4 text-blue-600" />
-                  <span className="text-xs font-bold text-blue-700 tracking-wide uppercase">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-100 rounded-full mb-4">
+                  <GraduationCap className="w-4 h-4 text-green-600" />
+                  <span className="text-xs font-bold text-green-700 tracking-wide uppercase">
                     Learning Hub
                   </span>
                 </div>
@@ -372,7 +220,7 @@ export default function LMSPage() {
                 {isTeacherOrAdmin && (
                   <div className="flex items-center gap-6 mt-6">
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                      <div className="w-2 h-2 rounded-full bg-green-600"></div>
                       <span className="text-sm font-semibold text-slate-700">
                         {courses.length} Major{courses.length !== 1 ? "s" : ""}
                       </span>
@@ -406,7 +254,7 @@ export default function LMSPage() {
               <div className="flex items-center gap-3 flex-wrap">
                 {isTeacherOrAdmin && (
                   <Link href="/lms/courses/new">
-                    <button className="inline-flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:from-blue-700 hover:to-blue-800 transition-all duration-200 active:scale-[0.98] border border-blue-500/20">
+                    <button className="inline-flex items-center gap-2 px-6 py-3.5 bg-green-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40 hover:bg-green-800 transition-all duration-200 active:scale-[0.98] border border-green-600/20">
                       <Plus className="w-5 h-5" />
                       Create New Major
                       <Sparkles className="w-4 h-4 ml-1" />
@@ -414,7 +262,7 @@ export default function LMSPage() {
                   </Link>
                 )}
                 <Link href="/lms/programs">
-                  <button className="inline-flex items-center gap-2 px-5 py-3.5 bg-white/80 backdrop-blur border border-indigo-200 text-indigo-700 text-sm font-bold rounded-xl shadow-md hover:shadow-lg hover:bg-indigo-50 transition-all duration-200 active:scale-[0.98]">
+                  <button className="inline-flex items-center gap-2 px-5 py-3.5 bg-white/80 backdrop-blur border border-green-200 text-green-700 text-sm font-bold rounded-xl shadow-md hover:shadow-lg hover:bg-green-50 transition-all duration-200 active:scale-[0.98]">
                     <GraduationCap className="w-5 h-5" />
                     Academic Structure
                   </button>
@@ -429,7 +277,7 @@ export default function LMSPage() {
             <Loader size="lg" text="Loading majors..." />
           </div>
         ) : error ? (
-          <div className="bg-gradient-to-br from-red-50 to-rose-50 border border-red-100 p-12 rounded-3xl flex flex-col items-center justify-center text-center shadow-lg">
+          <div className="bg-red-50 border border-red-100 p-12 rounded-3xl flex flex-col items-center justify-center text-center shadow-lg">
             <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mb-6 shadow-inner">
               <AlertCircle className="w-8 h-8 text-red-600" />
             </div>
@@ -447,9 +295,9 @@ export default function LMSPage() {
         ) : visibleCourses.length === 0 ? (
           <div className="bg-white border border-slate-200/60 rounded-3xl p-16 flex flex-col items-center justify-center text-center shadow-lg">
             <div className="relative mb-8">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-3xl blur-2xl opacity-20"></div>
-              <div className="relative w-24 h-24 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl flex items-center justify-center shadow-xl shadow-blue-500/10 border border-blue-100">
-                <BookOpen className="w-12 h-12 text-blue-400" />
+              <div className="absolute inset-0 bg-green-400 rounded-3xl blur-2xl opacity-20"></div>
+              <div className="relative w-24 h-24 bg-green-50 rounded-3xl flex items-center justify-center shadow-xl shadow-green-500/10 border border-green-100">
+                <BookOpen className="w-12 h-12 text-green-500" />
               </div>
             </div>
             <h3 className="text-3xl font-bold text-slate-900 mb-3">
@@ -462,7 +310,7 @@ export default function LMSPage() {
             </p>
             {isTeacherOrAdmin && (
               <Link href="/lms/courses/new">
-                <button className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-base font-bold rounded-xl hover:from-blue-700 hover:to-blue-800 shadow-xl shadow-blue-500/30 transition-all active:scale-[0.98]">
+                <button className="flex items-center gap-2 px-8 py-4 bg-green-700 text-white text-base font-bold rounded-xl hover:bg-green-800 shadow-xl shadow-green-500/30 transition-all active:scale-[0.98]">
                   <Plus className="w-5 h-5" />
                   Create Your First Major
                   <ArrowRight className="w-5 h-5 ml-1" />
@@ -495,9 +343,9 @@ export default function LMSPage() {
                   key={course._id}
                   className="group"
                 >
-                  <div className="bg-white rounded-2xl border border-slate-200/60 hover:border-blue-200 shadow-sm hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden flex flex-col h-full">
+                  <div className="bg-white rounded-2xl border border-slate-200/60 hover:border-green-200 shadow-sm hover:shadow-xl hover:shadow-green-500/10 transition-all duration-300 overflow-hidden flex flex-col h-full">
                     {/* Enhanced Thumbnail */}
-                    <div className="relative h-52 bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden">
+                    <div className="relative h-52 bg-slate-100 overflow-hidden">
                       {course.thumbnail ? (
                         <>
                           <img
@@ -508,38 +356,18 @@ export default function LMSPage() {
                           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         </>
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center relative overflow-hidden">
+                        <div className="w-full h-full bg-green-50 flex items-center justify-center relative overflow-hidden">
                           {/* Abstract Pattern */}
                           <svg
                             className="absolute inset-0 w-full h-full opacity-40"
                             viewBox="0 0 400 300"
                             xmlns="http://www.w3.org/2000/svg"
                           >
-                            <circle
-                              cx="80"
-                              cy="60"
-                              r="60"
-                              fill="#3b82f6"
-                              opacity="0.1"
-                            />
-                            <circle
-                              cx="320"
-                              cy="240"
-                              r="70"
-                              fill="#8b5cf6"
-                              opacity="0.08"
-                            />
-                            <rect
-                              x="280"
-                              y="40"
-                              width="40"
-                              height="40"
-                              rx="6"
-                              fill="#06b6d4"
-                              opacity="0.12"
-                            />
+                            <circle cx="80" cy="60" r="60" fill="#2E7D32" opacity="0.1" />
+                            <circle cx="320" cy="240" r="70" fill="#66BB6A" opacity="0.08" />
+                            <rect x="280" y="40" width="40" height="40" rx="6" fill="#43A047" opacity="0.12" />
                           </svg>
-                          <PlayCircle className="w-16 h-16 text-blue-300 relative z-10 group-hover:text-blue-400 group-hover:scale-110 transition-all duration-300" />
+                          <PlayCircle className="w-16 h-16 text-green-300 relative z-10 group-hover:text-green-500 group-hover:scale-110 transition-all duration-300" />
                         </div>
                       )}
 
@@ -570,7 +398,7 @@ export default function LMSPage() {
                     {/* Enhanced Content Section */}
                     <div className="p-6 flex-1 flex flex-col">
                       <div className="flex-1">
-                        <h3 className="font-bold text-slate-900 text-xl leading-snug mb-3 group-hover:text-blue-600 transition-colors duration-200 line-clamp-2">
+                        <h3 className="font-bold text-slate-900 text-xl leading-snug mb-3 group-hover:text-green-700 transition-colors duration-200 line-clamp-2">
                           {course.title}
                         </h3>
                         <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">
@@ -582,8 +410,8 @@ export default function LMSPage() {
                       {/* Enhanced Footer */}
                       <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 flex items-center justify-center">
-                            <Users className="w-4 h-4 text-blue-600" />
+                          <div className="w-9 h-9 rounded-xl bg-green-50 border border-green-100 flex items-center justify-center">
+                            <Users className="w-4 h-4 text-green-600" />
                           </div>
                           <div className="flex flex-col">
                             <span className="text-xs text-slate-500 font-medium">
@@ -607,7 +435,7 @@ export default function LMSPage() {
                                 : <><CheckCircle2 className="w-3.5 h-3.5" /> Publish</>}
                             </button>
                           )}
-                          <div className="flex items-center gap-1.5 text-blue-600 font-bold text-sm group/btn">
+                          <div className="flex items-center gap-1.5 text-green-700 font-bold text-sm group/btn">
                             <span className="hidden sm:inline">
                               {isTeacherOrAdmin ? "Manage" : "Continue"}
                             </span>

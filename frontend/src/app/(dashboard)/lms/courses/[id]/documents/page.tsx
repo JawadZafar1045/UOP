@@ -82,9 +82,9 @@ export default function CourseDocumentsPage({ params }: { params: Promise<{ id: 
   const getFileIcon = (fileType: string) => {
     if (!fileType) return <FileText className="w-8 h-8 text-slate-400" />;
     if (fileType.includes('pdf')) return <FileText className="w-8 h-8 text-red-500" />;
-    if (fileType.includes('word') || fileType.includes('docx')) return <FileText className="w-8 h-8 text-blue-600" />;
-    if (fileType.includes('video') || fileType.includes('mp4')) return <FileVideo className="w-8 h-8 text-purple-500" />;
-    if (fileType.includes('image')) return <FileImage className="w-8 h-8 text-emerald-500" />;
+    if (fileType.includes('word') || fileType.includes('docx')) return <FileText className="w-8 h-8 text-green-600" />;
+    if (fileType.includes('video') || fileType.includes('mp4')) return <FileVideo className="w-8 h-8 text-green-600" />;
+    if (fileType.includes('image')) return <FileImage className="w-8 h-8 text-green-600" />;
     return <File className="w-8 h-8 text-slate-500" />;
   };
 
@@ -127,7 +127,7 @@ export default function CourseDocumentsPage({ params }: { params: Promise<{ id: 
                 onChange={e => setFile(e.target.files?.[0] || null)}
                 accept=".pdf,.doc,.docx,.ppt,.pptx,.mp4,.png,.jpg,.jpeg"
               />
-              <UploadCloud className="w-10 h-10 text-blue-500 mb-3" />
+              <UploadCloud className="w-10 h-10 text-green-600 mb-3" />
               {file ? (
                 <div>
                   <p className="font-medium text-slate-900">{file.name}</p>
@@ -144,21 +144,21 @@ export default function CourseDocumentsPage({ params }: { params: Promise<{ id: 
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Document Title *</label>
-                <input required type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none" placeholder="e.g. Chapter 1 Slides" />
+                <input required type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-600 outline-none" placeholder="e.g. Chapter 1 Slides" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
-                <textarea rows={2} value={description} onChange={e => setDescription(e.target.value)} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none" placeholder="Optional details..." />
+                <textarea rows={2} value={description} onChange={e => setDescription(e.target.value)} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-600 outline-none" placeholder="Optional details..." />
               </div>
               <div className="flex items-center gap-2">
-                <input type="checkbox" id="visibility" checked={visibleToStudents} onChange={e => setVisibleToStudents(e.target.checked)} className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-600" />
+                <input type="checkbox" id="visibility" checked={visibleToStudents} onChange={e => setVisibleToStudents(e.target.checked)} className="w-4 h-4 text-green-600 rounded border-slate-300 focus:ring-green-600" />
                 <label htmlFor="visibility" className="text-sm font-medium text-slate-700">Visible to students immediately</label>
               </div>
               
               <button 
                 type="submit" 
                 disabled={!file || !title || isUploading} 
-                className="w-full py-2.5 bg-blue-600 text-sm font-medium text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-all flex justify-center items-center gap-2"
+                className="w-full py-2.5 bg-green-600 text-sm font-medium text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-all flex justify-center items-center gap-2"
               >
                 {isUploading ? (
                   <>Uploading {uploadProgress}%...</>
@@ -169,7 +169,7 @@ export default function CourseDocumentsPage({ params }: { params: Promise<{ id: 
               
               {isUploading && (
                 <div className="w-full bg-slate-100 rounded-full h-1.5 mt-2">
-                  <div className="bg-blue-600 h-1.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
+                  <div className="bg-green-600 h-1.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
                 </div>
               )}
             </div>
@@ -206,12 +206,12 @@ export default function CourseDocumentsPage({ params }: { params: Promise<{ id: 
                     {getFileIcon(doc.fileType || '')}
                   </div>
                   <div>
-                    <h3 className="font-medium text-slate-900 text-sm hover:text-blue-600 transition-colors">{doc.title}</h3>
+                    <h3 className="font-medium text-slate-900 text-sm hover:text-green-600 transition-colors">{doc.title}</h3>
                     <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">
                       <span>{formatSize(doc.fileSize)}</span>
                       <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(doc.createdAt).toLocaleDateString()}</span>
                       {!doc.visibleToStudents && isTeacherOrAdmin && (
-                        <span className="text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded flex items-center gap-1 font-medium">
+                        <span className="text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded flex items-center gap-1 font-medium">
                           <EyeOff className="w-3 h-3" /> Hidden
                         </span>
                       )}
@@ -221,7 +221,7 @@ export default function CourseDocumentsPage({ params }: { params: Promise<{ id: 
                 
                 {isTeacherOrAdmin && (
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Toggle Visibility">
+                    <button className="p-2 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Toggle Visibility">
                       {doc.visibleToStudents ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                     </button>
                     <button className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">

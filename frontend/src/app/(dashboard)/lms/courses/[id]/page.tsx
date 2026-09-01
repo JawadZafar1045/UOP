@@ -256,31 +256,31 @@ export default function CourseOverviewPage({
       name: "Video Lectures",
       icon: Video,
       href: `/lms/courses/${courseId}/lectures`,
-      color: "from-rose-600 to-red-600",
+      color: "from-green-600 to-green-700",
     },
     {
       name: "Sessions",
       icon: Calendar,
       href: `/lms/courses/${courseId}/sessions`,
-      color: "from-blue-600 to-cyan-600",
+      color: "from-green-600 to-green-700",
     },
     {
       name: "Assignments",
       icon: FileText,
       href: `/lms/courses/${courseId}/assignments`,
-      color: "from-emerald-600 to-teal-600",
+      color: "from-green-600 to-green-700",
     },
     {
       name: "Quizzes",
       icon: CheckCircle,
       href: `/lms/courses/${courseId}/quiz`,
-      color: "from-amber-600 to-orange-600",
+      color: "from-green-600 to-green-700",
     },
     {
       name: "Performance",
       icon: BookOpen,
       href: `/lms/courses/${courseId}/performance`,
-      color: "from-purple-600 to-pink-600",
+      color: "from-green-600 to-green-700",
     },
   ];
 
@@ -289,7 +289,7 @@ export default function CourseOverviewPage({
       name: "Certificate Designer",
       icon: Edit2,
       href: `/lms/courses/${courseId}/certificate-template`,
-      color: "from-indigo-600 to-violet-600",
+      color: "from-green-600 to-green-700",
     });
   }
 
@@ -298,7 +298,7 @@ export default function CourseOverviewPage({
     <div className="flex items-center mb-6">
       <Link
         href="/lms"
-        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all group active:scale-[0.98] shadow-blue-500/20"
+        className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-green-700 transition-all group active:scale-[0.98] shadow-green-500/20"
       >
         <ChevronLeft className="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" />
         Back to Courses
@@ -319,21 +319,21 @@ export default function CourseOverviewPage({
             <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop
                 offset="0%"
-                style={{ stopColor: "#3b82f6", stopOpacity: 0.1 }}
+                style={{ stopColor: "#16a34a", stopOpacity: 0.1 }}
               />
               <stop
                 offset="100%"
-                style={{ stopColor: "#8b5cf6", stopOpacity: 0.05 }}
+                style={{ stopColor: "#15803d", stopOpacity: 0.05 }}
               />
             </linearGradient>
             <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop
                 offset="0%"
-                style={{ stopColor: "#10b981", stopOpacity: 0.08 }}
+                style={{ stopColor: "#22c55e", stopOpacity: 0.08 }}
               />
               <stop
                 offset="100%"
-                style={{ stopColor: "#06b6d4", stopOpacity: 0.05 }}
+                style={{ stopColor: "#16a34a", stopOpacity: 0.05 }}
               />
             </linearGradient>
           </defs>
@@ -345,7 +345,7 @@ export default function CourseOverviewPage({
           {/* Wave patterns */}
           <path
             d="M 0 200 Q 300 100 600 200 T 1200 200 L 1200 400 L 0 400 Z"
-            fill="#f0f9ff"
+            fill="#f0fdf4"
             opacity="0.3"
           />
 
@@ -375,9 +375,9 @@ export default function CourseOverviewPage({
                 <span
                   className={`text-xs font-bold tracking-wider px-3 py-1.5 rounded-full uppercase ${
                     currentCourse.status === "active"
-                      ? "bg-emerald-100 text-emerald-700 border border-emerald-300"
+                      ? "bg-green-100 text-green-700 border border-green-200"
                       : currentCourse.status === "draft"
-                        ? "bg-amber-100 text-amber-700 border border-amber-300"
+                        ? "bg-slate-100 text-slate-700 border border-slate-300"
                         : "bg-slate-100 text-slate-700 border border-slate-300"
                   }`}
                 >
@@ -423,7 +423,7 @@ export default function CourseOverviewPage({
                 </button>
                 <button
                   onClick={() => setShowEnrollModal(true)}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors shadow-md hover:shadow-lg"
                 >
                   <UserPlus className="w-5 h-5" />
                   Enroll Student
@@ -476,8 +476,8 @@ export default function CourseOverviewPage({
           <div className="flex flex-col items-center text-center flex-1">
             {/* Avatar with gradient ring */}
             <div className="relative mb-4">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full blur-md opacity-50"></div>
-              <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-2xl shadow-md border-2 border-white">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-green-600 rounded-full blur-md opacity-50"></div>
+              <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-white font-bold text-2xl shadow-md border-2 border-white">
                 {currentCourse.instructor?.name?.charAt(0) || "I"}
               </div>
             </div>
@@ -497,34 +497,34 @@ export default function CourseOverviewPage({
             <div className="w-full space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
                   <span className="text-xs text-slate-600 font-medium">
                     Students
                   </span>
                 </div>
-                <span className="text-sm font-bold text-blue-600">
+                <span className="text-sm font-bold text-green-600">
                   {currentCourse.enrolledStudents?.length || 0}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                  <div className="w-2 h-2 rounded-full bg-green-600"></div>
                   <span className="text-xs text-slate-600 font-medium">
                     Sessions
                   </span>
                 </div>
-                <span className="text-sm font-bold text-indigo-600">
+                <span className="text-sm font-bold text-green-600">
                   {currentCourse.stats?.sessions || 0}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                  <div className="w-2 h-2 rounded-full bg-green-700"></div>
                   <span className="text-xs text-slate-600 font-medium">
                     Assignments
                   </span>
                 </div>
-                <span className="text-sm font-bold text-emerald-600">
+                <span className="text-sm font-bold text-green-600">
                   {currentCourse.stats?.assignments || 0}
                 </span>
               </div>
@@ -559,32 +559,32 @@ export default function CourseOverviewPage({
           </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-              <p className="text-2xl font-bold text-blue-600">
+            <div className="p-3 bg-green-50 rounded-lg border border-green-100">
+              <p className="text-2xl font-bold text-green-700">
                 {currentCourse.enrolledStudents?.length || 0}
               </p>
               <p className="text-xs text-slate-600 mt-1 font-medium uppercase leading-tight">
                 {isTeacherOrAdmin ? "Students" : "Learners"}
               </p>
             </div>
-            <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-100">
-              <p className="text-2xl font-bold text-indigo-600">
+            <div className="p-3 bg-green-50 rounded-lg border border-green-100">
+              <p className="text-2xl font-bold text-green-700">
                 {currentCourse.stats?.sessions || 0}
               </p>
               <p className="text-xs text-slate-600 mt-1 font-medium uppercase leading-tight">
                 Sessions
               </p>
             </div>
-            <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
-              <p className="text-2xl font-bold text-emerald-600">
+            <div className="p-3 bg-green-50 rounded-lg border border-green-100">
+              <p className="text-2xl font-bold text-green-700">
                 {currentCourse.stats?.assignments || 0}
               </p>
               <p className="text-xs text-slate-600 mt-1 font-medium uppercase leading-tight">
                 Assignments
               </p>
             </div>
-            <div className="p-3 bg-rose-50 rounded-lg border border-rose-100">
-              <p className="text-2xl font-bold text-rose-600">
+            <div className="p-3 bg-green-50 rounded-lg border border-green-100">
+              <p className="text-2xl font-bold text-green-700">
                 {currentCourse.stats?.quizzes || 0}
               </p>
               <p className="text-xs text-slate-600 mt-1 font-medium uppercase leading-tight">
@@ -599,17 +599,17 @@ export default function CourseOverviewPage({
               {
                 label: "Sessions",
                 value: currentCourse.stats?.sessions || 0,
-                color: "bg-blue-500",
+                color: "bg-green-600",
               },
               {
                 label: "Assignments",
                 value: currentCourse.stats?.assignments || 0,
-                color: "bg-emerald-500",
+                color: "bg-green-500",
               },
               {
                 label: "Quizzes",
                 value: currentCourse.stats?.quizzes || 0,
-                color: "bg-rose-500",
+                color: "bg-green-700",
               },
             ].map((item) => {
               const total =
@@ -648,7 +648,7 @@ export default function CourseOverviewPage({
           <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-4 flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <Settings className="w-5 h-5 text-blue-400" />
+                <Settings className="w-5 h-5 text-green-400" />
                 <h2 className="text-xl font-bold text-white">Edit Course Settings</h2>
               </div>
               <button
@@ -668,7 +668,7 @@ export default function CourseOverviewPage({
                       type="text"
                       value={editFormData.title}
                       onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
-                      className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                      className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition-all"
                     />
                   </div>
                   <div>
@@ -677,7 +677,7 @@ export default function CourseOverviewPage({
                       rows={4}
                       value={editFormData.description}
                       onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
-                      className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                      className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition-all"
                     />
                   </div>
                 </div>
@@ -688,7 +688,7 @@ export default function CourseOverviewPage({
                     type="text"
                     value={editFormData.duration}
                     onChange={(e) => setEditFormData({ ...editFormData, duration: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                    className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition-all"
                   />
                 </div>
 
@@ -697,7 +697,7 @@ export default function CourseOverviewPage({
                   <select
                     value={editFormData.status}
                     onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value as any })}
-                    className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all bg-white"
+                    className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition-all bg-white"
                   >
                     <option value="draft">Draft</option>
                     <option value="active">Active</option>
@@ -707,7 +707,7 @@ export default function CourseOverviewPage({
 
                 <div className="md:col-span-2 pt-4 border-t border-slate-100">
                   <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-emerald-500" />
+                    <CheckCircle className="w-4 h-4 text-green-600" />
                     Completion Criteria
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -722,7 +722,7 @@ export default function CourseOverviewPage({
                           ...editFormData,
                           completionCriteria: { ...editFormData.completionCriteria, minAttendancePercent: parseInt(e.target.value) }
                         })}
-                        className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                        className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition-all"
                       />
                     </div>
                     <div>
@@ -736,7 +736,7 @@ export default function CourseOverviewPage({
                           ...editFormData,
                           completionCriteria: { ...editFormData.completionCriteria, minAssignmentScore: parseInt(e.target.value) }
                         })}
-                        className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                        className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition-all"
                       />
                     </div>
                     <div>
@@ -750,7 +750,7 @@ export default function CourseOverviewPage({
                           ...editFormData,
                           completionCriteria: { ...editFormData.completionCriteria, minQuizScore: parseInt(e.target.value) }
                         })}
-                        className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                        className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition-all"
                       />
                     </div>
                   </div>
@@ -768,7 +768,7 @@ export default function CourseOverviewPage({
                 <button
                   type="submit"
                   disabled={isUpdating}
-                  className="px-6 py-2.5 bg-blue-600 text-sm font-semibold text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-md"
+                  className="px-6 py-2.5 bg-green-600 text-sm font-semibold text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors shadow-md"
                 >
                   {isUpdating ? <><Loader size="sm" /> Saving...</> : "Save Changes"}
                 </button>
@@ -782,7 +782,7 @@ export default function CourseOverviewPage({
       {showEnrollModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex justify-between items-center shrink-0">
+            <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4 flex justify-between items-center shrink-0">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
                 <Users className="w-5 h-5" />
                 Manage Course Students
@@ -799,7 +799,7 @@ export default function CourseOverviewPage({
               {/* Left Side: Enroll by Email */}
               <div className="w-full md:w-1/3 p-6 border-b md:border-b-0 md:border-r border-slate-200 bg-slate-50 shrink-0">
                 <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                  <UserPlus className="w-4 h-4 text-blue-600" />
+                  <UserPlus className="w-4 h-4 text-green-600" />
                   Quick Enroll
                 </h3>
                 <form onSubmit={handleEnroll} className="space-y-4">
@@ -812,14 +812,14 @@ export default function CourseOverviewPage({
                       type="email"
                       value={studentEmail}
                       onChange={(e) => setStudentEmail(e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all bg-white"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition-all bg-white"
                       placeholder="name@example.com"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={isEnrolling}
-                    className="w-full py-2 bg-blue-600 text-sm font-semibold text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm flex justify-center items-center gap-2"
+                    className="w-full py-2 bg-green-600 text-sm font-semibold text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors shadow-sm flex justify-center items-center gap-2"
                   >
                     {isEnrolling ? <><Loader size="sm" /> Enrolling...</> : "Enroll via Email"}
                   </button>
@@ -848,9 +848,9 @@ export default function CourseOverviewPage({
                       const isToggling = togglingStudentId === student._id;
 
                       return (
-                        <div key={student._id} className={`flex items-center justify-between p-3 rounded-xl border transition-all ${isEnrolled ? 'bg-blue-50/50 border-blue-100' : 'bg-white border-slate-200 hover:border-slate-300'}`}>
+                        <div key={student._id} className={`flex items-center justify-between p-3 rounded-xl border transition-all ${isEnrolled ? 'bg-green-50/50 border-green-100' : 'bg-white border-slate-200 hover:border-slate-300'}`}>
                           <div className="flex items-center gap-3 overflow-hidden">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${isEnrolled ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${isEnrolled ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
                               {student.name?.charAt(0) || student.email?.charAt(0)}
                             </div>
                             <div className="min-w-0">
@@ -868,7 +868,7 @@ export default function CourseOverviewPage({
                             disabled={isToggling}
                             className={`ml-3 shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
                               isEnrolled
-                                ? 'bg-rose-100 text-rose-700 hover:bg-rose-200'
+                                ? 'bg-red-100 text-red-700 hover:bg-red-200'
                                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                             } disabled:opacity-50`}
                           >

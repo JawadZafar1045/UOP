@@ -124,7 +124,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
     <div className="space-y-6 max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
       <div className="space-y-4 mb-2">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <Link href={`/lms/courses/${courseId}`} className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all group active:scale-[0.98] shadow-blue-500/20">
+          <Link href={`/lms/courses/${courseId}`} className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-green-700 transition-all group active:scale-[0.98] shadow-green-500/20">
             <ChevronLeft className="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" />
             Back to Course
           </Link>
@@ -132,7 +132,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
             <button
               onClick={handleGenerateAll}
               disabled={isGenerating}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-sm font-bold text-white rounded-xl shadow-md hover:bg-indigo-700 transition-all disabled:opacity-50 active:scale-[0.98] shadow-indigo-500/20"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-sm font-bold text-white rounded-xl shadow-md hover:bg-green-700 transition-all disabled:opacity-50 active:scale-[0.98] shadow-green-500/20"
             >
               {isGenerating ? <><Loader size="sm" /> Generating...</> : <><FileBadge className="w-4 h-4" /> Generate All Eligible</>}
             </button>
@@ -172,11 +172,11 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                   <td className="px-6 py-4 text-slate-600">{perf.quizScore}%</td>
                   <td className="px-6 py-4">
                     {perf.certificate ? (
-                      <span className="inline-flex items-center gap-1 text-indigo-600 bg-indigo-50 px-2 py-1 rounded text-xs font-medium border border-indigo-100">
+                      <span className="inline-flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded text-xs font-medium border border-green-100">
                         <Award className="w-3.5 h-3.5" /> Issued
                       </span>
                     ) : perf.eligible ? (
-                      <span className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-50 px-2 py-1 rounded text-xs font-medium border border-emerald-100">
+                      <span className="inline-flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded text-xs font-medium border border-green-100">
                         <CheckCircle2 className="w-3.5 h-3.5" /> Eligible
                       </span>
                     ) : (
@@ -197,7 +197,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                         <button
                           onClick={() => handleDownloadCert(perf.certificate!._id, perf.certificate!.certificateNumber)}
                           disabled={downloadingCertId === perf.certificate._id}
-                          className="inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-800 font-medium text-xs border border-emerald-200 px-3 py-1.5 rounded bg-emerald-50 hover:bg-emerald-100 transition-colors disabled:opacity-50"
+                          className="inline-flex items-center gap-1 text-green-600 hover:text-green-800 font-medium text-xs border border-green-200 px-3 py-1.5 rounded bg-green-50 hover:bg-green-100 transition-colors disabled:opacity-50"
                         >
                           {downloadingCertId === perf.certificate._id ? <><Loader size="sm" /> Downloading...</> : 'Download'}
                         </button>
@@ -206,7 +206,7 @@ export default function PerformancePage({ params }: { params: Promise<{ id: stri
                           <button
                             onClick={() => handleGenerateCertificate(perf.student._id)}
                             disabled={generatingStudentId === perf.student._id}
-                            className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-medium text-xs border border-indigo-200 px-3 py-1.5 rounded bg-indigo-50 hover:bg-indigo-100 transition-colors disabled:opacity-50"
+                            className="inline-flex items-center gap-1 text-green-600 hover:text-green-800 font-medium text-xs border border-green-200 px-3 py-1.5 rounded bg-green-50 hover:bg-green-100 transition-colors disabled:opacity-50"
                           >
                             {generatingStudentId === perf.student._id ? <><Loader size="sm" /> Generating...</> : 'Generate Cert'}
                           </button>

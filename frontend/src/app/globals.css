@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @theme {
+  /* Legacy Purple/Blue Palette (keeping for backward compatibility) */
   --color-blue-50: #f5f0f6;
   --color-blue-100: #e8dbec;
   --color-blue-200: #d4badb;
@@ -12,37 +13,51 @@
   --color-blue-800: #1e0d23;
   --color-blue-900: #0f0612;
   --color-blue-950: #080309;
+
+  /* NEW: Professional Agriculture Green Palette */
+  --color-green-50: #f1f8e9;
+  --color-green-100: #dcedc8;
+  --color-green-200: #c5e1a5;
+  --color-green-300: #aed581;
+  --color-green-400: #9ccc65;
+  --color-green-500: #8bc34a;
+  --color-green-600: #7cb342;
+  --color-green-700: #689f38;
+  --color-green-800: #558b2f;
+  --color-green-900: #33691e;
+  --color-green-950: #1b5e20;
 }
 
 @layer base {
   :root {
-    --background: 210 40% 98%; /* Slate 50 */
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* NEW: Green-based theme colors for agriculture focus */
+    --background: 127 53% 93%; /* Light green background #E8F5E9 */
+    --foreground: 137 61% 24%; /* Dark forest green text #1B5E20 */
+    --card: 0 0% 100%; /* White cards */
+    --card-foreground: 137 61% 24%; /* Dark green text on cards */
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 285.3 46.4% 19%; /* Acrotyx #3c1a47 */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%; /* Slate 500 */
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --popover-foreground: 137 61% 24%;
+    --primary: 134 49% 37%; /* Professional green #2E7D32 */
+    --primary-foreground: 127 53% 93%; /* Light green on primary #E8F5E9 */
+    --secondary: 127 53% 93%; /* Light green #E8F5E9 */
+    --secondary-foreground: 137 61% 24%; /* Dark green text #1B5E20 */
+    --muted: 139 82% 95%; /* Very light green #F1F8E9 */
+    --muted-foreground: 124 12% 42%; /* Muted green-gray text */
+    --accent: 126 40% 85%; /* Pale green accent #C8E6C9 */
+    --accent-foreground: 137 61% 24%; /* Dark green on accent */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 285.3 46.4% 19%;
+    --border: 127 53% 93%; /* Light green borders #E8F5E9 */
+    --input: 127 53% 93%; /* Light green inputs #E8F5E9 */
+    --ring: 134 49% 37%; /* Green focus ring #2E7D32 */
     --radius: 0.5rem;
   }
 }
 
-/* Custom elevations based on DESIGN.md */
+/* Custom elevations - updated to use green primary color */
 .elevation-1 {
-  box-shadow: 0 2px 8px rgba(60, 26, 71, 0.04);
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.04);
 }
 .elevation-2 {
-  box-shadow: 0 10px 20px rgba(60, 26, 71, 0.08);
+  box-shadow: 0 10px 20px rgba(46, 125, 50, 0.08);
 }

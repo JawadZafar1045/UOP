@@ -14,6 +14,12 @@ import * as lmsService from "@/services/lms.service";
 
 type Tab = "overview" | "users" | "courses" | "certificates";
 
+type FilterOption = {
+  id: "all" | "pending" | "active" | "inactive";
+  label: string;
+  highlight?: boolean;
+};
+
 export default function AdminDashboardPage() {
   const router = useRouter();
   const { user } = useStore();
@@ -138,6 +144,13 @@ export default function AdminDashboardPage() {
     { id: "certificates", label: "Certificates", icon: <Award className="w-4 h-4" /> },
   ];
 
+  const filterOptions: FilterOption[] = [
+    { id: "all", label: `All (${users.length})` },
+    { id: "pending", label: `Pending (${pendingUsersCount})`, highlight: pendingUsersCount > 0 },
+    { id: "active", label: "Active" },
+    { id: "inactive", label: "Inactive" },
+  ];
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
       {/* Header */}
@@ -240,14 +253,7 @@ export default function AdminDashboardPage() {
 
               {/* Status Filter Buttons */}
               <div className="flex items-center gap-1.5 flex-wrap">
-                {(
-                  [
-                    { id: "all", label: `All (${users.length})` },
-                    { id: "pending", label: `Pending (${pendingUsersCount})`, highlight: pendingUsersCount > 0 },
-                    { id: "active", label: "Active" },
-                    { id: "inactive", label: "Inactive" },
-                  ] as const
-                ).map((f) => (
+                {filterOptions.map((f) => (
                   <button
                     key={f.id}
                     onClick={() => setUserStatusFilter(f.id)}
