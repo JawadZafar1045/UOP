@@ -559,7 +559,7 @@ const registerPaidCourse = async (tenantId, courseId, userId, data = {}) => {
       await sendEmail(
         student.email,
         `Registration Received: ${course.title}`,
-        `Hello ${student.name},\n\nYour registration for "${course.title}" has been submitted successfully.\nOur admin team will contact you shortly and grant access upon confirmation.\n\nThank you,\nCSZone LMS Team`,
+        `Hello ${student.name},\n\nYour registration for "${course.title}" has been submitted successfully.\nOur admin team will contact you shortly and grant access upon confirmation.\n\nThank you,\nCSZone Academy Team`,
         `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #4F46E5;">Registration Submitted</h2>
           <p>Hello <strong>${student.name}</strong>,</p>
@@ -711,7 +711,7 @@ const approveRegistration = async (tenantId, registrationId, adminUserId) => {
               Start Learning Now
             </a>
           </p>
-          <p>Best regards,<br/><strong>CSZone LMS Team</strong></p>
+          <p>Best regards,<br/><strong>CSZone Academy Team</strong></p>
         </div>`
       );
     }
@@ -765,7 +765,7 @@ const rejectRegistration = async (tenantId, registrationId, reason, adminUserId)
             <strong>Reason:</strong> ${registration.rejectionReason}
           </p>
           <p>If you believe this is an error or would like to provide updated payment details, please reach out to CSZone support.</p>
-          <p>Best regards,<br/><strong>CSZone LMS Team</strong></p>
+          <p>Best regards,<br/><strong>CSZone Academy Team</strong></p>
         </div>`
       );
     }

@@ -18,7 +18,7 @@ const transporter = nodemailer.createTransport({
 const sendEmail = async (to, subject, text, html) => {
   try {
     const mailOptions = {
-      from: `UOP LMS <${process.env.RESEND_FROM_EMAIL}>`,
+      from: `UOP Academy <${process.env.RESEND_FROM_EMAIL}>`,
       to,
       subject,
       text,

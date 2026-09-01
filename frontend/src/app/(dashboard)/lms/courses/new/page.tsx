@@ -415,7 +415,7 @@ export default function NewCoursePage() {
               href="/lms"
               className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors"
             >
-              Back to LMS Hub
+              Back to Academy Hub
             </Link>
           </div>
         </div>

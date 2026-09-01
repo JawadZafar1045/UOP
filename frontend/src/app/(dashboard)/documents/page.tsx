@@ -112,7 +112,7 @@ export default function DocumentsPage() {
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">LMS Document Center</h1>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Academy Document Center</h1>
           <p className="text-sm text-slate-500 mt-1">Manage global institute files, course materials, and student submissions.</p>
         </div>
         {user?.role !== "student" && (

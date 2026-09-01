@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'CSZone LMS — Public Learning Platform',
+  title: 'CSZone Academy — Public Learning Platform',
   description: 'Practical cybersecurity, programming, and technology courses.',
   icons: {
     icon: [

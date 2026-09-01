@@ -20,7 +20,7 @@ const PRESETS = [
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: "📊" },
-  { name: "LMS", href: "/lms", icon: "🎓" },
+  { name: "Academy", href: "/lms", icon: "🎓" },
   { name: "Documents", href: "/documents", icon: "📁" },
 ];
 
@@ -84,9 +84,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         )}
         
         {navItems.map((item) => {
-          const isLmsMatch = item.name === 'LMS' && pathname.startsWith('/lms');
+          const isLmsMatch = item.name === 'Academy' && pathname.startsWith('/lms');
           const isActive = isLmsMatch || pathname === item.href || pathname.startsWith(item.href + '/');
-          const isLmsExpanded = item.name === 'LMS' && (isActive || isLmsMatch);
+          const isLmsExpanded = item.name === 'Academy' && (isActive || isLmsMatch);
           
           return (
             <div key={item.name}>

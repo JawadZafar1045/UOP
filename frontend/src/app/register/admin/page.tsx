@@ -68,7 +68,7 @@ export default function AdminRegisterPage() {
         <div className="relative z-10 max-w-lg space-y-6 animate-fade-in-up">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider border border-blue-200 shadow-xs animate-fade-in-down">
             <Shield className="w-4 h-4 text-blue-600" />
-            CSZone LMS Control Center
+            CSZone Academy Control Center
           </div>
 
           <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 leading-tight">
@@ -109,7 +109,7 @@ export default function AdminRegisterPage() {
               />
             </Link>
             <h1 className="text-3xl font-black text-slate-900 tracking-tight">Admin Registration</h1>
-            <p className="text-slate-500 text-sm">Create an administrator account for CSZone LMS</p>
+            <p className="text-slate-500 text-sm">Create an administrator account for CSZone Academy</p>
           </div>
 
           {success ? (

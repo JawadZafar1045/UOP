@@ -230,7 +230,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-slate-900 leading-none">{stats?.stats?.courses || lmsStats.total}</p>
-                  <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-1.5">LMS Courses</p>
+                  <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-1.5">Academy Courses</p>
                 </div>
               </div>
             </div>
