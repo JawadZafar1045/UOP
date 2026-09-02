@@ -10,6 +10,7 @@ interface Course {
   duration?: string;
   isPublished: boolean;
   status: 'draft' | 'active' | 'completed';
+  featuredOnHomepage?: boolean;
   startDate?: string;
   endDate?: string;
   completionCriteria?: {

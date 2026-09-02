@@ -71,6 +71,7 @@ export default function CourseOverviewPage({
     title: "",
     description: "",
     duration: "",
+    status: "draft",
     thumbnail: "",
     featuredOnHomepage: false,
     completionCriteria: {

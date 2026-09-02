@@ -441,7 +441,7 @@ export default function CourseVideoLecturesPage({
                         <button
                           onClick={() => handleLayoutChange("top")}
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-                            layoutMode === "top"
+                            (layoutMode as string) === "top"
                               ? "bg-white text-blue-600 shadow-sm font-bold"
                               : "text-slate-600 hover:text-slate-900"
                           }`}
@@ -453,7 +453,7 @@ export default function CourseVideoLecturesPage({
                         <button
                           onClick={() => handleLayoutChange("side")}
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-                            layoutMode === "side"
+                            (layoutMode as string) === "side"
                               ? "bg-white text-blue-600 shadow-sm font-bold"
                               : "text-slate-600 hover:text-slate-900"
                           }`}
