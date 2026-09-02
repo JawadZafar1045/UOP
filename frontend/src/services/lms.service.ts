@@ -388,8 +388,8 @@ export const deleteUser = async (id: string) => {
   return res.data?.data ?? res.data;
 };
 
-export const approveUser = async (id: string) => {
-  const res = await api.patch(`/lms/admin/users/${id}/approve`);
+export const approveUser = async (id: string, programId?: string) => {
+  const res = await api.patch(`/lms/admin/users/${id}/approve`, { programId });
   return res.data?.data ?? res.data;
 };
 
@@ -518,6 +518,7 @@ export const toggleVideoLectureProgress = async (courseId: string, lectureId: st
   const res = await api.post(`/lms/courses/${courseId}/lectures/${lectureId}/progress`);
   return res.data?.data ?? res.data;
 };
+
 
 
 

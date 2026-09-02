@@ -381,26 +381,34 @@ export default function DashboardPage() {
               <h3 className="font-bold text-slate-900 text-xl tracking-tight">Continue Learning</h3>
               <p className="text-sm text-slate-500 mt-1">Pick up right where you left off</p>
             </div>
-            <Link href="/lms" className="text-sm font-bold text-green-600 hover:text-green-700 whitespace-nowrap">View All Majors</Link>
+            <Link href="/lms" className="text-sm font-bold text-green-600 hover:text-green-700 whitespace-nowrap">View Enrolled Majors</Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {courses.slice(0, 4).map((course) => (
-              <Link key={course._id} href={`/lms/courses/${course._id}`} className="group">
-                <div className="flex items-center gap-4 p-4 border border-slate-100 rounded-2xl hover:border-green-200 hover:shadow-lg hover:shadow-green-500/5 transition-all">
-                  <div className="w-16 h-16 rounded-xl bg-green-50 flex items-center justify-center shrink-0 group-hover:bg-green-100 transition-colors">
-                    <BookOpen className="w-8 h-8 text-green-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-slate-900 truncate group-hover:text-green-600 transition-colors">{course.title}</h4>
-                    <p className="text-xs text-slate-500 mt-1 line-clamp-1">{course.description || 'No description available'}</p>
-                    <div className="mt-3 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-green-500 rounded-full" style={{ width: '45%' }}></div>
+          {courses.length === 0 ? (
+            <div className="text-center py-12 border-2 border-dashed border-slate-100 rounded-2xl bg-slate-50/50">
+              <div className="text-3xl mb-2">🎓</div>
+              <p className="text-slate-700 font-semibold text-sm">No Enrolled Courses</p>
+              <p className="text-slate-400 text-xs mt-1">You will see your enrolled courses here once enrolled by your administrator.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {courses.slice(0, 4).map((course) => (
+                <Link key={course._id} href={`/lms/courses/${course._id}`} className="group">
+                  <div className="flex items-center gap-4 p-4 border border-slate-100 rounded-2xl hover:border-green-200 hover:shadow-lg hover:shadow-green-500/5 transition-all">
+                    <div className="w-16 h-16 rounded-xl bg-green-50 flex items-center justify-center shrink-0 group-hover:bg-green-100 transition-colors">
+                      <BookOpen className="w-8 h-8 text-green-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-bold text-slate-900 truncate group-hover:text-green-600 transition-colors">{course.title}</h4>
+                      <p className="text-xs text-slate-500 mt-1 line-clamp-1">{course.description || 'No description available'}</p>
+                      <div className="mt-3 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-green-500 rounded-full" style={{ width: '45%' }}></div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

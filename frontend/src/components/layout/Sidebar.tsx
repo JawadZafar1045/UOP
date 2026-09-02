@@ -102,16 +102,16 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               {isLmsExpanded && (
                 <div className="ml-9 mt-1 mb-2 space-y-1 border-l-2 border-slate-100 pl-2">
                   <Link 
-                    href="/lms" 
-                    className={`block px-3 py-2 rounded-md text-sm transition-colors ${pathname === '/lms' ? 'text-green-700 font-medium bg-green-50/50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
-                  >
-                    My Majors
-                  </Link>
-                  <Link 
                     href="/lms/programs" 
                     className={`block px-3 py-2 rounded-md text-sm transition-colors ${pathname.startsWith('/lms/programs') ? 'text-green-700 font-medium bg-green-50/50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
                   >
                     Academic Structure
+                  </Link>
+                  <Link 
+                    href="/lms" 
+                    className={`block px-3 py-2 rounded-md text-sm transition-colors ${pathname === '/lms' ? 'text-green-700 font-medium bg-green-50/50' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
+                  >
+                    My Program
                   </Link>
                   <Link 
                     href="/lms/certificates" 

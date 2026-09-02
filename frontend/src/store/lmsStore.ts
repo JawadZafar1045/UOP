@@ -21,6 +21,11 @@ interface Course {
   modules?: any[];
   enrolledStudents?: any[];
   students?: any[];
+  programId?: any;
+  majorId?: any;
+  isCommon?: boolean;
+  courseCode?: string;
+  creditHours?: number;
   stats?: {
     sessions: number;
     assignments: number;

@@ -189,7 +189,7 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
       {/* Header Section */}
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <Link href={`/lms/courses/${courseId}`} className="inline-flex items-center gap-2 px-4 py-2 bg-lime-700 text-white text-sm font-bold rounded-xl shadow-md hover:bg-lime-800 transition-all group active:scale-[0.98] shadow-lime-600/20">
+          <Link href={`/lms/courses/${courseId}`} className="inline-flex items-center gap-2 px-4 py-2 bg-green-700 text-white text-sm font-bold rounded-xl shadow-md hover:bg-green-800 transition-all group active:scale-[0.98] shadow-green-600/20">
             <ChevronLeft className="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" />
             Back to Course
           </Link>
@@ -197,7 +197,7 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
           {isTeacherOrAdmin && (
             <button 
               onClick={openCreateModal} 
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-lime-700 text-white text-sm font-bold rounded-xl shadow-md hover:bg-lime-800 transition-all active:scale-[0.98] shadow-lime-600/20"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-green-700 text-white text-sm font-bold rounded-xl shadow-md hover:bg-green-800 transition-all active:scale-[0.98] shadow-green-600/20"
             >
               <Plus className="w-4.5 h-4.5" />
               Create Assignment
@@ -219,8 +219,8 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
 
       {assignments.length === 0 ? (
         <div className="bg-white border border-slate-200/60 rounded-3xl p-16 flex flex-col items-center justify-center text-center shadow-sm">
-          <div className="w-20 h-20 bg-lime-50 rounded-3xl flex items-center justify-center mb-6 shadow-inner border border-lime-100">
-            <FileText className="w-10 h-10 text-lime-600" />
+          <div className="w-20 h-20 bg-green-50 rounded-3xl flex items-center justify-center mb-6 shadow-inner border border-green-100">
+            <FileText className="w-10 h-10 text-green-600" />
           </div>
           <h3 className="text-2xl font-bold text-slate-900 mb-2">No assignments yet</h3>
           <p className="text-slate-500 text-base max-w-sm leading-relaxed">
@@ -234,20 +234,20 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
             const status = mySub ? mySub.status : 'Not Submitted';
             
             return (
-              <div key={assignment._id} className="bg-white rounded-2xl border border-slate-200/60 hover:border-lime-300 shadow-sm hover:shadow-xl hover:shadow-lime-500/10 transition-all duration-300 flex flex-col group p-7">
+              <div key={assignment._id} className="bg-white rounded-2xl border border-slate-200/60 hover:border-green-300 shadow-sm hover:shadow-xl hover:shadow-green-500/10 transition-all duration-300 flex flex-col group p-7">
                 <div className="flex justify-between items-start mb-4 gap-4">
-                  <h3 className="font-bold text-slate-900 text-xl leading-snug group-hover:text-lime-800 transition-colors">
+                  <h3 className="font-bold text-slate-900 text-xl leading-snug group-hover:text-green-800 transition-colors">
                     {assignment.title}
                   </h3>
                   <div className="flex flex-col items-end gap-2 shrink-0">
-                    <span className="inline-flex items-center px-3 py-1 bg-lime-50 text-lime-800 text-xs font-bold rounded-full border border-lime-200 shadow-sm">
+                    <span className="inline-flex items-center px-3 py-1 bg-green-50 text-green-800 text-xs font-bold rounded-full border border-green-200 shadow-sm">
                       {assignment.maxMarks} pts
                     </span>
                     {isTeacherOrAdmin && (
                       <div className="flex items-center gap-1.5">
                         <button 
                           onClick={() => openEditModal(assignment)}
-                          className="p-1.5 text-slate-400 hover:text-lime-700 hover:bg-lime-50 rounded-lg transition-all"
+                          className="p-1.5 text-slate-400 hover:text-green-700 hover:bg-green-50 rounded-lg transition-all"
                           title="Edit Assignment"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
@@ -276,7 +276,7 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
                         <button 
                           key={idx} 
                           onClick={() => handleFileDownload(m.url, m.name)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-xs font-semibold hover:bg-lime-50 hover:text-lime-800 border border-slate-100 hover:border-lime-200 transition-all"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-xs font-semibold hover:bg-green-50 hover:text-green-800 border border-slate-100 hover:border-green-200 transition-all"
                         >
                           <Download className="w-3.5 h-3.5" />
                           <span className="truncate max-w-[140px]">{m.name}</span>
@@ -288,7 +288,7 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
                 
                 <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
                   <div className="flex items-center gap-2 text-slate-400">
-                    <Calendar className="w-4 h-4 text-lime-600" />
+                    <Calendar className="w-4 h-4 text-green-600" />
                     <span className="text-xs font-medium">
                       {assignment.dueDate ? `Due: ${new Date(assignment.dueDate).toLocaleDateString()}` : 'No due date'}
                     </span>
@@ -297,7 +297,7 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
                   {isTeacherOrAdmin ? (
                     <button 
                       onClick={() => { setActiveAssignment(assignment); fetchAssignmentSubmissions(assignment._id); setShowSubmissionsModal(true); }}
-                      className="inline-flex items-center gap-1.5 text-sm font-bold text-lime-700 hover:text-lime-800 transition-colors group/btn"
+                      className="inline-flex items-center gap-1.5 text-sm font-bold text-green-700 hover:text-green-800 transition-colors group/btn"
                     >
                       Submissions ({assignment.submissions?.length || 0})
                       <ArrowRight className="w-4 h-4 transform group-hover/btn:translate-x-1 transition-transform" />
@@ -307,7 +307,7 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
                       {status === 'Not Submitted' ? (
                         <button 
                           onClick={() => { setActiveAssignment(assignment); setShowModal(true); }}
-                          className="inline-flex items-center justify-center px-5 py-2 bg-lime-700 text-white text-sm font-bold rounded-xl hover:bg-lime-800 shadow-md shadow-lime-600/10 transition-all active:scale-[0.98]"
+                          className="inline-flex items-center justify-center px-5 py-2 bg-green-700 text-white text-sm font-bold rounded-xl hover:bg-green-800 shadow-md shadow-green-600/10 transition-all active:scale-[0.98]"
                         >
                           Submit Work
                         </button>
@@ -348,32 +348,32 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-slate-700 mb-1">Title</label>
-                  <input type="text" required value={createData.title} onChange={e => setCreateData({...createData, title: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-lime-500/30 focus:border-lime-600 outline-none" placeholder="Assignment Title" />
+                  <input type="text" required value={createData.title} onChange={e => setCreateData({...createData, title: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-500/30 focus:border-green-600 outline-none" placeholder="Assignment Title" />
                 </div>
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-slate-700 mb-1">Description (Short summary)</label>
-                  <input type="text" value={createData.description} onChange={e => setCreateData({...createData, description: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-lime-500/30 focus:border-lime-600 outline-none" placeholder="A brief description for the card view" />
+                  <input type="text" value={createData.description} onChange={e => setCreateData({...createData, description: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-500/30 focus:border-green-600 outline-none" placeholder="A brief description for the card view" />
                 </div>
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-slate-700 mb-1">Detailed Instructions</label>
-                  <textarea rows={4} value={createData.instructions} onChange={e => setCreateData({...createData, instructions: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-lime-500/30 focus:border-lime-600 outline-none" placeholder="Provide detailed instructions for the students..." />
+                  <textarea rows={4} value={createData.instructions} onChange={e => setCreateData({...createData, instructions: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-500/30 focus:border-green-600 outline-none" placeholder="Provide detailed instructions for the students..." />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Max Marks</label>
-                  <input type="number" required value={createData.maxMarks} onChange={e => setCreateData({...createData, maxMarks: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-lime-500/30 focus:border-lime-600 outline-none" />
+                  <input type="number" required value={createData.maxMarks} onChange={e => setCreateData({...createData, maxMarks: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-500/30 focus:border-green-600 outline-none" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Due Date (Deadline)</label>
-                  <input type="datetime-local" required value={createData.dueDate} onChange={e => setCreateData({...createData, dueDate: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-lime-500/30 focus:border-lime-600 outline-none" />
+                  <input type="datetime-local" required value={createData.dueDate} onChange={e => setCreateData({...createData, dueDate: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-500/30 focus:border-green-600 outline-none" />
                 </div>
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-slate-700 mb-1">Reference Materials (Optional)</label>
-                  <input type="file" multiple onChange={e => setMaterialFiles(Array.from(e.target.files || []))} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-lime-500/30 focus:border-lime-600 outline-none bg-white file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-lime-50 file:text-lime-700 hover:file:bg-lime-100" />
+                  <input type="file" multiple onChange={e => setMaterialFiles(Array.from(e.target.files || []))} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-500/30 focus:border-green-600 outline-none bg-white file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100" />
                 </div>
               </div>
               <div className="pt-4 flex justify-end gap-3 border-t border-slate-100 mt-4">
                 <button type="button" onClick={() => setShowCreateModal(false)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800">Cancel</button>
-                <button type="submit" disabled={isSubmitting} className="flex items-center gap-2 px-6 py-2 bg-lime-700 text-sm font-medium text-white rounded-lg shadow-sm hover:bg-lime-800 disabled:opacity-50">
+                <button type="submit" disabled={isSubmitting} className="flex items-center gap-2 px-6 py-2 bg-green-700 text-sm font-medium text-white rounded-lg shadow-sm hover:bg-green-800 disabled:opacity-50">
                   {isSubmitting ? <><Loader size="sm" />{isEditing ? 'Updating...' : 'Creating...'}</> : (isEditing ? 'Update Assignment' : 'Create Assignment')}
                 </button>
               </div>
@@ -406,7 +406,7 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
                     <div 
                       key={sub._id} 
                       onClick={() => setGradingData({ studentId: sub.studentId._id, score: sub.marks || '', feedback: sub.feedback || '' })}
-                      className={`p-4 rounded-xl border cursor-pointer transition-all ${gradingData.studentId === sub.studentId._id ? 'border-lime-500 bg-lime-50/50 shadow-sm' : 'border-slate-100 hover:border-slate-200 bg-white'}`}
+                      className={`p-4 rounded-xl border cursor-pointer transition-all ${gradingData.studentId === sub.studentId._id ? 'border-green-500 bg-green-50/50 shadow-sm' : 'border-slate-100 hover:border-slate-200 bg-white'}`}
                     >
                       <div className="flex justify-between items-start mb-2">
                         <h4 className="font-semibold text-slate-900">{sub.studentId.name}</h4>
@@ -416,7 +416,7 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
                       </div>
                       <p className="text-xs text-slate-500 mb-3">{new Date(sub.submittedAt).toLocaleString()}</p>
                       {sub.text && <p className="text-xs text-slate-600 line-clamp-1 italic">"{sub.text}"</p>}
-                      {sub.fileUrl && <div className="mt-2 text-[10px] text-lime-700 font-medium flex items-center gap-1"><Download className="w-3 h-3" /> File attached</div>}
+                      {sub.fileUrl && <div className="mt-2 text-[10px] text-green-700 font-medium flex items-center gap-1"><Download className="w-3 h-3" /> File attached</div>}
                     </div>
                   ))
                 )}
@@ -446,7 +446,7 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
                           {sub.fileUrl && (
                             <button 
                               onClick={() => handleFileDownload(sub.fileUrl, `submission_${sub.studentId?.name || 'student'}`)}
-                              className="flex items-center gap-2 w-full justify-center py-2.5 bg-lime-700 text-white rounded-lg text-sm font-semibold hover:bg-lime-800 transition-all shadow-sm"
+                              className="flex items-center gap-2 w-full justify-center py-2.5 bg-green-700 text-white rounded-lg text-sm font-semibold hover:bg-green-800 transition-all shadow-sm"
                             >
                               <Download className="w-4 h-4" />
                               Download Submitted File
@@ -458,13 +458,13 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
 
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1">Score (Out of {activeAssignment.maxMarks})</label>
-                      <input type="number" required max={activeAssignment.maxMarks} value={gradingData.score} onChange={e => setGradingData({...gradingData, score: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-lime-500/30 focus:border-lime-600 outline-none" />
+                      <input type="number" required max={activeAssignment.maxMarks} value={gradingData.score} onChange={e => setGradingData({...gradingData, score: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-500/30 focus:border-green-600 outline-none" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1">Feedback for Student</label>
-                      <textarea rows={4} value={gradingData.feedback} onChange={e => setGradingData({...gradingData, feedback: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-lime-500/30 focus:border-lime-600 outline-none" placeholder="Provide constructive feedback..." />
+                      <textarea rows={4} value={gradingData.feedback} onChange={e => setGradingData({...gradingData, feedback: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-500/30 focus:border-green-600 outline-none" placeholder="Provide constructive feedback..." />
                     </div>
-                    <button type="submit" disabled={isSubmitting} className="flex items-center justify-center gap-2 w-full py-3 bg-lime-700 text-sm font-bold text-white rounded-xl shadow-md hover:bg-lime-800 disabled:opacity-50 transition-all">
+                    <button type="submit" disabled={isSubmitting} className="flex items-center justify-center gap-2 w-full py-3 bg-green-700 text-sm font-bold text-white rounded-xl shadow-md hover:bg-green-800 disabled:opacity-50 transition-all">
                       {isSubmitting ? <><Loader size="sm" /> Saving...</> : 'Submit Grade & Feedback'}
                     </button>
                   </form>
@@ -497,7 +497,7 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
                   rows={4} 
                   value={submissionText} 
                   onChange={e => setSubmissionText(e.target.value)} 
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-lime-500/30 focus:border-lime-600 outline-none" 
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-500/30 focus:border-green-600 outline-none" 
                   placeholder="Type your answer or comments here..." 
                 />
               </div>
@@ -510,7 +510,7 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
               </div>
               <div className="pt-4 flex justify-end gap-3">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800">Cancel</button>
-                <button type="submit" disabled={isSubmitting || (!submissionText && !file)} className="flex items-center gap-2 px-4 py-2 bg-lime-700 text-sm font-medium text-white rounded-lg shadow-sm hover:bg-lime-800 disabled:opacity-50">
+                <button type="submit" disabled={isSubmitting || (!submissionText && !file)} className="flex items-center gap-2 px-4 py-2 bg-green-700 text-sm font-medium text-white rounded-lg shadow-sm hover:bg-green-800 disabled:opacity-50">
                   {isSubmitting ? <><Loader size="sm" /> Submitting...</> : 'Submit Assignment'}
                 </button>
               </div>

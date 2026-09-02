@@ -22,9 +22,10 @@ const signLimiter = rateLimit({
   }
 });
 
-// ── Public certificate verification (no auth) ──────────────────────────────────
+// ── Public certificate verification & public programs (no auth) ─────────────────
 router.get('/certificates/verify/:code', val.verifyCertificateVal, validateResult, ctrl.verifyCertificate);
 router.get('/certificates/verify/:code/pdf', ctrl.getCertificatePdfPublic);
+router.get('/programs/public', ctrl.getPublicPrograms);
 
 // All routes below require a valid JWT + tenantId
 router.use(protect, tenantIsolation);

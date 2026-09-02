@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import api from '@/services/api';
 import {
   Building2,
   Users,
@@ -20,6 +21,21 @@ import {
 export default function LandingPage() {
   const [studentCount, setStudentCount] = useState(250);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [publicPrograms, setPublicPrograms] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchPublicPrograms = async () => {
+      try {
+        const res = await api.get('/lms/programs/public');
+        if (res.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
+          setPublicPrograms(res.data.data);
+        }
+      } catch (e) {
+        // Fallback to static programs list if server is starting
+      }
+    };
+    fetchPublicPrograms();
+  }, []);
 
   const calculatePricePerStudent = () => {
     let basePrice = 2.50;
@@ -279,48 +295,56 @@ export default function LandingPage() {
 
             {/* Programs Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              {[
+              {(publicPrograms.length > 0 ? publicPrograms : [
                 {
-                  title: "Water Management Officer (BS-17) | PPSC Preparation",
-                  desc: "Comprehensive preparation program for Water Management Officer (BS-17) PPSC exams, covering irrigation techniques, soil physics, hydrology, and agricultural engineering concepts.",
-                  badge: "BS-17 Track",
-                  duration: "PPSC Prep"
+                  _id: "",
+                  name: "Water Management Officer (BS-17) | PPSC Preparation",
+                  description: "Comprehensive preparation program for Water Management Officer (BS-17) PPSC exams, covering irrigation techniques, soil physics, hydrology, and agricultural engineering concepts.",
+                  degreeLevel: "BS-17 Track",
+                  code: "WMO-PPSC"
                 },
                 {
-                  title: "Agriculture Officer (BS-17) | PPSC Preparation",
-                  desc: "Complete syllabus coverage for Agriculture Officer (BS-17) competitive test, focusing on agronomy, plant pathology, entomology, and agricultural economics.",
-                  badge: "BS-17 Track",
-                  duration: "PPSC Prep"
+                  _id: "",
+                  name: "Agriculture Officer (BS-17) | PPSC Preparation",
+                  description: "Complete syllabus coverage for Agriculture Officer (BS-17) competitive test, focusing on agronomy, plant pathology, entomology, and agricultural economics.",
+                  degreeLevel: "BS-17 Track",
+                  code: "AO-PPSC"
                 },
                 {
-                  title: "Assistant Director (BS-18) | PPSC Preparation",
-                  desc: "Specialized executive prep track for Assistant Director (BS-18) selection exams, featuring high-yield study materials, past paper analysis, and mock tests.",
-                  badge: "BS-18 Track",
-                  duration: "PPSC Prep"
+                  _id: "",
+                  name: "Assistant Director (BS-18) | PPSC Preparation",
+                  description: "Specialized executive prep track for Assistant Director (BS-18) selection exams, featuring high-yield study materials, past paper analysis, and mock tests.",
+                  degreeLevel: "BS-18 Track",
+                  code: "AD-PPSC"
                 }
-              ].map((program, i) => (
-                <div key={i} className="bg-white rounded-2xl border border-green-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col">
+              ]).map((program: any, i: number) => (
+                <div key={program._id || i} className="bg-white rounded-2xl border border-green-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col">
                   {/* Banner Header */}
                   <div className="w-full h-44 bg-gradient-to-br from-green-700 to-green-900 p-6 flex flex-col justify-between text-white relative overflow-hidden">
                     <div className="absolute right-[-20px] bottom-[-20px] opacity-10 text-8xl font-black select-none">🌾</div>
                     <span className="inline-block self-start px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-xs font-bold rounded-full border border-white/30">
-                      {program.badge}
+                      {program.degreeLevel || "PPSC Track"}
                     </span>
-                    <h3 className="text-lg font-bold text-white leading-snug drop-shadow-sm">{program.title}</h3>
+                    <h3 className="text-lg font-bold text-white leading-snug drop-shadow-sm">{program.name || program.title}</h3>
                   </div>
 
                   {/* Content */}
                   <div className="p-6 flex flex-col gap-3 flex-grow">
-                    <p className="text-sm text-slate-600 leading-relaxed flex-grow">{program.desc}</p>
+                    <p className="text-sm text-slate-600 leading-relaxed flex-grow">
+                      {program.description || program.desc || "Target-oriented competitive examination preparation track with comprehensive syllabus coverage, video lectures, and notes."}
+                    </p>
                     <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs font-bold text-slate-500">
-                      <span>Course Module</span>
-                      <span className="text-green-700 bg-green-50 px-2.5 py-1 rounded-md">{program.duration}</span>
+                      <span>Program Code</span>
+                      <span className="text-green-700 bg-green-50 px-2.5 py-1 rounded-md">{program.code || "PPSC Prep"}</span>
                     </div>
                   </div>
 
                   {/* Button */}
                   <div className="px-6 pb-6">
-                    <Link href="/signup" className="block w-full py-3 bg-green-700 hover:bg-green-800 text-white rounded-xl font-bold text-sm transition-all text-center shadow-md hover:shadow-lg">
+                    <Link 
+                      href={program._id ? `/signup?programId=${program._id}` : "/signup"} 
+                      className="block w-full py-3 bg-green-700 hover:bg-green-800 text-white rounded-xl font-bold text-sm transition-all text-center shadow-md hover:shadow-lg active:scale-[0.98]"
+                    >
                       Enroll Now
                     </Link>
                   </div>

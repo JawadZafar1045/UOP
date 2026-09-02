@@ -117,7 +117,7 @@ export default function DocumentsPage() {
         </div>
         {user?.role !== "student" && (
           <button 
-            className="px-4 py-2 bg-blue-600 text-sm font-semibold text-white rounded-lg shadow-sm hover:bg-blue-700 transition-all flex items-center gap-2"
+            className="px-5 py-2.5 bg-green-700 hover:bg-green-800 text-sm font-bold text-white rounded-xl shadow-md shadow-green-700/20 active:scale-[0.98] transition-all flex items-center gap-2"
             onClick={() => setIsUploading(!isUploading)}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -144,13 +144,13 @@ export default function DocumentsPage() {
               }}
               className={`pb-4 text-sm font-semibold transition-all relative ${
                 activeTab === tab.id 
-                  ? 'text-blue-600' 
+                  ? 'text-green-600' 
                   : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               {tab.label}
               {activeTab === tab.id && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full" />
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-600 rounded-full" />
               )}
             </button>
           ))}
@@ -162,7 +162,7 @@ export default function DocumentsPage() {
             <select 
               value={selectedCourseFilter} 
               onChange={e => setSelectedCourseFilter(e.target.value)}
-              className="text-xs font-bold bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500/20 transition-all outline-none"
+              className="text-xs font-bold bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-green-500/20 transition-all outline-none"
             >
               <option value="all">All My Courses</option>
               {courses.map(c => (
@@ -187,11 +187,11 @@ export default function DocumentsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Document Title</label>
-                <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="e.g. Annual Audit Report" />
+                <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all" placeholder="e.g. Annual Audit Report" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Category</label>
-                <select value={category} onChange={e => setCategory(e.target.value)} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
+                <select value={category} onChange={e => setCategory(e.target.value)} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all">
                   <option value="policy">Policy</option>
                   <option value="contract">Contract</option>
                   <option value="report">Report</option>
@@ -204,7 +204,7 @@ export default function DocumentsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Scope</label>
-                <select value={scope} onChange={e => setScope(e.target.value)} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
+                <select value={scope} onChange={e => setScope(e.target.value)} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all">
                   <option value="institute">Institute-wide (Global)</option>
                   <option value="course">Course Material</option>
                 </select>
@@ -212,7 +212,7 @@ export default function DocumentsPage() {
               {scope === "course" && (
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Target Course</label>
-                  <select value={selectedCourse} onChange={e => setSelectedCourse(e.target.value)} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" required>
+                  <select value={selectedCourse} onChange={e => setSelectedCourse(e.target.value)} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all" required>
                     <option value="">-- Choose Course --</option>
                     {courses.map(c => (
                       <option key={c._id} value={c._id}>{c.title}</option>
@@ -222,9 +222,9 @@ export default function DocumentsPage() {
               )}
             </div>
 
-            <div className="p-4 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50 hover:bg-white hover:border-blue-400 transition-all cursor-pointer group">
+            <div className="p-4 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50 hover:bg-white hover:border-green-400 transition-all cursor-pointer group">
               <label className="flex flex-col items-center justify-center cursor-pointer">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-slate-400 group-hover:text-blue-500 mb-2 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-slate-400 group-hover:text-green-500 mb-2 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
                 <span className="text-sm font-medium text-slate-600 group-hover:text-slate-900">{file ? file.name : "Click to select or drag and drop file"}</span>
@@ -233,7 +233,7 @@ export default function DocumentsPage() {
             </div>
 
             <div className="flex gap-3 pt-2">
-              <button type="submit" disabled={isUploadSubmitting} className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all disabled:opacity-50">
+              <button type="submit" disabled={isUploadSubmitting} className="flex items-center gap-2 px-6 py-2.5 bg-green-600 text-white rounded-lg text-sm font-bold hover:bg-green-700 shadow-lg shadow-green-500/20 transition-all disabled:opacity-50">
                 {isUploadSubmitting ? <><Loader size="sm" /> Uploading...</> : 'Start Upload'}
               </button>
               <button type="button" onClick={() => setIsUploading(false)} className="px-6 py-2.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200 transition-all">Cancel</button>
@@ -258,7 +258,7 @@ export default function DocumentsPage() {
               {loading ? (
                 <tr><td colSpan={5} className="p-12 text-center">
                   <div className="flex flex-col items-center gap-2">
-                    <div className="w-8 h-8 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin" />
+                    <div className="w-8 h-8 border-4 border-green-600/20 border-t-green-600 rounded-full animate-spin" />
                     <p className="text-slate-500 font-medium">Synchronizing files...</p>
                   </div>
                 </td></tr>
@@ -278,13 +278,13 @@ export default function DocumentsPage() {
                   <tr key={doc._id} className="hover:bg-slate-50/50 group transition-colors">
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-4">
-                        <div className="p-2 bg-blue-50 rounded-lg text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                        <div className="p-2 bg-green-50 rounded-lg text-green-600 group-hover:bg-green-600 group-hover:text-white transition-all">
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
                           </svg>
                         </div>
                         <div>
-                          <p className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{doc.title}</p>
+                          <p className="font-bold text-slate-900 group-hover:text-green-600 transition-colors">{doc.title}</p>
                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{doc.category}</p>
                         </div>
                       </div>
@@ -317,7 +317,7 @@ export default function DocumentsPage() {
                       <div className="flex items-center justify-end gap-2">
                         <button 
                           onClick={() => handleView(doc._id, doc.title || 'document')} 
-                          className="px-3 py-1.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-lg transition-all"
+                          className="px-3 py-1.5 text-xs font-bold text-green-600 bg-green-50 hover:bg-green-600 hover:text-white rounded-lg transition-all"
                         >
                           Download
                         </button>

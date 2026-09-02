@@ -110,13 +110,17 @@ const registerAdmin = async (data, secretKey) => {
 /**
  * Register a new user (student or teacher only).
  */
-const registerUser = async ({ tenantId, name, email, password, role }) => {
+const registerUser = async ({ 
+  tenantId, name, email, password, role = 'student',
+  whatsappNumber, district, degreeQualification,
+  workExperience, currentJobTitle, programId
+}) => {
+  const normalizedEmail = email ? email.toLowerCase().trim() : '';
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  if (!email || !emailRegex.test(email.trim())) {
+  if (!email || !emailRegex.test(normalizedEmail)) {
     throw new Error('Please provide a valid email address');
   }
 
-  const normalizedEmail = email.toLowerCase().trim();
   const effectiveTenantId = tenantId || process.env.DEFAULT_TENANT_ID || 'cszone';
 
   if (!['student', 'teacher'].includes(role)) {
@@ -134,12 +138,44 @@ const registerUser = async ({ tenantId, name, email, password, role }) => {
   });
   if (existing) throw Object.assign(new Error('Email already registered.'), { statusCode: 400 });
 
+  let resolvedProgramId = null;
+  if (programId) {
+    try {
+      const Program = require('../../lms/models/program.model');
+      const mongoose = require('mongoose');
+      if (mongoose.Types.ObjectId.isValid(programId)) {
+        const prog = await Program.findById(programId);
+        if (prog) resolvedProgramId = prog._id;
+      }
+      if (!resolvedProgramId) {
+        const prog = await Program.findOne({
+          tenantId: effectiveTenantId,
+          $or: [
+            { name: new RegExp('^' + programId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') },
+            { code: String(programId).toUpperCase() }
+          ]
+        });
+        if (prog) resolvedProgramId = prog._id;
+      }
+    } catch (e) {
+      // fallback
+    }
+  }
+
   const user = await User.create({ 
     tenantId: effectiveTenantId, 
     name, 
     email: normalizedEmail, 
     password, 
     role,
+    phone: whatsappNumber,
+    whatsappNumber: whatsappNumber || undefined,
+    district: district || undefined,
+    degreeQualification: degreeQualification || undefined,
+    workExperience: workExperience || 'No Experience',
+    currentJobTitle: currentJobTitle || 'N/A',
+    programId: resolvedProgramId || null,
+    requestedProgramId: resolvedProgramId || null,
     isActive: true,
     isVerified: true,
     isApproved: false // Requires admin panel approval

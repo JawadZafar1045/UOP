@@ -14,7 +14,15 @@ const userSchema = new mongoose.Schema(
     },
     avatar:       { type: String },
     phone:        { type: String },
-    location:     { type: String },
+    whatsappNumber: { type: String, trim: true },
+    district:     { type: String, trim: true },
+    degreeQualification: { type: String, trim: true },
+    workExperience: { 
+      type: String, 
+      trim: true, 
+      default: 'No Experience' 
+    },
+    currentJobTitle: { type: String, trim: true, default: 'N/A' },
     bio:          { type: String },
     isActive:     { type: Boolean, default: true },
     isApproved:   { type: Boolean, default: true },
@@ -25,9 +33,10 @@ const userSchema = new mongoose.Schema(
     lastLogin:    { type: Date },
 
     // ── Academic Profile (for students) ──────────────────────────────────────────
-    programId:  { type: require('mongoose').Schema.Types.ObjectId, ref: 'Program', default: null }, // Degree/Program enrolled in
-    majorId:    { type: require('mongoose').Schema.Types.ObjectId, ref: 'Major',   default: null }, // Major/Specialization
-    rollNumber: { type: String, trim: true },  // Student roll number / reg. number
+    programId:          { type: require('mongoose').Schema.Types.ObjectId, ref: 'Program', default: null }, // Degree/Program enrolled in
+    requestedProgramId: { type: require('mongoose').Schema.Types.ObjectId, ref: 'Program', default: null }, // Program requested upon registration
+    majorId:            { type: require('mongoose').Schema.Types.ObjectId, ref: 'Major',   default: null }, // Major/Specialization
+    rollNumber:         { type: String, trim: true },  // Student roll number / reg. number
   },
   { timestamps: true }
 );

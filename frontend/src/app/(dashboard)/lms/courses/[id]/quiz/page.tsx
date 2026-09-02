@@ -434,7 +434,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
       {/* Header Section */}
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <Link href={`/lms/courses/${courseId}`} className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all group active:scale-[0.98] shadow-blue-500/20">
+          <Link href={`/lms/courses/${courseId}`} className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-green-700 transition-all group active:scale-[0.98] shadow-green-500/20">
             <ChevronLeft className="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" />
             Back to Course
           </Link>
@@ -450,7 +450,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
               </button>
               <button
                 onClick={openCreateQuizModal}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all active:scale-[0.98] shadow-blue-500/20"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-green-700 transition-all active:scale-[0.98] shadow-green-500/20"
               >
                 <Plus className="w-4.5 h-4.5" />
                 Create Quiz
@@ -484,7 +484,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {quizzes.map((quiz) => (
-            <div key={quiz._id} className="bg-white rounded-2xl border border-slate-200/60 hover:border-blue-200/60 shadow-sm hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 flex flex-col group p-7 relative">
+            <div key={quiz._id} className="bg-white rounded-2xl border border-slate-200/60 hover:border-green-200/60 shadow-sm hover:shadow-xl hover:shadow-green-500/5 transition-all duration-300 flex flex-col group p-7 relative">
               {/* Status Badge */}
               <div className="absolute top-7 right-7">
                 <span className={`text-[10px] font-bold tracking-[0.1em] px-3 py-1.5 rounded-full uppercase border ${
@@ -497,7 +497,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
               </div>
 
               <div className="mb-5">
-                <h3 className="font-bold text-slate-900 text-xl leading-snug mb-3 group-hover:text-blue-600 transition-colors">
+                <h3 className="font-bold text-slate-900 text-xl leading-snug mb-3 group-hover:text-green-600 transition-colors">
                   {quiz.title}
                 </h3>
                 <p className="text-[15px] text-slate-500 line-clamp-2 leading-relaxed">
@@ -507,17 +507,17 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
 
               <div className="flex flex-wrap items-center gap-5 mb-8">
                 <div className="flex items-center gap-2 text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100/60">
-                  <FileText className="w-4 h-4 text-blue-400" />
+                  <FileText className="w-4 h-4 text-green-400" />
                   <span className="text-xs font-semibold">{quiz.questionCount || 0} Questions</span>
                 </div>
                 {quiz.timeLimit && (
                   <div className="flex items-center gap-2 text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100/60">
-                    <Clock className="w-4 h-4 text-blue-400" />
+                    <Clock className="w-4 h-4 text-green-400" />
                     <span className="text-xs font-semibold">{quiz.timeLimit} mins</span>
                   </div>
                 )}
                 <div className="flex items-center gap-2 text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100/60">
-                  <Award className="w-4 h-4 text-blue-400" />
+                  <Award className="w-4 h-4 text-green-400" />
                   <span className="text-xs font-semibold">Pass: {quiz.passMark}%</span>
                 </div>
                 {quiz.enableNegativeMarking && (
@@ -542,7 +542,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                             } catch (e) { console.error(e); }
                             setShowQuestionBuilder(true);
                           }}
-                          className="text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1.5 transition-colors"
+                          className="text-sm font-bold text-green-600 hover:text-green-700 flex items-center gap-1.5 transition-colors"
                         >
                           <Edit className="w-4 h-4" />
                           Questions
@@ -592,7 +592,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                       disabled={quiz.status !== 'published' || ((quiz.myAttempts || 0) >= (quiz.maxAttempts || 1))}
                       className={`flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm active:scale-[0.98] ${
                         quiz.status === 'published' && ((quiz.myAttempts || 0) < (quiz.maxAttempts || 1))
-                          ? 'bg-blue-600 text-white hover:bg-blue-700'
+                          ? 'bg-green-600 text-white hover:bg-green-700'
                           : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                       }`}
                     >
@@ -638,7 +638,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
             {/* Modal Header */}
             <div className="px-5 sm:px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/90 flex-shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shadow-sm flex-shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-green-50 text-green-600 flex items-center justify-center border border-green-100 shadow-sm flex-shrink-0">
                   <Settings className="w-4.5 h-4.5" />
                 </div>
                 <div>
@@ -664,7 +664,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                     type="text"
                     value={createForm.title}
                     onChange={(e) => setCreateForm({...createForm, title: e.target.value})}
-                    className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all"
+                    className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all"
                     placeholder="e.g. Midterm Assessment"
                   />
                 </div>
@@ -674,7 +674,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                   <textarea
                     value={createForm.instructions}
                     onChange={(e) => setCreateForm({...createForm, instructions: e.target.value})}
-                    className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all resize-none"
+                    className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all resize-none"
                     placeholder="Optional instructions for students..."
                     rows={2}
                   />
@@ -687,7 +687,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                       type="number"
                       value={createForm.timeLimit}
                       onChange={(e) => setCreateForm({...createForm, timeLimit: e.target.value})}
-                      className="w-full rounded-xl border border-slate-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
+                      className="w-full rounded-xl border border-slate-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-green-600 outline-none"
                       placeholder="0 = Unlimited"
                       min="0"
                     />
@@ -698,7 +698,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                       type="number"
                       value={createForm.passMark}
                       onChange={(e) => setCreateForm({...createForm, passMark: parseInt(e.target.value) || 60})}
-                      className="w-full rounded-xl border border-slate-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
+                      className="w-full rounded-xl border border-slate-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-green-600 outline-none"
                       min="0"
                       max="100"
                       required
@@ -710,7 +710,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                       type="number"
                       value={createForm.maxAttempts}
                       onChange={(e) => setCreateForm({...createForm, maxAttempts: parseInt(e.target.value) || 1})}
-                      className="w-full rounded-xl border border-slate-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
+                      className="w-full rounded-xl border border-slate-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-green-600 outline-none"
                       min="1"
                       required
                     />
@@ -729,7 +729,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                       className="flex items-center"
                     >
                       {createForm.shuffleQuestions ? (
-                        <ToggleRight className="w-8 h-5 text-blue-600" />
+                        <ToggleRight className="w-8 h-5 text-green-600" />
                       ) : (
                         <ToggleLeft className="w-8 h-5 text-slate-300" />
                       )}
@@ -747,7 +747,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                       className="flex items-center"
                     >
                       {createForm.showResultImmediately ? (
-                        <ToggleRight className="w-8 h-5 text-blue-600" />
+                        <ToggleRight className="w-8 h-5 text-green-600" />
                       ) : (
                         <ToggleLeft className="w-8 h-5 text-slate-300" />
                       )}
@@ -772,7 +772,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                         className="flex items-center"
                       >
                         {createForm.enableNegativeMarking ? (
-                          <ToggleRight className="w-8 h-5 text-blue-600" />
+                          <ToggleRight className="w-8 h-5 text-green-600" />
                         ) : (
                           <ToggleLeft className="w-8 h-5 text-slate-300" />
                         )}
@@ -845,7 +845,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                 <button
                   type="submit"
                   disabled={isSubmitting || !createForm.title.trim()}
-                  className="inline-flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md transition-all shadow-blue-500/20 disabled:opacity-50 active:scale-[0.98]"
+                  className="inline-flex items-center gap-2 px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-xl shadow-md transition-all shadow-green-500/20 disabled:opacity-50 active:scale-[0.98]"
                 >
                   {isSubmitting ? (
                     <>
@@ -874,10 +874,10 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
               {/* Header */}
               <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white flex-shrink-0">
                 <div className="flex items-center gap-2">
-                  <FileText className="w-4.5 h-4.5 text-blue-600" />
+                  <FileText className="w-4.5 h-4.5 text-green-600" />
                   <h3 className="text-sm font-bold text-slate-900">Questions</h3>
                 </div>
-                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-100">
                   {quizQuestions.length} added
                 </span>
               </div>
@@ -897,8 +897,8 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                       onClick={() => openEditQuestion(q)}
                       className={`p-3 rounded-xl border transition-all cursor-pointer group relative ${
                         editQuestionId === q._id
-                          ? 'bg-blue-50/80 border-blue-300 shadow-sm'
-                          : 'bg-white border-slate-200/70 hover:border-blue-200 hover:shadow-sm'
+                          ? 'bg-green-50/80 border-green-300 shadow-sm'
+                          : 'bg-white border-slate-200/70 hover:border-green-200 hover:shadow-sm'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2 pr-12">
@@ -927,7 +927,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                             e.stopPropagation();
                             openEditQuestion(q);
                           }}
-                          className="p-1 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                          className="p-1 rounded-lg text-slate-400 hover:text-green-600 hover:bg-green-50 transition-colors"
                           title="Edit Question"
                         >
                           <Edit className="w-3.5 h-3.5" />
@@ -1018,7 +1018,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                       required
                       value={questionForm.question}
                       onChange={(e) => setQuestionForm({...questionForm, question: e.target.value})}
-                      className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all resize-none"
+                      className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all resize-none"
                       placeholder="Type your multiple-choice question here..."
                       rows={2}
                     />
@@ -1032,7 +1032,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <div className="relative">
-                          <span className="absolute left-3 top-2.5 text-xs font-extrabold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">
+                          <span className="absolute left-3 top-2.5 text-xs font-extrabold text-green-600 bg-green-50 px-1.5 py-0.5 rounded border border-green-100">
                             A
                           </span>
                           <input
@@ -1040,7 +1040,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                             type="text"
                             value={questionForm.optionA}
                             onChange={(e) => setQuestionForm({...questionForm, optionA: e.target.value})}
-                            className="w-full rounded-xl border border-slate-300 pl-11 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
+                            className="w-full rounded-xl border border-slate-300 pl-11 pr-3 py-2 text-sm focus:ring-2 focus:ring-green-600 outline-none"
                             placeholder="Option A text..."
                           />
                         </div>
@@ -1048,7 +1048,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
 
                       <div>
                         <div className="relative">
-                          <span className="absolute left-3 top-2.5 text-xs font-extrabold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">
+                          <span className="absolute left-3 top-2.5 text-xs font-extrabold text-green-600 bg-green-50 px-1.5 py-0.5 rounded border border-green-100">
                             B
                           </span>
                           <input
@@ -1056,7 +1056,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                             type="text"
                             value={questionForm.optionB}
                             onChange={(e) => setQuestionForm({...questionForm, optionB: e.target.value})}
-                            className="w-full rounded-xl border border-slate-300 pl-11 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
+                            className="w-full rounded-xl border border-slate-300 pl-11 pr-3 py-2 text-sm focus:ring-2 focus:ring-green-600 outline-none"
                             placeholder="Option B text..."
                           />
                         </div>
@@ -1064,7 +1064,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
 
                       <div>
                         <div className="relative">
-                          <span className="absolute left-3 top-2.5 text-xs font-extrabold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">
+                          <span className="absolute left-3 top-2.5 text-xs font-extrabold text-green-600 bg-green-50 px-1.5 py-0.5 rounded border border-green-100">
                             C
                           </span>
                           <input
@@ -1072,7 +1072,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                             type="text"
                             value={questionForm.optionC}
                             onChange={(e) => setQuestionForm({...questionForm, optionC: e.target.value})}
-                            className="w-full rounded-xl border border-slate-300 pl-11 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
+                            className="w-full rounded-xl border border-slate-300 pl-11 pr-3 py-2 text-sm focus:ring-2 focus:ring-green-600 outline-none"
                             placeholder="Option C text..."
                           />
                         </div>
@@ -1080,7 +1080,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
 
                       <div>
                         <div className="relative">
-                          <span className="absolute left-3 top-2.5 text-xs font-extrabold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">
+                          <span className="absolute left-3 top-2.5 text-xs font-extrabold text-green-600 bg-green-50 px-1.5 py-0.5 rounded border border-green-100">
                             D
                           </span>
                           <input
@@ -1088,7 +1088,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                             type="text"
                             value={questionForm.optionD}
                             onChange={(e) => setQuestionForm({...questionForm, optionD: e.target.value})}
-                            className="w-full rounded-xl border border-slate-300 pl-11 pr-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
+                            className="w-full rounded-xl border border-slate-300 pl-11 pr-3 py-2 text-sm focus:ring-2 focus:ring-green-600 outline-none"
                             placeholder="Option D text..."
                           />
                         </div>
@@ -1135,7 +1135,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                         type="number"
                         value={questionForm.marks}
                         onChange={(e) => setQuestionForm({...questionForm, marks: parseInt(e.target.value) || 1})}
-                        className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
+                        className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-600 outline-none"
                         min="1"
                         required
                       />
@@ -1148,7 +1148,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                         type="text"
                         value={questionForm.explanation}
                         onChange={(e) => setQuestionForm({...questionForm, explanation: e.target.value})}
-                        className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
+                        className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-green-600 outline-none"
                         placeholder="Explanation shown to students after attempt..."
                       />
                     </div>
@@ -1160,7 +1160,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                   <button
                     type="submit"
                     disabled={isSubmitting || !questionForm.question.trim()}
-                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md transition-all shadow-blue-500/20 disabled:opacity-50 active:scale-[0.98]"
+                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-xl shadow-md transition-all shadow-green-500/20 disabled:opacity-50 active:scale-[0.98]"
                   >
                     {isSubmitting ? (
                       <>
@@ -1268,18 +1268,18 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
             {/* LANDING */}
             {quizPlayerPhase === 'landing' && (
               <>
-                <div className="p-6 border-b border-slate-100 flex justify-between items-start bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+                <div className="p-6 border-b border-slate-100 flex justify-between items-start bg-gradient-to-r from-green-600 to-indigo-600 text-white">
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-widest text-blue-200 mb-1">Ready to begin?</p>
+                    <p className="text-xs font-bold uppercase tracking-widest text-green-200 mb-1">Ready to begin?</p>
                     <h2 className="text-xl font-bold">{quizPlayerQuiz.title}</h2>
                   </div>
                   <button onClick={() => setShowQuizPlayer(false)} className="text-white/70 hover:text-white mt-1"><XCircle className="w-6 h-6" /></button>
                 </div>
                 <div className="p-6 overflow-y-auto space-y-5">
                   {quizPlayerQuiz.instructions && (
-                    <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-                      <p className="text-xs font-bold text-blue-500 uppercase tracking-widest mb-1">Instructions</p>
-                      <p className="text-sm text-blue-800">{quizPlayerQuiz.instructions}</p>
+                    <div className="bg-green-50 border border-green-100 rounded-xl p-4">
+                      <p className="text-xs font-bold text-green-500 uppercase tracking-widest mb-1">Instructions</p>
+                      <p className="text-sm text-green-800">{quizPlayerQuiz.instructions}</p>
                     </div>
                   )}
 
@@ -1318,14 +1318,14 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                       </div>
                     ))}
                   </div>
-                  <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 flex items-start gap-2">
-                    <Clock className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                    <p className="text-xs text-blue-700">Once you start, the timer will begin. Make sure you have enough time before proceeding.</p>
+                  <div className="bg-green-50 border border-green-100 rounded-lg p-3 flex items-start gap-2">
+                    <Clock className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-green-700">Once you start, the timer will begin. Make sure you have enough time before proceeding.</p>
                   </div>
                 </div>
                 <div className="p-5 border-t border-slate-100 flex justify-end gap-3">
                   <button onClick={() => setShowQuizPlayer(false)} className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800">Cancel</button>
-                  <button onClick={handleBeginAttempt} disabled={isSubmitting} className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 disabled:opacity-60 shadow-md transition-all">
+                  <button onClick={handleBeginAttempt} disabled={isSubmitting} className="flex items-center gap-2 px-6 py-2.5 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 disabled:opacity-60 shadow-md transition-all">
                     {isSubmitting ? <><Loader size="sm" /> Starting...</> : <><Play className="w-4 h-4" /> Begin Attempt</>}
                   </button>
                 </div>
@@ -1377,7 +1377,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                   {/* Progress bar */}
                   <div className="w-full bg-slate-100 h-1.5">
                     <div
-                      className="bg-gradient-to-r from-blue-600 to-indigo-600 h-1.5 transition-all duration-300"
+                      className="bg-gradient-to-r from-green-600 to-indigo-600 h-1.5 transition-all duration-300"
                       style={{width:`${((quizPlayerIndex+1)/quizPlayerQuestions.length)*100}%`}}
                     />
                   </div>
@@ -1438,7 +1438,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                             className={`w-full text-left px-4 py-3.5 rounded-xl border-2 text-sm font-medium transition-all flex items-center justify-between group ${
                               isSelected
                                 ? 'border-purple-600 bg-purple-50/70 text-purple-950 shadow-sm ring-1 ring-purple-400/30'
-                                : 'border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-slate-50'
+                                : 'border-slate-200 bg-white text-slate-700 hover:border-green-300 hover:bg-slate-50'
                             }`}
                           >
                             <div className="flex items-center gap-3">
@@ -1446,7 +1446,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                                 className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold transition-colors ${
                                   isSelected
                                     ? 'bg-purple-600 text-white shadow-sm'
-                                    : 'bg-slate-100 text-slate-600 group-hover:bg-blue-100 group-hover:text-blue-700'
+                                    : 'bg-slate-100 text-slate-600 group-hover:bg-green-100 group-hover:text-green-700'
                                 }`}
                               >
                                 {optionLetter}
@@ -1497,7 +1497,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                       {quizPlayerIndex < quizPlayerQuestions.length - 1 ? (
                         <button
                           onClick={() => setQuizPlayerIndex(i => i + 1)}
-                          className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md shadow-blue-500/20 transition-all active:scale-95"
+                          className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-white bg-green-600 hover:bg-green-700 rounded-xl shadow-md shadow-green-500/20 transition-all active:scale-95"
                         >
                           Next <ChevronRight className="w-4 h-4" />
                         </button>

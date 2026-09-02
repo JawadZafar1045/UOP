@@ -114,7 +114,7 @@ export default function CertificatesPage() {
               <select 
                 value={selectedCourseId} 
                 onChange={(e) => setSelectedCourseId(e.target.value)}
-                className="px-4 py-3 sm:py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-lime-500/30 transition-all outline-none w-full sm:min-w-[200px]"
+                className="px-4 py-3 sm:py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-green-500/30 transition-all outline-none w-full sm:min-w-[200px]"
               >
                 <option value="">-- Select Course --</option>
                 {courses.map(c => (
@@ -124,7 +124,7 @@ export default function CertificatesPage() {
               <button
                 onClick={handleGenerateAll}
                 disabled={!selectedCourseId || isGenerating}
-                className="flex items-center justify-center gap-2 px-5 py-3 sm:py-2 bg-lime-700 text-white text-sm font-bold rounded-xl hover:bg-lime-800 shadow-lg shadow-lime-600/20 transition-all disabled:opacity-50 active:scale-[0.98] w-full sm:w-auto whitespace-nowrap"
+                className="flex items-center justify-center gap-2 px-5 py-3 sm:py-2 bg-green-700 text-white text-sm font-bold rounded-xl hover:bg-green-800 shadow-lg shadow-green-600/20 transition-all disabled:opacity-50 active:scale-[0.98] w-full sm:w-auto whitespace-nowrap"
               >
                 {isGenerating ? <><Loader size="sm" /> Generating...</> : <><FileBadge className="w-4 h-4 shrink-0" /> Generate All Eligible</>}
               </button>
@@ -141,8 +141,8 @@ export default function CertificatesPage() {
         {isInstructor ? (
           !selectedCourseId ? (
             <div className="bg-white border border-slate-200 border-dashed rounded-3xl p-20 flex flex-col items-center justify-center text-center shadow-sm">
-              <div className="w-16 h-16 bg-lime-50 rounded-2xl flex items-center justify-center mb-6 border border-lime-100">
-                <Award className="w-8 h-8 text-lime-600" />
+              <div className="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center mb-6 border border-green-100">
+                <Award className="w-8 h-8 text-green-600" />
               </div>
               <h3 className="text-xl font-bold text-slate-700 mb-2">Select a course to manage</h3>
               <p className="text-slate-500 max-w-sm">Choose a course from the dropdown above to view issued certificates and generate new ones for eligible students.</p>
@@ -153,7 +153,7 @@ export default function CertificatesPage() {
             <div className="bg-white border border-slate-200 rounded-3xl p-20 flex flex-col items-center justify-center text-center shadow-sm">
               <p className="text-slate-500 mb-6">No certificates have been issued for this course yet.</p>
               <Link href={`/lms/courses/${selectedCourseId}/performance`}>
-                <button className="px-6 py-2.5 bg-lime-50 text-lime-700 text-sm font-bold rounded-xl hover:bg-lime-100 transition-all">
+                <button className="px-6 py-2.5 bg-green-50 text-green-700 text-sm font-bold rounded-xl hover:bg-green-100 transition-all">
                   Check Eligibility
                 </button>
               </Link>
@@ -171,7 +171,7 @@ export default function CertificatesPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {courseCertificates.map((cert) => (
-                    <tr key={cert._id} className="hover:bg-lime-50/30 transition-colors">
+                    <tr key={cert._id} className="hover:bg-green-50/30 transition-colors">
                       <td className="px-6 py-4">
                         <div className="font-bold text-slate-900">{cert.studentId?.name || 'Unknown Student'}</div>
                         <div className="text-xs text-slate-500">{cert.studentId?.email}</div>
@@ -188,7 +188,7 @@ export default function CertificatesPage() {
                         <button
                           onClick={() => handleDownload(cert._id, cert.certificateNumber)}
                           disabled={isDownloading === cert._id}
-                          className="inline-flex items-center gap-1.5 text-lime-700 font-bold hover:underline disabled:opacity-50"
+                          className="inline-flex items-center gap-1.5 text-green-700 font-bold hover:underline disabled:opacity-50"
                         >
                           {isDownloading === cert._id ? <><Loader size="sm" /> Downloading...</> : 'View & Download'}
                         </button>
@@ -208,15 +208,15 @@ export default function CertificatesPage() {
         ) : (
           certificates.length === 0 ? (
             <div className="bg-white border border-slate-200/60 rounded-3xl p-16 flex flex-col items-center justify-center text-center shadow-sm">
-              <div className="w-24 h-24 bg-lime-50 rounded-full flex items-center justify-center mb-8 shadow-inner">
-                <Award className="w-12 h-12 text-lime-600" />
+              <div className="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center mb-8 shadow-inner">
+                <Award className="w-12 h-12 text-green-600" />
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-2">No certificates yet</h3>
               <p className="text-slate-500 text-base max-w-md leading-relaxed mb-8">
                 Complete a course and meet all the eligibility criteria to earn your first certificate. Your achievements will be showcased here.
               </p>
               <Link href="/lms">
-                <button className="flex items-center gap-2 px-6 py-3 bg-lime-700 text-white text-sm font-bold rounded-xl hover:bg-lime-800 shadow-lg shadow-lime-600/20 transition-all active:scale-[0.98]">
+                <button className="flex items-center gap-2 px-6 py-3 bg-green-700 text-white text-sm font-bold rounded-xl hover:bg-green-800 shadow-lg shadow-green-600/20 transition-all active:scale-[0.98]">
                   Browse Courses
                 </button>
               </Link>
@@ -224,25 +224,25 @@ export default function CertificatesPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
               {certificates.map((cert) => (
-                <div key={cert._id} className="bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-sm hover:shadow-xl hover:shadow-lime-500/10 transition-all duration-300 flex flex-col group relative">
-                  {/* Accent bar using sidebar hover lime gradient */}
-                  <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-lime-500 to-emerald-600"></div>
+                <div key={cert._id} className="bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-sm hover:shadow-xl hover:shadow-green-500/10 transition-all duration-300 flex flex-col group relative">
+                  {/* Accent bar using sidebar hover green gradient */}
+                  <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-green-500 to-emerald-600"></div>
                   
-                  <div className="p-8 bg-gradient-to-br from-lime-50/40 via-slate-50 to-white border-b border-slate-100/60 relative overflow-hidden flex-1">
+                  <div className="p-8 bg-gradient-to-br from-green-50/40 via-slate-50 to-white border-b border-slate-100/60 relative overflow-hidden flex-1">
                     <div className="absolute -top-6 -right-6 p-4 opacity-[0.04] transform rotate-12 group-hover:scale-110 group-hover:opacity-[0.08] transition-all duration-700">
-                      <FileBadge className="w-48 h-48 text-lime-900" />
+                      <FileBadge className="w-48 h-48 text-green-900" />
                     </div>
                     
-                    <div className="w-12 h-12 bg-lime-50 rounded-xl shadow-sm flex items-center justify-center mb-6 border border-lime-100">
-                      <Award className="w-6 h-6 text-lime-700" />
+                    <div className="w-12 h-12 bg-green-50 rounded-xl shadow-sm flex items-center justify-center mb-6 border border-green-100">
+                      <Award className="w-6 h-6 text-green-700" />
                     </div>
                     
-                    <h3 className="font-bold text-slate-900 text-xl leading-snug mb-3 relative z-10 group-hover:text-lime-800 transition-colors">
+                    <h3 className="font-bold text-slate-900 text-xl leading-snug mb-3 relative z-10 group-hover:text-green-800 transition-colors">
                       {cert.courseId?.title || 'Unknown Course'}
                     </h3>
                     
                     <div className="flex items-center gap-2 text-slate-500 text-sm font-medium relative z-10">
-                      <Calendar className="w-4 h-4 text-lime-600" />
+                      <Calendar className="w-4 h-4 text-green-600" />
                       <span>Issued: {new Date(cert.issuedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                     </div>
                   </div>
@@ -259,15 +259,15 @@ export default function CertificatesPage() {
                       <button
                         onClick={() => handleDownload(cert._id, cert.certificateNumber)}
                         disabled={isDownloading === cert._id}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-lime-700 text-white text-sm font-bold rounded-xl hover:bg-lime-800 shadow-md shadow-lime-600/10 transition-all active:scale-[0.98] disabled:opacity-50"
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-green-700 text-white text-sm font-bold rounded-xl hover:bg-green-800 shadow-md shadow-green-600/10 transition-all active:scale-[0.98] disabled:opacity-50"
                       >
                         {isDownloading === cert._id ? <><Loader size="sm" /> Processing...</> : <><Download className="w-4 h-4" /> Download</>}
                       </button>
                       <button 
                         onClick={() => handleCopyLink(cert.verificationCode)}
-                        className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-slate-700 border border-slate-200 text-sm font-bold rounded-xl hover:bg-lime-50 hover:text-lime-800 hover:border-lime-200 transition-all active:scale-[0.98]"
+                        className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-slate-700 border border-slate-200 text-sm font-bold rounded-xl hover:bg-green-50 hover:text-green-800 hover:border-green-200 transition-all active:scale-[0.98]"
                       >
-                        <Share2 className="w-4 h-4 text-slate-400 group-hover:text-lime-600 transition-colors" />
+                        <Share2 className="w-4 h-4 text-slate-400 group-hover:text-green-600 transition-colors" />
                         {copiedCode === cert.verificationCode ? 'Copied!' : 'Share'}
                       </button>
                     </div>

@@ -43,8 +43,10 @@ const getCourses = async (tenantId, userId, role) => {
   // admin: no extra filter, sees everything
 
   return Course.find(filter)
-    .populate('instructor', 'name email')
-    .select('title description status instructor enrolledStudents startDate endDate completionCriteria category thumbnail')
+    .populate('instructor', 'name email avatar')
+    .populate('programId', 'name code school faculty degreeLevel')
+    .populate('majorId', 'name code description')
+    .select('title description status instructor enrolledStudents startDate endDate completionCriteria category thumbnail coverImage programId majorId isCommon courseCode creditHours')
     .lean()
     .sort({ createdAt: -1 });
 };
@@ -59,8 +61,9 @@ const getCourseById = async (tenantId, courseId, userId, role) => {
   if (!course) throw err('Course not found.', 404);
 
   if (role === 'student') {
-    const isEnrolled = course.enrolledStudents.some(s => String(s._id) === String(userId));
-    if (!isEnrolled && course.status !== 'active') throw err('This course is not currently active or you are not enrolled.', 403);
+    const isEnrolled = course.enrolledStudents.some(s => String(s._id || s) === String(userId));
+    if (!isEnrolled) throw err('You are not enrolled in this course.', 403);
+    if (course.status !== 'active') throw err('This course is not currently active.', 403);
   }
 
   const [sessionCount, assignmentCount, quizCount] = await Promise.all([
@@ -788,6 +791,12 @@ const createQuizBulk = async (tenantId, courseId, quizData, questions, userId, r
 };
 
 const getCourseQuizzes = async (tenantId, courseId, userRole, userId) => {
+  const course = await Course.findOne({ _id: courseId, tenantId });
+  if (!course) throw err('Course not found.', 404);
+  if (userRole === 'student' && !course.enrolledStudents.map(String).includes(String(userId))) {
+    throw err('You are not enrolled in this course.', 403);
+  }
+
   const filter = { courseId, tenantId };
   if (userRole === 'student') filter.status = 'published';
   const quizzes = await Quiz.find(filter).sort({ createdAt: -1 });
@@ -1396,7 +1405,9 @@ const getAdminStats = async (tenantId) => {
 const getAdminUsers = async (tenantId) => {
   const User = require('../../auth/models/user.model');
   return User.find({ tenantId, role: { $ne: 'admin' } })
-    .select('name email role createdAt isActive isApproved')
+    .populate('programId', 'name code degreeLevel')
+    .populate('requestedProgramId', 'name code degreeLevel')
+    .select('name email role createdAt isActive isApproved phone whatsappNumber district degreeQualification workExperience currentJobTitle programId requestedProgramId rollNumber')
     .lean()
     .sort({ createdAt: -1 });
 };
@@ -1444,19 +1455,29 @@ const deleteUser = async (tenantId, targetUserId, requesterId) => {
   const user = await User.findOneAndDelete({ _id: targetUserId, tenantId });
   if (!user) throw err('User not found.', 404);
   
-  // Optionally delete related data like Attendance, Assignments, etc., but deleting from User is typically enough for "extra data" unless cascading is strict.
   return { success: true, message: 'User deleted permanently.' };
 };
 
-const approveUser = async (tenantId, targetUserId) => {
+const approveUser = async (tenantId, targetUserId, overrideProgramId = null) => {
   const User = require('../../auth/models/user.model');
-  const user = await User.findOneAndUpdate(
-    { _id: targetUserId, tenantId },
-    { isApproved: true, isActive: true },
-    { new: true }
-  ).select('name email role isApproved isActive createdAt');
+  const user = await User.findOne({ _id: targetUserId, tenantId });
   if (!user) throw err('User not found.', 404);
-  
+
+  user.isApproved = true;
+  user.isActive = true;
+
+  // Use overrideProgramId if provided by admin, otherwise use student's requestedProgramId / programId
+  const effectiveProgramId = overrideProgramId || user.requestedProgramId || user.programId;
+  if (effectiveProgramId) {
+    user.programId = effectiveProgramId;
+    user.requestedProgramId = effectiveProgramId;
+    await Course.updateMany(
+      { tenantId, programId: effectiveProgramId },
+      { $addToSet: { enrolledStudents: user._id } }
+    );
+  }
+
+  await user.save();
   return user;
 };
 
@@ -1519,7 +1540,12 @@ const revokeCertificate = async (tenantId, certId) => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 // ── Programs ───────────────────────────────────────────────────────────────────
-const getPrograms = async (tenantId) => {
+const getPrograms = async (tenantId, userId = null, role = null) => {
+  if (role === 'student' && userId) {
+    const enrolledCourses = await Course.find({ tenantId, enrolledStudents: userId, status: 'active' }).select('programId').lean();
+    const progIds = enrolledCourses.map(c => c.programId).filter(Boolean);
+    return Program.find({ tenantId, _id: { $in: progIds } }).sort({ name: 1 }).lean();
+  }
   return Program.find({ tenantId }).sort({ name: 1 }).lean();
 };
 
@@ -1554,9 +1580,14 @@ const deleteProgram = async (tenantId, programId) => {
 };
 
 // ── Majors ─────────────────────────────────────────────────────────────────────
-const getMajors = async (tenantId, programId) => {
+const getMajors = async (tenantId, programId, userId = null, role = null) => {
   const filter = { tenantId };
   if (programId) filter.programId = programId;
+  if (role === 'student' && userId) {
+    const enrolledCourses = await Course.find({ tenantId, enrolledStudents: userId, status: 'active' }).select('majorId').lean();
+    const majorIds = enrolledCourses.map(c => c.majorId).filter(Boolean);
+    filter._id = { $in: majorIds };
+  }
   return Major.find(filter).populate('programId', 'name code').sort({ name: 1 }).lean();
 };
 
@@ -1586,27 +1617,41 @@ const deleteMajor = async (tenantId, majorId) => {
 };
 
 // ── Academic Hierarchy Tree ───────────────────────────────────────────────────
-const getAcademicHierarchyTree = async (tenantId) => {
+const getAcademicHierarchyTree = async (tenantId, userId = null, role = null) => {
+  const courseFilter = { tenantId };
+  if (role === 'student' && userId) {
+    courseFilter.enrolledStudents = userId;
+    courseFilter.status = 'active';
+  }
+
   const [programs, majors, courses] = await Promise.all([
     Program.find({ tenantId }).sort({ name: 1 }).lean(),
     Major.find({ tenantId }).sort({ name: 1 }).lean(),
-    Course.find({ tenantId }).select('title courseCode creditHours programId majorId isCommon status').lean(),
+    Course.find(courseFilter).select('title courseCode creditHours programId majorId isCommon status enrolledStudents').lean(),
   ]);
 
-  return programs.map(prog => {
+  const tree = programs.map(prog => {
     const progMajors = majors.filter(m => String(m.programId) === String(prog._id));
     const progCourses = courses.filter(c => String(c.programId) === String(prog._id));
     const commonSubjects = progCourses.filter(c => c.isCommon || !c.majorId);
 
+    const mappedMajors = progMajors.map(maj => ({
+      ...maj,
+      subjects: progCourses.filter(c => String(c.majorId) === String(maj._id)),
+    }));
+
     return {
       ...prog,
       commonSubjects,
-      majors: progMajors.map(maj => ({
-        ...maj,
-        subjects: progCourses.filter(c => String(c.majorId) === String(maj._id)),
-      })),
+      majors: role === 'student' ? mappedMajors.filter(m => m.subjects.length > 0) : mappedMajors,
     };
   });
+
+  if (role === 'student') {
+    return tree.filter(p => p.commonSubjects.length > 0 || p.majors.length > 0);
+  }
+
+  return tree;
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1844,6 +1889,10 @@ function extractYouTubeId(url) {
 const getCourseVideoLectures = async (tenantId, courseId, userId, userRole) => {
   const course = await Course.findOne({ _id: courseId, tenantId });
   if (!course) throw err('Course not found.', 404);
+
+  if (userRole === 'student' && !course.enrolledStudents.map(String).includes(String(userId))) {
+    throw err('You are not enrolled in this course.', 403);
+  }
 
   const filter = { tenantId, courseId };
   if (userRole === 'student') {

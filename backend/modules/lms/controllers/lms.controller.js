@@ -554,7 +554,7 @@ const deleteUser = async (req, res, next) => {
 
 const approveUser = async (req, res, next) => {
   try {
-    const data = await lmsService.approveUser(req.tenantId, req.params.id);
+    const data = await lmsService.approveUser(req.tenantId, req.params.id, req.body?.programId);
     res.json({ success: true, data });
   } catch (e) { next(e); }
 };
@@ -587,13 +587,21 @@ const revokeCertificate = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
-// ══════════════════════════════════════════════════════════════════════════════
-// ACADEMIC STRUCTURE – Programs & Majors Controllers
-// ══════════════════════════════════════════════════════════════════════════════
+const getPublicPrograms = async (req, res, next) => {
+  try {
+    const tenantId = req.headers['x-tenant-id'] || req.query.tenantId || process.env.DEFAULT_TENANT_ID || 'cszone';
+    const data = await lmsService.getPrograms(tenantId);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
 
 const getPrograms = async (req, res, next) => {
   try {
-    const data = await lmsService.getPrograms(req.tenantId);
+    const data = await lmsService.getPrograms(
+      req.tenantId,
+      req.userId || req.user?._id,
+      req.user?.role
+    );
     res.json({ success: true, data });
   } catch (e) { next(e); }
 };
@@ -628,7 +636,12 @@ const deleteProgram = async (req, res, next) => {
 
 const getMajors = async (req, res, next) => {
   try {
-    const data = await lmsService.getMajors(req.tenantId, req.query.programId);
+    const data = await lmsService.getMajors(
+      req.tenantId,
+      req.query.programId,
+      req.userId || req.user?._id,
+      req.user?.role
+    );
     res.json({ success: true, data });
   } catch (e) { next(e); }
 };
@@ -656,7 +669,11 @@ const deleteMajor = async (req, res, next) => {
 
 const getAcademicTree = async (req, res, next) => {
   try {
-    const data = await lmsService.getAcademicHierarchyTree(req.tenantId);
+    const data = await lmsService.getAcademicHierarchyTree(
+      req.tenantId,
+      req.userId || req.user?._id,
+      req.user?.role
+    );
     res.json({ success: true, data });
   } catch (e) { next(e); }
 };
@@ -728,7 +745,7 @@ module.exports = {
   getAdminStats, getAdminUsers, updateUserRole, deactivateUser, activateUser, deleteUser, approveUser, getAdminCourses, deleteAdminCourse, getAdminCertificates, revokeCertificate,
   getCertificateTemplate, saveCertificateTemplate,
   // Academic hierarchy
-  getPrograms, getProgram, createProgram, updateProgram, deleteProgram,
+  getPublicPrograms, getPrograms, getProgram, createProgram, updateProgram, deleteProgram,
   getMajors, createMajor, updateMajor, deleteMajor,
   getAcademicTree,
   getStudentDegreePerformance, getProgramPerformanceOverview,

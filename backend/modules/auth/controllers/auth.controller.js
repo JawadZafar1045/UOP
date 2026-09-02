@@ -80,8 +80,18 @@ const register = async (req, res, next) => {
     if (!validate(req, res)) return;
     
     const tenantId = req.body.tenantId || process.env.DEFAULT_TENANT_ID || 'cszone';
-    const { name, email, password, role } = req.body;
-    const user = await authService.registerUser({ tenantId, name, email, password, role });
+    const { 
+      name, email, password, role,
+      whatsappNumber, phone, district, degreeQualification,
+      workExperience, currentJobTitle, programId
+    } = req.body;
+
+    const user = await authService.registerUser({ 
+      tenantId, name, email, password, role,
+      whatsappNumber: whatsappNumber || phone,
+      district, degreeQualification,
+      workExperience, currentJobTitle, programId
+    });
     
     console.log(`[Auth] User registered successfully: ${user._id}`);
     
@@ -93,7 +103,8 @@ const register = async (req, res, next) => {
         name: user.name, 
         email: user.email, 
         role: user.role,
-        tenantId: user.tenantId
+        tenantId: user.tenantId,
+        programId: user.programId
       } 
     });
   } catch (err) { 
@@ -193,9 +204,23 @@ const updatePassword = async (req, res, next) => {
   }
 };
 
+/** GET /api/auth/programs */
+const getPublicPrograms = async (req, res, next) => {
+  try {
+    const Program = require('../../lms/models/program.model');
+    const tenantId = req.headers['x-tenant-id'] || req.query.tenantId || process.env.DEFAULT_TENANT_ID || 'cszone';
+    const programs = await Program.find({ tenantId, status: { $ne: 'archived' } })
+      .select('name code degreeLevel school faculty description')
+      .sort({ name: 1 })
+      .lean();
+    res.json({ success: true, data: programs });
+  } catch (err) { next(err); }
+};
+
 module.exports = {
   registerAdmin,
   register,
+  getPublicPrograms,
   verifyEmail,
   registerValidation,
   login,

@@ -7,7 +7,8 @@ import { useStore } from "@/store/useStore";
 import {
   Shield, BookOpen, Users, GraduationCap, Award, Calendar,
   CheckCircle, XCircle, Trash2, Eye, MoreVertical, Search,
-  BarChart3, TrendingUp, UserCheck, UserX
+  BarChart3, TrendingUp, UserCheck, UserX, Phone, MapPin,
+  Briefcase, Mail, X
 } from "lucide-react";
 import Loader from "@/components/ui/Loader";
 import * as lmsService from "@/services/lms.service";
@@ -36,6 +37,7 @@ export default function AdminDashboardPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [certs, setCerts] = useState<any[]>([]);
+  const [programs, setPrograms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -44,10 +46,14 @@ export default function AdminDashboardPage() {
   const [courseSearch, setCourseSearch] = useState("");
   const [userStatusFilter, setUserStatusFilter] = useState<"all" | "pending" | "active" | "inactive">("all");
 
+  // Applicant details modal
+  const [selectedApplicant, setSelectedApplicant] = useState<any>(null);
+  const [assignedProgramId, setAssignedProgramId] = useState<string>("");
+
   // Confirm dialogs
   const [confirmAction, setConfirmAction] = useState<null | {
     type: "deactivate" | "activate" | "deleteCourse" | "revokeCert" | "approveUser" | "deleteUser";
-    id: string; label: string;
+    id: string; label: string; programId?: string;
   }>(null);
   const [isConfirming, setIsConfirming] = useState(false);
 
@@ -56,16 +62,18 @@ export default function AdminDashboardPage() {
     const fetchAll = async () => {
       setLoading(true);
       try {
-        const [s, u, c, ce] = await Promise.all([
+        const [s, u, c, ce, pr] = await Promise.all([
           lmsService.getAdminStats(),
           lmsService.getAdminUsers(),
           lmsService.getAdminCourses(),
           lmsService.getAdminCertificates(),
+          lmsService.getPrograms(),
         ]);
         setStats(s);
         setUsers(u || []);
         setCourses(c || []);
         setCerts(ce || []);
+        setPrograms(pr || []);
       } catch (e: any) {
         setError(e?.message || "Failed to load admin data.");
       } finally {
@@ -118,8 +126,13 @@ export default function AdminDashboardPage() {
         await lmsService.deleteUser(id);
         setUsers(prev => prev.filter(u => u._id !== id));
       } else if (type === "approveUser") {
-        await lmsService.approveUser(id);
-        setUsers(prev => prev.map(u => u._id === id ? { ...u, isApproved: true } : u));
+        await lmsService.approveUser(id, confirmAction.programId);
+        setUsers(prev => prev.map(u => u._id === id ? { 
+          ...u, 
+          isApproved: true, 
+          isActive: true,
+          programId: programs.find(p => p._id === confirmAction.programId) || u.programId
+        } : u));
       } else if (type === "deleteCourse") {
         await lmsService.deleteAdminCourse(id);
         setCourses(prev => prev.filter(c => c._id !== id));
@@ -157,12 +170,12 @@ export default function AdminDashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-            <Shield className="w-8 h-8 text-indigo-600" />
+            <Shield className="w-8 h-8 text-green-700" />
             Admin Dashboard
           </h1>
           <p className="text-slate-500 mt-1">
             Managing institution{" "}
-            <span className="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg text-sm">
+            <span className="font-bold text-green-800 bg-green-50 border border-green-200 px-2 py-0.5 rounded-lg text-sm">
               {user.tenantId}
             </span>
           </p>
@@ -179,8 +192,8 @@ export default function AdminDashboardPage() {
           <button key={tab.id} onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all shrink-0 ${
               activeTab === tab.id
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
+                ? "bg-green-700 text-white shadow-sm font-bold"
+                : "text-slate-600 hover:text-slate-900"
             }`}>
             {tab.icon}{tab.label}
           </button>
@@ -191,22 +204,22 @@ export default function AdminDashboardPage() {
       {activeTab === "overview" && (
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-5">
           {[
-            { label: "Total Courses", value: stats?.totalCourses ?? "—", icon: <BookOpen className="w-6 h-6" />, color: "blue" },
-            { label: "Active Courses", value: stats?.activeCourses ?? "—", icon: <CheckCircle className="w-6 h-6" />, color: "emerald" },
-            { label: "Total Students", value: stats?.totalStudents ?? "—", icon: <GraduationCap className="w-6 h-6" />, color: "teal" },
-            { label: "Total Teachers", value: stats?.totalTeachers ?? "—", icon: <UserCheck className="w-6 h-6" />, color: "purple" },
-            { label: "Certificates Issued", value: stats?.totalCertificates ?? "—", icon: <Award className="w-6 h-6" />, color: "amber" },
-            { label: "Total Sessions", value: stats?.totalSessions ?? "—", icon: <Calendar className="w-6 h-6" />, color: "slate" },
+            { label: "Total Courses", value: stats?.totalCourses ?? "—", icon: <BookOpen className="w-6 h-6" /> },
+            { label: "Active Courses", value: stats?.activeCourses ?? "—", icon: <CheckCircle className="w-6 h-6" /> },
+            { label: "Total Students", value: stats?.totalStudents ?? "—", icon: <GraduationCap className="w-6 h-6" /> },
+            { label: "Total Teachers", value: stats?.totalTeachers ?? "—", icon: <UserCheck className="w-6 h-6" /> },
+            { label: "Certificates Issued", value: stats?.totalCertificates ?? "—", icon: <Award className="w-6 h-6" /> },
+            { label: "Total Sessions", value: stats?.totalSessions ?? "—", icon: <Calendar className="w-6 h-6" /> },
           ].map((stat) => (
             <div key={stat.label}
-              className={`bg-${stat.color}-50/50 border border-${stat.color}-100 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all`}>
+              className="bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all">
               <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 bg-${stat.color}-100 rounded-xl flex items-center justify-center text-${stat.color}-600`}>
+                <div className="w-12 h-12 bg-green-50 border border-green-100 rounded-xl flex items-center justify-center text-green-700">
                   {stat.icon}
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-slate-900">{loading ? "..." : stat.value}</p>
-                  <p className={`text-[10px] font-bold text-${stat.color}-600 uppercase tracking-widest mt-1`}>{stat.label}</p>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">{stat.label}</p>
                 </div>
               </div>
             </div>
@@ -247,7 +260,7 @@ export default function AdminDashboardPage() {
               <div className="relative w-full sm:max-w-sm">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input value={userSearch} onChange={e => setUserSearch(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400"
                   placeholder="Search by name or email..." />
               </div>
 
@@ -259,7 +272,7 @@ export default function AdminDashboardPage() {
                     onClick={() => setUserStatusFilter(f.id)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                       userStatusFilter === f.id
-                        ? "bg-slate-900 text-white shadow-sm"
+                        ? "bg-green-700 text-white shadow-sm"
                         : f.highlight
                         ? "bg-amber-100 text-amber-800 border border-amber-200 hover:bg-amber-200"
                         : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -283,7 +296,7 @@ export default function AdminDashboardPage() {
                 <table className="w-full text-sm">
                   <thead className="bg-slate-50 border-b border-slate-100">
                     <tr>
-                      {["Name", "Email", "Role", "Status", "Joined", "Actions"].map(h => (
+                      {["Applicant / Name", "Email & WhatsApp", "Academic Track", "Status", "Applied", "Actions"].map(h => (
                         <th key={h} className="text-left px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{h}</th>
                       ))}
                     </tr>
@@ -293,17 +306,36 @@ export default function AdminDashboardPage() {
                       <tr key={u._id} className={`hover:bg-slate-50/50 transition-colors ${u.isApproved === false ? 'bg-amber-50/30' : ''}`}>
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs">
+                            <div className="w-8 h-8 rounded-full bg-green-50 border border-green-200 flex items-center justify-center text-green-800 font-bold text-xs">
                               {u.name?.[0]?.toUpperCase() || "U"}
                             </div>
-                            <span className="font-semibold text-slate-900">{u.name}</span>
+                            <div>
+                              <span className="font-semibold text-slate-900 block">{u.name}</span>
+                              {u.district && (
+                                <span className="text-[11px] text-slate-400 font-medium">📍 {u.district}</span>
+                              )}
+                            </div>
                           </div>
                         </td>
-                        <td className="px-5 py-4 text-slate-500">{u.email}</td>
                         <td className="px-5 py-4">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold border ${u.role === 'admin' ? 'bg-purple-50 text-purple-700 border-purple-200' : u.role === 'teacher' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-slate-50 text-slate-700 border-slate-200'}`}>
-                            {u.role ? u.role.charAt(0).toUpperCase() + u.role.slice(1) : 'Unknown'}
-                          </span>
+                          <div className="text-slate-600 text-xs font-medium">{u.email}</div>
+                          {(u.whatsappNumber || u.phone) && (
+                            <div className="text-green-700 font-bold text-[11px] mt-0.5">
+                              📞 {u.whatsappNumber || u.phone}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="flex flex-col gap-1">
+                            <span className="font-bold text-xs text-slate-800">
+                              {u.requestedProgramId?.name || u.programId?.name || "General Track"}
+                            </span>
+                            {u.degreeQualification && (
+                              <span className="text-[11px] text-slate-500 truncate max-w-[180px]">
+                                🎓 {u.degreeQualification}
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-5 py-4">
                           {u.isActive ? (
@@ -312,8 +344,8 @@ export default function AdminDashboardPage() {
                                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />Pending Approval
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-100">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />Active
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-50 text-green-800 text-xs font-bold rounded-full border border-green-200">
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-600" />Active
                               </span>
                             )
                           ) : (
@@ -325,10 +357,22 @@ export default function AdminDashboardPage() {
                         <td className="px-5 py-4 text-slate-400 text-xs">{new Date(u.createdAt).toLocaleDateString()}</td>
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => {
+                                setSelectedApplicant(u);
+                                const initProgId = u.requestedProgramId?._id || u.requestedProgramId || u.programId?._id || u.programId || (programs[0]?._id || "");
+                                setAssignedProgramId(initProgId);
+                              }}
+                              className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-green-800 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg transition-colors"
+                              title="View full application profile"
+                            >
+                              <Eye className="w-3.5 h-3.5" />View
+                            </button>
+
                             {(u.role === 'teacher' || u.role === 'student') && u.isApproved === false && (
                               <button onClick={() => setConfirmAction({ type: "approveUser", id: u._id, label: u.name })}
-                                className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm rounded-lg transition-colors active:scale-95">
-                                <UserCheck className="w-3.5 h-3.5" />Accept / Approve
+                                className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-green-700 hover:bg-green-800 shadow-sm rounded-lg transition-colors active:scale-95">
+                                <UserCheck className="w-3.5 h-3.5" />Approve
                               </button>
                             )}
                             {u.isActive && u.isApproved !== false && (
@@ -339,7 +383,7 @@ export default function AdminDashboardPage() {
                             )}
                             {!u.isActive && u.isApproved !== false && (
                               <button onClick={() => setConfirmAction({ type: "activate", id: u._id, label: u.name })}
-                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 rounded-lg transition-colors">
+                                className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-green-800 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg transition-colors">
                                 <UserCheck className="w-3.5 h-3.5" />Activate
                               </button>
                             )}
@@ -366,7 +410,7 @@ export default function AdminDashboardPage() {
             <div className="relative flex-1 max-w-sm">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input value={courseSearch} onChange={e => setCourseSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400"
                 placeholder="Search courses..." />
             </div>
             <span className="text-xs text-slate-400 font-medium">{filteredCourses.length} courses</span>
@@ -396,7 +440,7 @@ export default function AdminDashboardPage() {
                       <td className="px-5 py-4">
                         <span className={`inline-flex px-2.5 py-1 text-xs font-bold rounded-full border ${
                           c.status === "active" || c.status === "published"
-                            ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                            ? "bg-green-50 text-green-800 border-green-200"
                             : "bg-amber-50 text-amber-700 border-amber-100"
                         }`}>
                           {c.status || "draft"}
@@ -406,7 +450,7 @@ export default function AdminDashboardPage() {
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-2">
                           <Link href={`/lms/courses/${c._id}`}
-                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-lg transition-colors">
+                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-green-800 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg transition-colors">
                             <Eye className="w-3.5 h-3.5" />View
                           </Link>
                           <button onClick={() => setConfirmAction({ type: "deleteCourse", id: c._id, label: c.title })}
@@ -460,8 +504,8 @@ export default function AdminDashboardPage() {
                       <td className="px-5 py-4 font-mono text-xs text-slate-600">{cert.certificateNumber || "—"}</td>
                       <td className="px-5 py-4">
                         {cert.isValid !== false ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-100">
-                            <CheckCircle className="w-3 h-3" />Valid
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-50 text-green-800 text-xs font-bold rounded-full border border-green-200">
+                            <CheckCircle className="w-3 h-3 text-green-600" />Valid
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 text-red-600 text-xs font-bold rounded-full border border-red-100">
@@ -483,6 +527,149 @@ export default function AdminDashboardPage() {
               </table>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── APPLICANT PROFILE DETAILS MODAL ── */}
+      {selectedApplicant && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-7 border border-slate-200 relative animate-in zoom-in-95 duration-200">
+            {/* Close */}
+            <button
+              onClick={() => setSelectedApplicant(null)}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Header */}
+            <div className="flex items-center gap-3.5 mb-5 pb-4 border-b border-slate-100">
+              <div className="w-12 h-12 rounded-2xl bg-green-50 border border-green-200 flex items-center justify-center text-green-800 font-extrabold text-lg shadow-sm">
+                {selectedApplicant.name?.[0]?.toUpperCase() || "S"}
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-slate-900">{selectedApplicant.name}</h3>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                    selectedApplicant.isApproved === false
+                      ? "bg-amber-100 text-amber-800 border-amber-200"
+                      : "bg-green-50 text-green-800 border-green-200"
+                  }`}>
+                    {selectedApplicant.isApproved === false ? "Pending Approval" : "Approved & Active"}
+                  </span>
+                  <span className="text-xs text-slate-400 font-medium capitalize">{selectedApplicant.role || "Student"}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Application Data Grid */}
+            <div className="space-y-3.5 text-sm">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                    <Mail className="w-3 h-3 text-slate-500" /> Email Address
+                  </p>
+                  <p className="font-semibold text-slate-800 text-xs mt-1 truncate">{selectedApplicant.email}</p>
+                </div>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                    <Phone className="w-3 h-3 text-green-600" /> WhatsApp Number
+                  </p>
+                  <p className="font-bold text-green-800 text-xs mt-1">
+                    {selectedApplicant.whatsappNumber || selectedApplicant.phone || "N/A"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                    <MapPin className="w-3 h-3 text-slate-500" /> District
+                  </p>
+                  <p className="font-semibold text-slate-800 text-xs mt-1">{selectedApplicant.district || "N/A"}</p>
+                </div>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                    <GraduationCap className="w-3 h-3 text-slate-500" /> Degree / Qualification
+                  </p>
+                  <p className="font-semibold text-slate-800 text-xs mt-1 truncate">{selectedApplicant.degreeQualification || "N/A"}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                    <Briefcase className="w-3 h-3 text-slate-500" /> Work Experience
+                  </p>
+                  <p className="font-semibold text-slate-800 text-xs mt-1">{selectedApplicant.workExperience || "No Experience"}</p>
+                </div>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Current Job Title</p>
+                  <p className="font-semibold text-slate-800 text-xs mt-1">{selectedApplicant.currentJobTitle || "N/A"}</p>
+                </div>
+              </div>
+
+              {/* Target Program Track Dropdown */}
+              <div className="p-3.5 bg-green-50/80 rounded-xl border border-green-200/90 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] font-bold text-green-900 uppercase tracking-wider flex items-center gap-1">
+                    <BookOpen className="w-3.5 h-3.5 text-green-700" /> Target Program Track *
+                  </label>
+                  {selectedApplicant.requestedProgramId?.name && (
+                    <span className="text-[10px] font-bold text-green-800 bg-white px-2 py-0.5 rounded border border-green-200">
+                      Requested: {selectedApplicant.requestedProgramId.name}
+                    </span>
+                  )}
+                </div>
+                <div className="relative">
+                  <select
+                    value={assignedProgramId}
+                    onChange={(e) => setAssignedProgramId(e.target.value)}
+                    className="w-full bg-white border border-green-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 outline-none focus:ring-2 focus:ring-green-400 cursor-pointer"
+                  >
+                    <option value="">-- Choose Program Track to Grant Access --</option>
+                    {programs.map((p: any) => (
+                      <option key={p._id} value={p._id}>
+                        {p.name} {p.code ? `(${p.code})` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <p className="text-[11px] text-green-700 font-medium">
+                  Approving will automatically enroll this student in all courses & majors under this program track.
+                </p>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex gap-2.5 pt-5 border-t border-slate-100 mt-5">
+              <button
+                onClick={() => setSelectedApplicant(null)}
+                className="flex-1 py-2.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+              >
+                Close
+              </button>
+              {selectedApplicant.isApproved === false && (
+                <button
+                  onClick={() => {
+                    const applicant = selectedApplicant;
+                    const finalProgId = assignedProgramId || applicant.requestedProgramId?._id || applicant.requestedProgramId || applicant.programId?._id || applicant.programId;
+                    setSelectedApplicant(null);
+                    setConfirmAction({
+                      type: "approveUser",
+                      id: applicant._id,
+                      label: applicant.name,
+                      programId: finalProgId
+                    });
+                  }}
+                  className="flex-1 py-2.5 text-xs font-bold text-white bg-green-700 hover:bg-green-800 rounded-xl shadow-md shadow-green-700/20 transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                >
+                  <UserCheck className="w-4 h-4" />
+                  Approve & Enroll
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
@@ -509,7 +696,7 @@ export default function AdminDashboardPage() {
               </button>
               <button onClick={handleConfirm} disabled={isConfirming}
                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-white rounded-xl transition-colors disabled:opacity-50 ${
-                  confirmAction.type === "approveUser" || confirmAction.type === "activate" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-red-600 hover:bg-red-700"
+                  confirmAction.type === "approveUser" || confirmAction.type === "activate" ? "bg-green-700 hover:bg-green-800" : "bg-red-600 hover:bg-red-700"
                 }`}>
                 {isConfirming ? <><Loader size="sm" /> Confirming...</> : 'Confirm'}
               </button>

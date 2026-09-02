@@ -50,10 +50,10 @@ interface AcademicNode {
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 const levelColors: Record<string, string> = {
-  undergraduate: "bg-blue-100 text-blue-700 border-blue-200",
-  postgraduate:  "bg-purple-100 text-purple-700 border-purple-200",
-  diploma:       "bg-amber-100 text-amber-700 border-amber-200",
-  certificate:   "bg-emerald-100 text-emerald-700 border-emerald-200",
+  undergraduate: "bg-green-50 text-green-800 border-green-200",
+  postgraduate:  "bg-emerald-50 text-emerald-800 border-emerald-200",
+  diploma:       "bg-amber-50 text-amber-800 border-amber-200",
+  certificate:   "bg-teal-50 text-teal-800 border-teal-200",
   other:         "bg-slate-100 text-slate-600 border-slate-200",
 };
 
@@ -237,13 +237,13 @@ export default function AcademicProgramsPage() {
           <div className="mb-2">
             <Link
               href="/lms"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-green-700 hover:text-green-800 transition-colors"
             >
               ← Back to Learning Hub
             </Link>
           </div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-green-800 rounded-xl flex items-center justify-center shadow-lg shadow-green-700/20">
               <GraduationCap className="w-5 h-5 text-white" />
             </div>
             Academic Structure
@@ -265,12 +265,12 @@ export default function AcademicProgramsPage() {
             )}
             <button onClick={() => setMajorModal({ open: true, editing: emptyMajor(programs[0]?._id || ""), defaultProgramId: programs[0]?._id || "" })}
               disabled={programs.length === 0}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-green-800 bg-green-50 border border-green-200 hover:bg-green-100 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed">
               <Plus className="w-4 h-4" />
               Add Major
             </button>
             <button onClick={() => setProgModal({ open: true, editing: emptyProg() })}
-              className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-[#440C57] hover:bg-[#350944] active:scale-[0.98] rounded-xl transition-all shadow-md shadow-[#440C57]/25 hover:shadow-lg hover:shadow-[#440C57]/30">
+              className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-green-700 hover:bg-green-800 active:scale-[0.98] rounded-xl transition-all shadow-md shadow-green-700/25 hover:shadow-lg">
               <Plus className="w-4 h-4" />
               Add Program
             </button>
@@ -288,18 +288,18 @@ export default function AcademicProgramsPage() {
       {/* ── Stats Row ── */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: "Programs", value: programs.length, icon: <GraduationCap className="w-5 h-5" />, color: "indigo" },
-          { label: "Majors", value: totalMajors, icon: <Layers className="w-5 h-5" />, color: "purple" },
-          { label: "Subjects", value: totalSubjects, icon: <BookOpen className="w-5 h-5" />, color: "emerald" },
+          { label: "Programs", value: programs.length, icon: <GraduationCap className="w-5 h-5" />, bg: "bg-green-50", text: "text-green-700" },
+          { label: "Majors", value: totalMajors, icon: <Layers className="w-5 h-5" />, bg: "bg-emerald-50", text: "text-emerald-700" },
+          { label: "Subjects", value: totalSubjects, icon: <BookOpen className="w-5 h-5" />, bg: "bg-teal-50", text: "text-teal-700" },
         ].map(s => (
           <div key={s.label} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all">
             <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 bg-${s.color}-100 rounded-xl flex items-center justify-center text-${s.color}-600`}>
+              <div className={`w-10 h-10 ${s.bg} rounded-xl flex items-center justify-center ${s.text}`}>
                 {s.icon}
               </div>
               <div>
                 <p className="text-2xl font-bold text-slate-900">{loading ? "..." : s.value}</p>
-                <p className={`text-[10px] font-bold text-${s.color}-600 uppercase tracking-widest`}>{s.label}</p>
+                <p className={`text-[10px] font-bold ${s.text} uppercase tracking-widest`}>{s.label}</p>
               </div>
             </div>
           </div>
@@ -310,7 +310,7 @@ export default function AcademicProgramsPage() {
       <div className="relative max-w-sm">
         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
         <input value={search} onChange={e => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white"
+          className="w-full pl-9 pr-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400 bg-white"
           placeholder="Search programs, majors..." />
       </div>
 
@@ -318,13 +318,18 @@ export default function AcademicProgramsPage() {
       {loading ? (
         <div className="flex justify-center py-20"><Loader size="md" text="Loading academic structure..." /></div>
       ) : filteredTree.length === 0 ? (
-        <div className="text-center py-20 border-2 border-dashed border-slate-200 rounded-2xl">
+        <div className="text-center py-20 border-2 border-dashed border-slate-200 rounded-2xl bg-white">
           <GraduationCap className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-          <p className="text-slate-500 font-medium">No programs found.</p>
+          <p className="text-slate-700 font-semibold">{isAdmin ? "No programs found." : "No Enrolled Academic Programs"}</p>
+          <p className="text-slate-400 text-xs mt-1">
+            {isAdmin
+              ? "Create a new degree program to start structuring majors and courses."
+              : "You are not currently enrolled in any academic programs or majors. Please contact your teacher or administrator."}
+          </p>
           {isAdmin && (
             <div className="mt-4 flex items-center justify-center gap-3">
               <button onClick={() => setProgModal({ open: true, editing: emptyProg() })}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-[#440C57] hover:bg-[#350944] active:scale-[0.98] rounded-xl transition-all shadow-md shadow-[#440C57]/20">
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-green-700 hover:bg-green-800 active:scale-[0.98] rounded-xl transition-all shadow-md shadow-green-700/20">
                 <Plus className="w-4 h-4" />
                 Add Program
               </button>
@@ -344,8 +349,8 @@ export default function AcademicProgramsPage() {
                       <img src={program.thumbnail} alt={program.name} className="w-full h-full object-cover" />
                     </div>
                   ) : (
-                    <div className="w-12 h-12 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl flex items-center justify-center shrink-0">
-                      <School className="w-6 h-6 text-indigo-600" />
+                    <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center shrink-0">
+                      <School className="w-6 h-6 text-green-700" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
@@ -382,15 +387,15 @@ export default function AcademicProgramsPage() {
                           <BarChart3 className="w-3.5 h-3.5" />Performance
                         </Link>
                         <button onClick={e => { e.stopPropagation(); setEnrollModal({ open: true, program }); setSelectedStudentId(""); }}
-                          className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg transition-colors">
+                          className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-green-800 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg transition-colors">
                           <Users className="w-3.5 h-3.5" />Enroll Student
                         </button>
                         <button onClick={e => { e.stopPropagation(); setMajorModal({ open: true, editing: emptyMajor(program._id), defaultProgramId: program._id }); }}
-                          className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition-colors">
+                          className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg transition-colors">
                           <Plus className="w-3.5 h-3.5" />Major
                         </button>
                         <button onClick={e => { e.stopPropagation(); setProgModal({ open: true, editing: { ...program } }); }}
-                          className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
+                          className="p-1.5 text-slate-400 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors">
                           <Pencil className="w-4 h-4" />
                         </button>
                         <button onClick={e => { e.stopPropagation(); setConfirmDelete({ type: "program", id: program._id, label: program.name }); }}
@@ -421,9 +426,9 @@ export default function AcademicProgramsPage() {
                         </div>
                         <div className="flex flex-wrap gap-2 ml-7">
                           {program.commonSubjects.map((s: any) => (
-                            <div key={s._id} className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg pl-3 pr-1.5 py-1 text-xs font-medium text-slate-700 hover:border-emerald-300 transition-all">
-                              <Link href={`/lms/courses/${s._id}`} className="flex items-center gap-1.5 hover:text-emerald-700">
-                                <BookOpen className="w-3 h-3 text-emerald-500" />
+                            <div key={s._id} className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg pl-3 pr-1.5 py-1 text-xs font-medium text-slate-700 hover:border-green-300 transition-all">
+                              <Link href={`/lms/courses/${s._id}`} className="flex items-center gap-1.5 hover:text-green-700">
+                                <BookOpen className="w-3 h-3 text-green-600" />
                                 {s.title}
                                 {s.courseCode && <span className="font-mono text-slate-400">{s.courseCode}</span>}
                                 {s.creditHours && <span className="text-slate-400">{s.creditHours} Cr</span>}
@@ -461,12 +466,12 @@ export default function AcademicProgramsPage() {
                           <div key={major._id} className="bg-white border border-slate-200 rounded-xl p-4">
                             <div className="flex items-center justify-between mb-3">
                               <div className="flex items-center gap-2">
-                                <div className="w-7 h-7 bg-purple-100 rounded-lg flex items-center justify-center">
-                                  <FolderOpen className="w-3.5 h-3.5 text-purple-600" />
+                                <div className="w-7 h-7 bg-green-50 rounded-lg flex items-center justify-center">
+                                  <FolderOpen className="w-3.5 h-3.5 text-green-700" />
                                 </div>
                                 <span className="font-bold text-slate-800 text-sm">{major.name}</span>
                                 {major.code && (
-                                  <span className="text-xs font-mono font-bold bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded border border-purple-100">
+                                  <span className="text-xs font-mono font-bold bg-green-50 text-green-800 px-1.5 py-0.5 rounded border border-green-100">
                                     {major.code}
                                   </span>
                                 )}
@@ -476,13 +481,13 @@ export default function AcademicProgramsPage() {
                                 <div className="flex items-center gap-1.5">
                                   <Link
                                     href={`/lms/courses/new?programId=${program._id}&majorId=${major._id}&title=${encodeURIComponent(major.name)}`}
-                                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg transition-colors"
+                                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-green-800 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg transition-colors"
                                   >
                                     <Pencil className="w-3.5 h-3.5" />
                                     Add/Edit Content
                                   </Link>
                                   <button onClick={() => setMajorModal({ open: true, editing: { ...(major as any) }, defaultProgramId: program._id })}
-                                    className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                    className="p-1 text-slate-400 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
                                     title="Rename Major"
                                   >
                                     <Pencil className="w-3.5 h-3.5" />
@@ -499,9 +504,9 @@ export default function AcademicProgramsPage() {
                             {major.subjects.length > 0 ? (
                               <div className="flex flex-wrap gap-2 ml-9">
                                 {major.subjects.map((s: any) => (
-                                  <div key={s._id} className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg pl-3 pr-1.5 py-1 text-xs font-medium text-slate-700 hover:border-purple-300 transition-all">
-                                    <Link href={`/lms/courses/${s._id}`} className="flex items-center gap-1.5 hover:text-purple-700">
-                                      <BookOpen className="w-3 h-3 text-purple-400" />
+                                  <div key={s._id} className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg pl-3 pr-1.5 py-1 text-xs font-medium text-slate-700 hover:border-green-300 transition-all">
+                                    <Link href={`/lms/courses/${s._id}`} className="flex items-center gap-1.5 hover:text-green-700">
+                                      <BookOpen className="w-3 h-3 text-green-600" />
                                       {s.title}
                                       {s.courseCode && <span className="font-mono text-slate-400">{s.courseCode}</span>}
                                       {s.creditHours && <span className="text-slate-400">{s.creditHours} Cr</span>}
@@ -552,7 +557,7 @@ export default function AcademicProgramsPage() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 flex flex-col max-h-[90vh]">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
               <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <GraduationCap className="w-5 h-5 text-indigo-600" />
+                <GraduationCap className="w-5 h-5 text-green-700" />
                 {progModal.editing._id ? "Edit Program" : "New Academic Program"}
               </h3>
               <button onClick={() => setProgModal({ open: false, editing: null })} className="p-1 hover:bg-slate-100 rounded-lg">
@@ -565,19 +570,19 @@ export default function AcademicProgramsPage() {
                   <div className="col-span-2">
                     <label className="block text-xs font-bold text-slate-600 mb-1.5">Program Name *</label>
                     <input required value={progModal.editing.name || ""} onChange={e => setProgModal(prev => ({ ...prev, editing: { ...prev.editing!, name: e.target.value } }))}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                       placeholder="e.g. BSc Agriculture" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-600 mb-1.5">Code</label>
                     <input value={progModal.editing.code || ""} onChange={e => setProgModal(prev => ({ ...prev, editing: { ...prev.editing!, code: e.target.value } }))}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 font-mono uppercase"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400 font-mono uppercase"
                       placeholder="BSC-AGRI" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-600 mb-1.5">Degree Level</label>
                     <select value={progModal.editing.degreeLevel || "undergraduate"} onChange={e => setProgModal(prev => ({ ...prev, editing: { ...prev.editing!, degreeLevel: e.target.value } }))}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
                       {["undergraduate", "postgraduate", "diploma", "certificate", "other"].map(l => (
                         <option key={l} value={l}>{l.charAt(0).toUpperCase() + l.slice(1)}</option>
                       ))}
@@ -586,23 +591,23 @@ export default function AcademicProgramsPage() {
                   <div className="col-span-2">
                     <label className="block text-xs font-bold text-slate-600 mb-1.5">School / Faculty</label>
                     <input value={progModal.editing.school || ""} onChange={e => setProgModal(prev => ({ ...prev, editing: { ...prev.editing!, school: e.target.value } }))}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                       placeholder="e.g. School of Agriculture" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-600 mb-1.5">Total Credit Hours</label>
                     <input type="number" min={0} value={progModal.editing.totalCreditHours ?? 120} onChange={e => setProgModal(prev => ({ ...prev, editing: { ...prev.editing!, totalCreditHours: +e.target.value } }))}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-600 mb-1.5">Passing Grade (%)</label>
                     <input type="number" min={0} max={100} value={progModal.editing.passingGradePercent ?? 60} onChange={e => setProgModal(prev => ({ ...prev, editing: { ...prev.editing!, passingGradePercent: +e.target.value } }))}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400" />
                   </div>
                   <div className="col-span-2">
                     <label className="block text-xs font-bold text-slate-600 mb-1.5">Description</label>
                     <textarea rows={2} value={progModal.editing.description || ""} onChange={e => setProgModal(prev => ({ ...prev, editing: { ...prev.editing!, description: e.target.value } }))}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400 resize-none"
                       placeholder="Brief description..." />
                   </div>
 
@@ -630,7 +635,7 @@ export default function AcademicProgramsPage() {
                           </div>
                         )}
                         <div className="flex-1">
-                          <label className={`inline-flex items-center gap-2 px-3.5 py-2 text-white text-xs font-semibold rounded-lg cursor-pointer transition-all shadow-sm ${isUploadingProgThumb ? 'bg-indigo-400 cursor-wait' : 'bg-indigo-600 hover:bg-indigo-700'}`}>
+                          <label className={`inline-flex items-center gap-2 px-3.5 py-2 text-white text-xs font-semibold rounded-lg cursor-pointer transition-all shadow-sm ${isUploadingProgThumb ? 'bg-green-600/70 cursor-wait' : 'bg-green-700 hover:bg-green-800'}`}>
                             {isUploadingProgThumb ? <Loader size="sm" /> : <Upload className="w-3.5 h-3.5" />}
                             {isUploadingProgThumb ? "Uploading..." : progModal.editing.thumbnail ? "Change Image" : "Upload Thumbnail"}
                             <input
@@ -678,7 +683,7 @@ export default function AcademicProgramsPage() {
                   Cancel
                 </button>
                 <button type="submit" disabled={saving}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-white bg-[#440C57] hover:bg-[#350944] active:scale-[0.98] rounded-xl transition-all disabled:opacity-50 shadow-md shadow-[#440C57]/20">
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-white bg-green-700 hover:bg-green-800 active:scale-[0.98] rounded-xl transition-all disabled:opacity-50 shadow-md shadow-green-700/20">
                   {saving ? <Loader size="sm" /> : <Check className="w-4 h-4" />}
                   {progModal.editing._id ? "Save Changes" : "Create Program"}
                 </button>
@@ -694,7 +699,7 @@ export default function AcademicProgramsPage() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-slate-200">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
               <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <Layers className="w-5 h-5 text-purple-600" />
+                <Layers className="w-5 h-5 text-green-700" />
                 {(majorModal.editing as any)._id ? "Edit Major" : "New Major / Specialization"}
               </h3>
               <button onClick={() => setMajorModal({ open: false, editing: null, defaultProgramId: "" })} className="p-1 hover:bg-slate-100 rounded-lg">
@@ -706,7 +711,7 @@ export default function AcademicProgramsPage() {
                 <div>
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">Program (Degree) *</label>
                   <select required value={majorModal.editing.programId || ""} onChange={e => setMajorModal(prev => ({ ...prev, editing: { ...prev.editing!, programId: e.target.value } }))}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300">
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
                     <option value="">Select program...</option>
                     {programs.map(p => (
                       <option key={p._id} value={p._id}>{p.name}</option>
@@ -717,19 +722,19 @@ export default function AcademicProgramsPage() {
                   <div className="col-span-2">
                     <label className="block text-xs font-bold text-slate-600 mb-1.5">Major Name *</label>
                     <input required value={majorModal.editing.name || ""} onChange={e => setMajorModal(prev => ({ ...prev, editing: { ...prev.editing!, name: e.target.value } }))}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                       placeholder="e.g. Agronomy" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-600 mb-1.5">Code</label>
                     <input value={majorModal.editing.code || ""} onChange={e => setMajorModal(prev => ({ ...prev, editing: { ...prev.editing!, code: e.target.value } }))}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 font-mono uppercase"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400 font-mono uppercase"
                       placeholder="AGRON" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-600 mb-1.5">Status</label>
                     <select value={majorModal.editing.status || "active"} onChange={e => setMajorModal(prev => ({ ...prev, editing: { ...prev.editing!, status: e.target.value } }))}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300">
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
                       <option value="active">Active</option>
                       <option value="archived">Archived</option>
                     </select>
@@ -737,7 +742,7 @@ export default function AcademicProgramsPage() {
                   <div className="col-span-2">
                     <label className="block text-xs font-bold text-slate-600 mb-1.5">Description</label>
                     <textarea rows={2} value={majorModal.editing.description || ""} onChange={e => setMajorModal(prev => ({ ...prev, editing: { ...prev.editing!, description: e.target.value } }))}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300 resize-none"
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400 resize-none"
                       placeholder="Brief description..." />
                   </div>
                 </div>
@@ -748,7 +753,7 @@ export default function AcademicProgramsPage() {
                   Cancel
                 </button>
                 <button type="submit" disabled={saving}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 rounded-xl transition-all disabled:opacity-50">
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-white bg-green-700 hover:bg-green-800 rounded-xl transition-all disabled:opacity-50 shadow-md shadow-green-700/20">
                   {saving ? <Loader size="sm" /> : <Check className="w-4 h-4" />}
                   {(majorModal.editing as any)._id ? "Save Changes" : "Create Major"}
                 </button>
@@ -764,7 +769,7 @@ export default function AcademicProgramsPage() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-slate-200">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
               <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <Users className="w-5 h-5 text-purple-600" />
+                <Users className="w-5 h-5 text-green-700" />
                 Enroll Student in Program
               </h3>
               <button onClick={() => setEnrollModal({ open: false, program: null })} className="p-1 hover:bg-slate-100 rounded-lg">
@@ -800,14 +805,14 @@ export default function AcademicProgramsPage() {
               }
             }}>
               <div className="px-6 py-5 space-y-4">
-                <div className="p-3 bg-purple-50 rounded-xl border border-purple-100">
-                  <span className="text-xs font-bold text-purple-600 uppercase tracking-wider block">Target Program</span>
+                <div className="p-3 bg-green-50 rounded-xl border border-green-100">
+                  <span className="text-xs font-bold text-green-700 uppercase tracking-wider block">Target Program</span>
                   <span className="text-sm font-bold text-slate-900">{enrollModal.program.name}</span>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">Select Approved Student *</label>
                   <select required value={selectedStudentId} onChange={e => setSelectedStudentId(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-300">
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
                     <option value="">Select student...</option>
                     {students.map(s => (
                       <option key={s._id} value={s._id}>{s.name} ({s.email})</option>
@@ -821,7 +826,7 @@ export default function AcademicProgramsPage() {
                   Cancel
                 </button>
                 <button type="submit" disabled={enrolling}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-white bg-purple-600 hover:bg-purple-700 rounded-xl transition-all disabled:opacity-50">
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-white bg-green-700 hover:bg-green-800 rounded-xl transition-all disabled:opacity-50 shadow-md shadow-green-700/20">
                   {enrolling ? <Loader size="sm" /> : <Check className="w-4 h-4" />}
                   {enrolling ? "Enrolling..." : "Enroll Student"}
                 </button>

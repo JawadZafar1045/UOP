@@ -131,7 +131,7 @@ export default function CertificateTemplatePage({ params }: { params: Promise<{ 
       {/* LEFT - CONTROLS (40%) */}
       <div className="w-full lg:w-2/5 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
         <div className="p-5 border-b border-slate-100 bg-slate-50 flex flex-col gap-4">
-          <Link href={`/lms/courses/${courseId}`} className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all group active:scale-[0.98] shadow-blue-500/20 w-fit">
+          <Link href={`/lms/courses/${courseId}`} className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-green-700 transition-all group active:scale-[0.98] shadow-green-500/20 w-fit">
             <ChevronLeft className="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" />
             Back to Course
           </Link>
@@ -182,7 +182,7 @@ export default function CertificateTemplatePage({ params }: { params: Promise<{ 
               ].map(opt => (
                 <button key={opt.id} onClick={() => setFontStyle(opt.id)}
                   className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                    fontStyle === opt.id ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                    fontStyle === opt.id ? "bg-green-50 border-green-200 text-green-700" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
                   }`}>
                   {opt.label}
                 </button>
@@ -203,7 +203,7 @@ export default function CertificateTemplatePage({ params }: { params: Promise<{ 
               ].map(opt => (
                 <button key={opt.id} onClick={() => setBorderStyle(opt.id)}
                   className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                    borderStyle === opt.id ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                    borderStyle === opt.id ? "bg-green-50 border-green-200 text-green-700" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
                   }`}>
                   {opt.label}
                 </button>
@@ -231,7 +231,7 @@ export default function CertificateTemplatePage({ params }: { params: Promise<{ 
                   </div>
                 )}
                 <div className="flex-1">
-                  <input type="file" accept="image/*" onChange={handleLogoChange} className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                  <input type="file" accept="image/*" onChange={handleLogoChange} className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100" />
                 </div>
               </div>
             </div>
@@ -240,18 +240,18 @@ export default function CertificateTemplatePage({ params }: { params: Promise<{ 
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1">Institute Name</label>
                 <input type="text" value={instituteName} onChange={e => setInstituteName(e.target.value)} placeholder="e.g. NCBAE College"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-green-500 outline-none" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 mb-1">Signatory Name</label>
                   <input type="text" value={signatoryName} onChange={e => setSignatoryName(e.target.value)} placeholder="e.g. Dr. Ahmed"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-green-500 outline-none" />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 mb-1">Signatory Title</label>
                   <input type="text" value={signatoryTitle} onChange={e => setSignatoryTitle(e.target.value)} placeholder="e.g. Director"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-green-500 outline-none" />
                 </div>
               </div>
             </div>
@@ -259,7 +259,7 @@ export default function CertificateTemplatePage({ params }: { params: Promise<{ 
         </div>
 
         <div className="p-5 border-t border-slate-100 bg-slate-50">
-          <button onClick={handleSave} disabled={saving} className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors disabled:opacity-50">
+          <button onClick={handleSave} disabled={saving} className="w-full py-3 bg-green-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-green-700 transition-colors disabled:opacity-50">
             {saving ? "Saving..." : <><Save className="w-4 h-4" /> Save Template</>}
           </button>
         </div>

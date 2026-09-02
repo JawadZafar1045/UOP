@@ -314,7 +314,7 @@ export default function CourseVideoLecturesPage({
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <Link
               href={`/lms/courses/${courseId}`}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all group active:scale-[0.98] shadow-blue-500/20"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-green-700 transition-all group active:scale-[0.98] shadow-green-500/20"
             >
               <ChevronLeft className="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" />
               Back to Course
@@ -323,7 +323,7 @@ export default function CourseVideoLecturesPage({
             {isTeacherOrAdmin && (
               <button
                 onClick={handleOpenCreateModal}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-md hover:shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-xl shadow-md hover:shadow-lg shadow-green-500/20 active:scale-[0.98] transition-all"
               >
                 <Plus className="w-4 h-4" />
                 Add Video Lecture
@@ -344,11 +344,11 @@ export default function CourseVideoLecturesPage({
             {/* Clean Stats Badges */}
             <div className="flex items-center gap-2.5 flex-wrap">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl text-slate-700 text-xs font-semibold shadow-sm">
-                <Film className="w-4 h-4 text-blue-600" />
+                <Film className="w-4 h-4 text-green-600" />
                 <span>{lectures.length} Lectures</span>
               </div>
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl text-slate-700 text-xs font-semibold shadow-sm">
-                <Clock className="w-4 h-4 text-blue-600" />
+                <Clock className="w-4 h-4 text-green-600" />
                 <span>{totalDurationMinutes} mins</span>
               </div>
               {!isTeacherOrAdmin && lectures.length > 0 && (
@@ -368,7 +368,7 @@ export default function CourseVideoLecturesPage({
           </div>
         ) : lectures.length === 0 ? (
           <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center flex flex-col items-center justify-center shadow-sm">
-            <div className="w-20 h-20 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mb-4 shadow-inner">
+            <div className="w-20 h-20 bg-green-50 rounded-2xl flex items-center justify-center text-green-600 mb-4 shadow-inner">
               <Video className="w-10 h-10" />
             </div>
             <h3 className="text-xl font-bold text-slate-900 mb-2">No Video Lectures Added Yet</h3>
@@ -380,7 +380,7 @@ export default function CourseVideoLecturesPage({
             {isTeacherOrAdmin && (
               <button
                 onClick={handleOpenCreateModal}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg shadow-blue-500/20 transition-all active:scale-[0.98]"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg shadow-green-500/20 transition-all active:scale-[0.98]"
               >
                 <Plus className="w-4 h-4" />
                 Add First Video Lecture
@@ -399,13 +399,13 @@ export default function CourseVideoLecturesPage({
                   {/* Header Bar: Title, Search, Layout Switch & Scroll Arrows */}
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold shadow-inner">
+                      <div className="w-10 h-10 rounded-2xl bg-green-50 text-green-600 flex items-center justify-center font-bold shadow-inner">
                         <Layers className="w-5 h-5" />
                       </div>
                       <div>
                         <h3 className="font-bold text-slate-900 text-base sm:text-lg flex items-center gap-2">
                           Course Playlist
-                          <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold border border-blue-100">
+                          <span className="text-xs px-2.5 py-0.5 rounded-full bg-green-50 text-green-700 font-bold border border-green-100">
                             {filteredLectures.length} of {lectures.length}
                           </span>
                         </h3>
@@ -424,7 +424,7 @@ export default function CourseVideoLecturesPage({
                           placeholder="Search lectures or topics..."
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                          className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
                         />
                         {searchQuery && (
                           <button
@@ -442,7 +442,7 @@ export default function CourseVideoLecturesPage({
                           onClick={() => handleLayoutChange("top")}
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
                             (layoutMode as string) === "top"
-                              ? "bg-white text-blue-600 shadow-sm font-bold"
+                              ? "bg-white text-green-600 shadow-sm font-bold"
                               : "text-slate-600 hover:text-slate-900"
                           }`}
                           title="Row Layout (Above Video)"
@@ -454,7 +454,7 @@ export default function CourseVideoLecturesPage({
                           onClick={() => handleLayoutChange("side")}
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
                             (layoutMode as string) === "side"
-                              ? "bg-white text-blue-600 shadow-sm font-bold"
+                              ? "bg-white text-green-600 shadow-sm font-bold"
                               : "text-slate-600 hover:text-slate-900"
                           }`}
                           title="Sidebar Layout (Right Column)"
@@ -493,7 +493,7 @@ export default function CourseVideoLecturesPage({
                           onClick={() => setSelectedModule(mod)}
                           className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
                             selectedModule === mod
-                              ? "bg-blue-600 text-white shadow-sm font-bold"
+                              ? "bg-green-600 text-white shadow-sm font-bold"
                               : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                           }`}
                         >
@@ -526,7 +526,7 @@ export default function CourseVideoLecturesPage({
                             onClick={() => setActiveLecture(lec)}
                             className={`group relative w-72 sm:w-80 shrink-0 p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
                               isActive
-                                ? "bg-blue-50/70 border-blue-300 ring-2 ring-blue-500/30 shadow-md -translate-y-0.5"
+                                ? "bg-green-50/70 border-green-300 ring-2 ring-green-500/30 shadow-md -translate-y-0.5"
                                 : "bg-white hover:bg-slate-50 border-slate-200 hover:border-slate-300 shadow-sm"
                             }`}
                           >
@@ -542,7 +542,7 @@ export default function CourseVideoLecturesPage({
                                   <div
                                     className={`w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm transition-transform ${
                                       isActive
-                                        ? "bg-blue-600 text-white scale-110 shadow-lg"
+                                        ? "bg-green-600 text-white scale-110 shadow-lg"
                                         : "bg-black/50 text-white group-hover:scale-110"
                                     }`}
                                   >
@@ -559,7 +559,7 @@ export default function CourseVideoLecturesPage({
 
                                 {/* Active Playing Badge */}
                                 {isActive && (
-                                  <span className="absolute top-2 left-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 shadow">
+                                  <span className="absolute top-2 left-2 bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 shadow">
                                     <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
                                     Now Playing
                                   </span>
@@ -568,14 +568,14 @@ export default function CourseVideoLecturesPage({
 
                               {/* Metadata */}
                               <div className="mt-3">
-                                <div className="flex items-center gap-1 text-[10px] font-bold text-blue-600 uppercase tracking-tight">
+                                <div className="flex items-center gap-1 text-[10px] font-bold text-green-600 uppercase tracking-tight">
                                   <span>#{idx + 1}</span>
                                   <span>•</span>
                                   <span className="truncate">{lec.moduleName || "General"}</span>
                                 </div>
                                 <h4
                                   className={`text-xs font-bold mt-1 line-clamp-2 transition-colors ${
-                                    isActive ? "text-blue-950 font-extrabold" : "text-slate-800 group-hover:text-blue-600"
+                                    isActive ? "text-green-950 font-extrabold" : "text-slate-800 group-hover:text-green-600"
                                   }`}
                                 >
                                   {lec.title}
@@ -599,7 +599,7 @@ export default function CourseVideoLecturesPage({
                                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                   <button
                                     onClick={(e) => handleOpenEditModal(lec, e)}
-                                    className="p-1 text-slate-500 hover:text-blue-600 rounded"
+                                    className="p-1 text-slate-500 hover:text-green-600 rounded"
                                     title="Edit"
                                   >
                                     <Edit3 className="w-3.5 h-3.5" />
@@ -645,13 +645,13 @@ export default function CourseVideoLecturesPage({
                         </video>
                       ) : (
                         <div className="p-8 text-center text-white space-y-4">
-                          <Play className="w-16 h-16 text-blue-400 mx-auto opacity-80" />
+                          <Play className="w-16 h-16 text-green-400 mx-auto opacity-80" />
                           <p className="text-sm font-semibold">{activeLecture.title}</p>
                           <a
                             href={activeLecture.videoUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-all shadow-md"
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-xl text-xs font-bold hover:bg-green-700 transition-all shadow-md"
                           >
                             <ExternalLink className="w-4 h-4" />
                             Open Video in New Tab
@@ -686,7 +686,7 @@ export default function CourseVideoLecturesPage({
                           className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-[0.98] ${
                             activeLecture.isCompleted
                               ? "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
-                              : "bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20"
+                              : "bg-green-600 text-white hover:bg-green-700 shadow-green-500/20"
                           }`}
                         >
                           <CheckCircle2 className="w-4 h-4" />
@@ -698,7 +698,7 @@ export default function CourseVideoLecturesPage({
                         <div className="flex items-center gap-2">
                           <button
                             onClick={(e) => handleOpenEditModal(activeLecture, e)}
-                            className="p-2 text-slate-600 hover:text-blue-600 bg-white border border-slate-200 rounded-xl hover:bg-blue-50 transition-all"
+                            className="p-2 text-slate-600 hover:text-green-600 bg-white border border-slate-200 rounded-xl hover:bg-green-50 transition-all"
                             title="Edit Video Lecture"
                           >
                             <Edit3 className="w-4 h-4" />
@@ -718,7 +718,7 @@ export default function CourseVideoLecturesPage({
                     <div className="p-6 sm:p-8 space-y-6">
                       <div>
                         <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <span className="px-2.5 py-1 bg-blue-50 text-blue-700 font-bold text-xs rounded-lg border border-blue-200">
+                          <span className="px-2.5 py-1 bg-green-50 text-green-700 font-bold text-xs rounded-lg border border-green-200">
                             {activeLecture.moduleName || "General Topic"}
                           </span>
                           {activeLecture.durationMinutes ? (
@@ -755,7 +755,7 @@ export default function CourseVideoLecturesPage({
                       {activeLecture.resources && activeLecture.resources.length > 0 && (
                         <div>
                           <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                            <FileText className="w-4 h-4 text-blue-600" />
+                            <FileText className="w-4 h-4 text-green-600" />
                             Lecture Materials & Downloads
                           </h4>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -765,15 +765,15 @@ export default function CourseVideoLecturesPage({
                                 href={res.url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-xl transition-all group"
+                                className="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-green-50 border border-slate-200 hover:border-green-300 rounded-xl transition-all group"
                               >
                                 <div className="flex items-center gap-2.5 min-w-0">
-                                  <FileText className="w-4 h-4 text-slate-400 group-hover:text-blue-600 shrink-0" />
-                                  <span className="text-sm font-semibold text-slate-800 group-hover:text-blue-600 truncate">
+                                  <FileText className="w-4 h-4 text-slate-400 group-hover:text-green-600 shrink-0" />
+                                  <span className="text-sm font-semibold text-slate-800 group-hover:text-green-600 truncate">
                                     {res.title}
                                   </span>
                                 </div>
-                                <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-blue-600 shrink-0" />
+                                <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-green-600 shrink-0" />
                               </a>
                             ))}
                           </div>
@@ -813,13 +813,13 @@ export default function CourseVideoLecturesPage({
                           </video>
                         ) : (
                           <div className="p-8 text-center text-white space-y-4">
-                            <Play className="w-16 h-16 text-blue-400 mx-auto opacity-80" />
+                            <Play className="w-16 h-16 text-green-400 mx-auto opacity-80" />
                             <p className="text-sm font-semibold">{activeLecture.title}</p>
                             <a
                               href={activeLecture.videoUrl}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-all shadow-md"
+                              className="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-xl text-xs font-bold hover:bg-green-700 transition-all shadow-md"
                             >
                               <ExternalLink className="w-4 h-4" />
                               Open Video in New Tab
@@ -854,7 +854,7 @@ export default function CourseVideoLecturesPage({
                             className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-[0.98] ${
                               activeLecture.isCompleted
                                 ? "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
-                                : "bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20"
+                                : "bg-green-600 text-white hover:bg-green-700 shadow-green-500/20"
                             }`}
                           >
                             <CheckCircle2 className="w-4 h-4" />
@@ -866,7 +866,7 @@ export default function CourseVideoLecturesPage({
                           <div className="flex items-center gap-2">
                             <button
                               onClick={(e) => handleOpenEditModal(activeLecture, e)}
-                              className="p-2 text-slate-600 hover:text-blue-600 bg-white border border-slate-200 rounded-xl hover:bg-blue-50 transition-all"
+                              className="p-2 text-slate-600 hover:text-green-600 bg-white border border-slate-200 rounded-xl hover:bg-green-50 transition-all"
                               title="Edit Video Lecture"
                             >
                               <Edit3 className="w-4 h-4" />
@@ -886,7 +886,7 @@ export default function CourseVideoLecturesPage({
                       <div className="p-6 sm:p-8 space-y-6">
                         <div>
                           <div className="flex flex-wrap items-center gap-2 mb-2">
-                            <span className="px-2.5 py-1 bg-blue-50 text-blue-700 font-bold text-xs rounded-lg border border-blue-200">
+                            <span className="px-2.5 py-1 bg-green-50 text-green-700 font-bold text-xs rounded-lg border border-green-200">
                               {activeLecture.moduleName || "General Topic"}
                             </span>
                             {activeLecture.durationMinutes ? (
@@ -923,7 +923,7 @@ export default function CourseVideoLecturesPage({
                         {activeLecture.resources && activeLecture.resources.length > 0 && (
                           <div>
                             <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                              <FileText className="w-4 h-4 text-blue-600" />
+                              <FileText className="w-4 h-4 text-green-600" />
                               Lecture Materials & Downloads
                             </h4>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -933,15 +933,15 @@ export default function CourseVideoLecturesPage({
                                   href={res.url}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-xl transition-all group"
+                                  className="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-green-50 border border-slate-200 hover:border-green-300 rounded-xl transition-all group"
                                 >
                                   <div className="flex items-center gap-2.5 min-w-0">
-                                    <FileText className="w-4 h-4 text-slate-400 group-hover:text-blue-600 shrink-0" />
-                                    <span className="text-sm font-semibold text-slate-800 group-hover:text-blue-600 truncate">
+                                    <FileText className="w-4 h-4 text-slate-400 group-hover:text-green-600 shrink-0" />
+                                    <span className="text-sm font-semibold text-slate-800 group-hover:text-green-600 truncate">
                                       {res.title}
                                     </span>
                                   </div>
-                                  <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-blue-600 shrink-0" />
+                                  <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-green-600 shrink-0" />
                                 </a>
                               ))}
                             </div>
@@ -959,7 +959,7 @@ export default function CourseVideoLecturesPage({
                     <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                       <div>
                         <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2">
-                          <Layers className="w-5 h-5 text-blue-600" />
+                          <Layers className="w-5 h-5 text-green-600" />
                           Course Playlist
                         </h3>
                         <p className="text-xs text-slate-500 mt-0.5">
@@ -970,7 +970,7 @@ export default function CourseVideoLecturesPage({
                       {/* Layout switch button in sidebar */}
                       <button
                         onClick={() => handleLayoutChange("top")}
-                        className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all border border-slate-200"
+                        className="p-2 text-slate-500 hover:text-green-600 hover:bg-green-50 rounded-xl transition-all border border-slate-200"
                         title="Switch to Top Row Layout (Above Video)"
                       >
                         <SlidersHorizontal className="w-4 h-4" />
@@ -985,7 +985,7 @@ export default function CourseVideoLecturesPage({
                         placeholder="Search lectures or topics..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                        className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
                       />
                     </div>
 
@@ -998,7 +998,7 @@ export default function CourseVideoLecturesPage({
                             onClick={() => setSelectedModule(mod)}
                             className={`px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                               selectedModule === mod
-                                ? "bg-blue-600 text-white shadow-sm"
+                                ? "bg-green-600 text-white shadow-sm"
                                 : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                             }`}
                           >
@@ -1023,7 +1023,7 @@ export default function CourseVideoLecturesPage({
                             onClick={() => setActiveLecture(lec)}
                             className={`group relative p-3 rounded-2xl border transition-all cursor-pointer flex gap-3 items-center ${
                               isActive
-                                ? "bg-blue-50/70 border-blue-300 ring-2 ring-blue-500/20 shadow-sm"
+                                ? "bg-green-50/70 border-green-300 ring-2 ring-green-500/20 shadow-sm"
                                 : "bg-white hover:bg-slate-50 border-slate-200/80"
                             }`}
                           >
@@ -1035,7 +1035,7 @@ export default function CourseVideoLecturesPage({
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                               />
                               <div className="absolute inset-0 bg-black/25 flex items-center justify-center">
-                                <Play className={`w-5 h-5 ${isActive ? "text-blue-400" : "text-white"}`} />
+                                <Play className={`w-5 h-5 ${isActive ? "text-green-400" : "text-white"}`} />
                               </div>
                               {lec.durationMinutes ? (
                                 <span className="absolute bottom-1 right-1 bg-black/80 text-white text-[9px] font-bold px-1 rounded">
@@ -1046,14 +1046,14 @@ export default function CourseVideoLecturesPage({
 
                             {/* Title & Metadata */}
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1 text-[10px] font-bold text-blue-600 uppercase tracking-tight">
+                              <div className="flex items-center gap-1 text-[10px] font-bold text-green-600 uppercase tracking-tight">
                                 <span>#{idx + 1}</span>
                                 <span>•</span>
                                 <span className="truncate">{lec.moduleName || "General"}</span>
                               </div>
                               <h4
                                 className={`text-xs font-bold mt-0.5 line-clamp-1 transition-colors ${
-                                  isActive ? "text-blue-950 font-bold" : "text-slate-800 group-hover:text-blue-600"
+                                  isActive ? "text-green-950 font-bold" : "text-slate-800 group-hover:text-green-600"
                                 }`}
                               >
                                 {lec.title}
@@ -1089,9 +1089,9 @@ export default function CourseVideoLecturesPage({
             <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
               
               {/* Modal Header */}
-              <div className="bg-blue-600 px-6 py-4 flex items-center justify-between text-white">
+              <div className="bg-green-600 px-6 py-4 flex items-center justify-between text-white">
                 <div className="flex items-center gap-2.5">
-                  <Video className="w-5 h-5 text-blue-200" />
+                  <Video className="w-5 h-5 text-green-200" />
                   <h3 className="font-bold text-lg">
                     {editingLecture ? "Edit Video Lecture" : "Add New Video Lecture"}
                   </h3>
@@ -1116,7 +1116,7 @@ export default function CourseVideoLecturesPage({
                     placeholder="e.g. Introduction to Integrated Pest Management"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                   />
                 </div>
 
@@ -1130,7 +1130,7 @@ export default function CourseVideoLecturesPage({
                       placeholder="e.g. Module 1: Crop Ecology"
                       value={formData.moduleName}
                       onChange={(e) => setFormData({ ...formData, moduleName: e.target.value })}
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                     />
                   </div>
                   <div>
@@ -1143,7 +1143,7 @@ export default function CourseVideoLecturesPage({
                       placeholder="20"
                       value={formData.durationMinutes}
                       onChange={(e) => setFormData({ ...formData, durationMinutes: parseInt(e.target.value) || 0 })}
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                     />
                   </div>
                 </div>
@@ -1158,7 +1158,7 @@ export default function CourseVideoLecturesPage({
                     placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ (Listed / Unlisted links supported)"
                     value={formData.videoUrl}
                     onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                   />
                   {formData.videoUrl && extractYouTubeId(formData.videoUrl) && (
                     <div className="mt-2.5 p-3 bg-emerald-50 rounded-xl border border-emerald-200 flex items-center gap-3">
@@ -1184,7 +1184,7 @@ export default function CourseVideoLecturesPage({
                     placeholder="Brief description of what is covered in this video lecture..."
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                   ></textarea>
                 </div>
 
@@ -1197,7 +1197,7 @@ export default function CourseVideoLecturesPage({
                     placeholder="Add bullet points or key takeaways for students to study alongside the video..."
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                   ></textarea>
                 </div>
 
@@ -1260,7 +1260,7 @@ export default function CourseVideoLecturesPage({
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold shadow-md hover:shadow-lg shadow-blue-500/20 disabled:opacity-50 transition-all active:scale-[0.98]"
+                    className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-bold shadow-md hover:shadow-lg shadow-green-500/20 disabled:opacity-50 transition-all active:scale-[0.98]"
                   >
                     {isSaving ? "Saving..." : editingLecture ? "Update Lecture" : "Save & Publish"}
                   </button>
