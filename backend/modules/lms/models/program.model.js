@@ -23,6 +23,9 @@ const programSchema = new mongoose.Schema(
     totalCreditHours:    { type: Number, default: 120, min: 0 },   // total credit hours to graduate
     passingGradePercent: { type: Number, default: 60, min: 0, max: 100 },
 
+    thumbnail: { type: String, default: '' },
+    featuredOnHomepage: { type: Boolean, default: false },
+
     status: {
       type: String,
       enum: ['active', 'archived'],

@@ -6,19 +6,19 @@ const registerValidation = [
   body('name').trim().notEmpty().withMessage('Name is required').escape(),
   body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-  body('tenantId').trim().notEmpty().withMessage('Tenant ID is required').escape(),
+  body('tenantId').optional().trim().escape(),
 ];
 
 const loginValidation = [
   body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
   body('password').notEmpty().withMessage('Password is required'),
-  body('tenantId').trim().notEmpty().withMessage('Tenant ID is required').escape(),
+  body('tenantId').optional().trim().escape(),
 ];
 
 const verifyValidation = [
   body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
   body('code').notEmpty().withMessage('Verification code is required'),
-  body('tenantId').trim().notEmpty().withMessage('Tenant ID is required').escape(),
+  body('tenantId').optional().trim().escape(),
 ];
 
 const registerAdminValidation = [
@@ -79,7 +79,8 @@ const register = async (req, res, next) => {
     
     if (!validate(req, res)) return;
     
-    const { tenantId, name, email, password, role } = req.body;
+    const tenantId = req.body.tenantId || process.env.DEFAULT_TENANT_ID || 'cszone';
+    const { name, email, password, role } = req.body;
     const user = await authService.registerUser({ tenantId, name, email, password, role });
     
     console.log(`[Auth] User registered successfully: ${user._id}`);

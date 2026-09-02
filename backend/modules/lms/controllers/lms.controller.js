@@ -481,6 +481,19 @@ const signFileUrl = async (req, res, next) => {
   }
 };
 
+const uploadThumbnail = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No file uploaded' });
+    }
+    const { uploadFile } = require('../../shared/services/fileService');
+    const result = await uploadFile(req.file, 'course_thumbnails');
+    res.json({ success: true, url: result.url });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // ── Certificate Template ───────────────────────────────────────────────────────
 const getCertificateTemplate = async (req, res, next) => {
   try {
@@ -711,7 +724,7 @@ module.exports = {
   gradeSubmission, getAssignmentSubmissions, getMySubmission,
   createQuiz, bulkCreateQuiz, downloadQuizTemplate, validateQuizExcel, updateQuiz, getCourseQuizzes, addQuizQuestion, getQuizQuestions, updateQuizQuestion, deleteQuizQuestion, publishQuiz, startQuizAttempt, submitQuizAttempt, getQuizResults, getMyQuizAttempts,
   getCoursePerformance, getMyPerformance,
-  generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate, getCertificatePdfPublic, getCertificateAccess, signFileUrl,
+  generateCertificate, generateAllCertificates, getCourseCertificates, getMyCertificates, verifyCertificate, getCertificatePdfPublic, getCertificateAccess, signFileUrl, uploadThumbnail,
   getAdminStats, getAdminUsers, updateUserRole, deactivateUser, activateUser, deleteUser, approveUser, getAdminCourses, deleteAdminCourse, getAdminCertificates, revokeCertificate,
   getCertificateTemplate, saveCertificateTemplate,
   // Academic hierarchy

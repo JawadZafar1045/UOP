@@ -13,7 +13,7 @@ export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [tenantId, setTenantId] = useState("");
+  const [tenantId, setTenantId] = useState("cszone");
   const [role, setRole] = useState("student");
 
   const [loading, setLoading] = useState(false);
@@ -82,7 +82,7 @@ export default function SignupPage() {
               </div>
             </Link>
             <h1 className="text-3xl font-bold text-slate-900">Create Account</h1>
-            <p className="text-slate-500 mt-2">Register with your college code</p>
+
           </div>
 
           <form onSubmit={handleRegister} className="space-y-4">
@@ -106,20 +106,6 @@ export default function SignupPage() {
               </div>
             </div>
 
-            {/* College Code */}
-            <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 ml-1">College Code</label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-green-600 transition-colors">
-                  <Building2 className="w-5 h-5" />
-                </div>
-                <input type="text" required value={tenantId} onChange={(e) => setTenantId(e.target.value.toLowerCase())}
-                  className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-4 focus:ring-green-500/10 focus:border-green-600 transition-all outline-none"
-                  placeholder="Enter code given by your college" />
-              </div>
-              <p className="text-xs text-slate-400 ml-1">Your college admin will provide this code</p>
-            </div>
-
             {/* Email */}
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-slate-700 ml-1">Email Address</label>
@@ -129,7 +115,7 @@ export default function SignupPage() {
                 </div>
                 <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
                   className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-4 focus:ring-green-500/10 focus:border-green-600 transition-all outline-none"
-                  placeholder="john@college.edu" />
+                  placeholder="john@soa.edu" />
               </div>
             </div>
 
@@ -178,12 +164,7 @@ export default function SignupPage() {
                 Sign in
               </Link>
             </p>
-            <p className="text-xs text-slate-400">
-              Are you a college admin?{" "}
-              <Link href="/register/admin" className="text-green-700 font-semibold hover:underline underline-offset-4">
-                Register your institution
-              </Link>
-            </p>
+
           </div>
         </div>
       </div>

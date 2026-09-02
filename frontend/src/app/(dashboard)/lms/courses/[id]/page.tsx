@@ -46,7 +46,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import * as lmsService from "@/services/lms.service";
-import { Edit2, Settings, Video } from "lucide-react";
+import { Edit2, Settings, Video, Upload, Image as ImageIcon } from "lucide-react";
 import Loader from "@/components/ui/Loader";
 
 export default function CourseOverviewPage({
@@ -71,13 +71,15 @@ export default function CourseOverviewPage({
     title: "",
     description: "",
     duration: "",
-    status: "draft" as "draft" | "active" | "completed",
+    thumbnail: "",
+    featuredOnHomepage: false,
     completionCriteria: {
       minAttendancePercent: 75,
       minAssignmentScore: 60,
       minQuizScore: 60,
     },
   });
+  const [isUploadingThumbnail, setIsUploadingThumbnail] = useState(false);
   const { updateCourse } = useLmsStore();
   const doughnutChartRef = useRef<HTMLCanvasElement>(null);
   const doughnutChartInstanceRef = useRef<ChartJS | null>(null);
@@ -154,6 +156,8 @@ export default function CourseOverviewPage({
       description: currentCourse.description || "",
       duration: currentCourse.duration || "",
       status: currentCourse.status || "draft",
+      thumbnail: currentCourse.thumbnail || "",
+      featuredOnHomepage: !!currentCourse.featuredOnHomepage,
       completionCriteria: {
         minAttendancePercent: currentCourse.completionCriteria?.minAttendancePercent || 75,
         minAssignmentScore: currentCourse.completionCriteria?.minAssignmentScore || 60,
@@ -703,6 +707,75 @@ export default function CourseOverviewPage({
                     <option value="active">Active</option>
                     <option value="completed">Completed</option>
                   </select>
+                </div>
+
+                {/* Course Thumbnail & Homepage Display */}
+                <div className="md:col-span-2 p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Course Thumbnail (Cloudinary)</label>
+                    <div className="flex items-center gap-4">
+                      {editFormData.thumbnail ? (
+                        <div className="relative w-28 h-18 rounded-lg overflow-hidden border border-slate-200 group shrink-0">
+                          <img src={editFormData.thumbnail} alt="Thumbnail preview" className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setEditFormData({ ...editFormData, thumbnail: "" })}
+                            className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                          >
+                            <XCircle className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-28 h-18 rounded-lg border-2 border-dashed border-slate-300 flex flex-col items-center justify-center bg-white text-slate-400 text-xs shrink-0 p-2 text-center">
+                          <ImageIcon className="w-5 h-5 mb-1" />
+                          <span>No Image</span>
+                        </div>
+                      )}
+
+                      <div className="flex-1">
+                        <label className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-lg cursor-pointer transition-colors shadow-sm">
+                          <Upload className="w-4 h-4" />
+                          {isUploadingThumbnail ? "Uploading to Cloudinary..." : "Upload New Thumbnail"}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            disabled={isUploadingThumbnail}
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              setIsUploadingThumbnail(true);
+                              try {
+                                const url = await lmsService.uploadThumbnail(file);
+                                setEditFormData((prev) => ({ ...prev, thumbnail: url }));
+                              } catch (err: any) {
+                                alert("Failed to upload thumbnail to Cloudinary");
+                              } finally {
+                                setIsUploadingThumbnail(false);
+                              }
+                            }}
+                          />
+                        </label>
+                        <p className="text-xs text-slate-500 mt-1.5">Upload a banner or thumbnail for course cards & homepage.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-3 border-t border-slate-200">
+                    <div>
+                      <label htmlFor="editFeaturedOnHomepage" className="text-xs font-bold text-slate-800 cursor-pointer block">
+                        Feature on Homepage
+                      </label>
+                      <p className="text-[11px] text-slate-500">Show this course prominently on the student & public homepage</p>
+                    </div>
+                    <input
+                      id="editFeaturedOnHomepage"
+                      type="checkbox"
+                      checked={editFormData.featuredOnHomepage}
+                      onChange={(e) => setEditFormData({ ...editFormData, featuredOnHomepage: e.target.checked })}
+                      className="w-4 h-4 text-green-600 rounded border-slate-300 focus:ring-green-500 cursor-pointer"
+                    />
+                  </div>
                 </div>
 
                 <div className="md:col-span-2 pt-4 border-t border-slate-100">

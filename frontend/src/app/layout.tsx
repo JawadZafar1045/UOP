@@ -7,10 +7,10 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'LMS ACROTYX',
-  description: 'Learning Management System.',
+  title: 'School of Agriculture - SOA',
+  description: 'School of Agriculture Learning Management System.',
   icons: {
-    icon: '/favicon.svg',
+    icon: '/SOA_logo.jpeg',
   },
 };
 

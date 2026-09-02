@@ -29,6 +29,15 @@ export const deleteCourse = async (id: string) => {
   return res;
 };
 
+export const uploadThumbnail = async (file: File) => {
+  const formData = new FormData();
+  formData.append('thumbnail', file);
+  const res: any = await api.post('/lms/upload/thumbnail', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res?.url || res?.data?.url || res;
+};
+
 export const enrollStudent = async (courseId: string, studentId: string) => {
   const res = await api.post(`/lms/courses/${courseId}/enroll`, { studentId });
   return res.data?.data ?? res.data;

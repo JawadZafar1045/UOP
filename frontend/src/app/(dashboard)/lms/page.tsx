@@ -371,8 +371,13 @@ export default function LMSPage() {
                         </div>
                       )}
 
-                      {/* Elevated Status Badge */}
-                      <div className="absolute top-4 right-4 z-20">
+                      {/* Elevated Status Badge & Featured Tag */}
+                      <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5">
+                        {course.featuredOnHomepage && (
+                          <span className="text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full shadow-lg bg-amber-500/95 text-white border border-amber-300/50 flex items-center gap-1">
+                            <Sparkles className="w-3 h-3" /> Featured
+                          </span>
+                        )}
                         <span
                           className={`text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-full shadow-lg backdrop-blur-xl border-2 ${
                             course.status === "active"

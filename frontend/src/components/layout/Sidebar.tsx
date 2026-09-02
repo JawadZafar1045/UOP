@@ -49,8 +49,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       isOpen ? "translate-x-0" : "-translate-x-full"
     }`}>
       <div className="h-16 flex items-center justify-center px-6 border-b border-slate-100">
-        <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-90 transition-opacity cursor-pointer">
-          <img src="/agree-logo.jpg" alt="Logo" className="h-8 w-auto object-contain" />
+        <Link href="/dashboard" className="flex items-center gap-3 hover:opacity-90 transition-opacity cursor-pointer">
+          <img src="/SOA_logo.jpeg" alt="School of Agriculture" className="h-10 w-10 object-contain rounded-full border border-slate-100 shadow-xs" />
+          <span className="font-bold text-slate-900 text-sm tracking-tight">SOA</span>
         </Link>
         <button
           onClick={onClose}

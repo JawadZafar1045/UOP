@@ -117,6 +117,8 @@ router.get('/courses/:courseId/certificates',                      val.getCourse
 router.get('/courses/:courseId/certificate-template',  val.getCertificateTemplateVal, validateResult, authorize('admin', 'teacher', 'student'), ctrl.getCertificateTemplate);
 router.post('/courses/:courseId/certificate-template', authorize('admin', 'teacher'), upload.single('logo'), val.saveCertificateTemplateVal, validateResult, ctrl.saveCertificateTemplate);
 
+router.post('/upload/thumbnail', authorize('admin', 'teacher'), upload.single('thumbnail'), ctrl.uploadThumbnail);
+
 router.post('/files/sign', protect, tenantIsolation, signLimiter, val.signFileUrlVal, validateResult, authorize('admin', 'teacher', 'student'), ctrl.signFileUrl);
 
 // ── Admin Routes ───────────────────────────────────────────────────────────────

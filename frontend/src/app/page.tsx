@@ -88,11 +88,11 @@ export default function LandingPage() {
             aria-label="Scroll to top"
           >
             <Image 
-              src="/logo.jpeg"
-              alt="Zarat.pk" 
-              width={44}
-              height={44}
-              className="h-11 w-auto object-contain"
+              src="/SOA_logo.jpeg"
+              alt="School of Agriculture" 
+              width={48}
+              height={48}
+              className="h-12 w-auto object-contain rounded-full"
             />
           </button>
           
@@ -143,54 +143,40 @@ export default function LandingPage() {
         </nav>
       </div>
 
-
-
-
-      <main className="flex-grow flex flex-col items-center">
-        {/* Hero Section */}
-        <section className="w-full px-4 pt-4 pb-12">
-          <div className="relative w-full max-w-7xl mx-auto min-h-[70vh] md:min-h-[75vh] rounded-[2.5rem] md:rounded-[3rem] overflow-hidden flex flex-col items-center justify-center shadow-lg">
-
-            {/* Agricultural Field Background Image */}
-            <div 
-              className="absolute inset-0 z-0 bg-cover bg-center"
-              style={{
-                backgroundImage: 'url("/hero-image.jpg")',
-                backgroundPosition: 'center',
-              }}
-            />
-            
-            {/* Subtle gradient overlay - transparent at top, darker at bottom for text area */}
-            <div 
-              className="absolute inset-0 z-[1]"
-              style={{
-                background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.45) 100%)'
-              }}
-            ></div>
-
-            {/* Hero Content */}
-            <div className="relative z-[2] w-full max-w-4xl mx-auto px-6 pt-16 pb-10 md:pt-20 md:pb-14 flex flex-col items-center text-center">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-white text-[11px] md:text-sm font-medium mb-6 border border-white/40 backdrop-blur-sm" style={{textShadow: '0 1px 4px rgba(0,0,0,0.5)'}}>
-                <span className="flex h-1.5 w-1.5 rounded-full bg-white animate-pulse"></span>
-                Zarat.pk is Live
-              </div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-6 leading-[1.15]" style={{textShadow: '0 3px 12px rgba(0,0,0,0.6)'}}>
-                Empowering Pakistan's Agricultural Education
-              </h1>
-              <p className="text-lg md:text-xl text-white/90 max-w-2xl mb-10 leading-relaxed font-medium" style={{textShadow: '0 2px 8px rgba(0,0,0,0.5)'}}>
-                Learn modern farming, sustainable agriculture, and crop science from expert educators. Transform your future in agriculture today.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center gap-5 w-full sm:w-auto">
-                <Link href="/signup" className="w-full sm:w-auto px-8 py-3.5 bg-green-600 text-white rounded-xl font-bold text-base md:text-lg hover:bg-green-700 transition-all shadow-lg flex items-center justify-center gap-2 hover:scale-105 active:scale-95">
-                  Start for free <ArrowRight className="w-5 h-5" />
-                </Link>
-                <Link href="/login" className="w-full sm:w-auto px-8 py-3.5 bg-white/20 text-white border border-white/40 rounded-xl font-bold text-base md:text-lg hover:bg-white/30 transition-all shadow-lg backdrop-blur-sm flex items-center justify-center gap-2">
-                  Login to workspace
-                </Link>
-              </div>
+      {/* Hero Section */}
+      <section className="pt-32 pb-20 md:pt-40 md:pb-28 bg-gradient-to-b from-green-50/50 via-white to-slate-50 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center max-w-3xl mx-auto space-y-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-100/80 border border-green-200 text-green-800 text-xs font-bold uppercase tracking-wider shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-green-600 animate-pulse"></span>
+              Zarat.pk is Live
+            </div>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-slate-900 tracking-tight leading-tight">
+              School of Agriculture <br />
+              <span className="bg-gradient-to-r from-green-700 via-emerald-600 to-green-800 bg-clip-text text-transparent">
+                PPSC Preparation Platform
+              </span>
+            </h1>
+            <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto font-normal leading-relaxed">
+              Empowering agriculture professionals in Pakistan with target-oriented learning, course modules, practice papers, and live interactive guidance.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+              <Link
+                href="/signup"
+                className="w-full sm:w-auto px-8 py-4 bg-green-700 hover:bg-green-800 text-white font-bold rounded-2xl shadow-lg hover:shadow-green-700/25 transition-all flex items-center justify-center gap-2 group"
+              >
+                Enroll Now <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <Link
+                href="/login"
+                className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-2xl border border-slate-200 shadow-sm transition-all flex items-center justify-center"
+              >
+                Student Portal
+              </Link>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
         {/* Branding / Partners Section */}
         <section className="w-full bg-white pt-4 pb-16 border-b border-slate-200/50">
@@ -283,76 +269,59 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Courses Section */}
+        {/* Programs / PPSC Preparation Courses Section */}
         <section id="courses" className="w-full bg-white py-24 border-t border-slate-200">
           <div className="max-w-6xl mx-auto px-6">
             <div className="text-center max-w-2xl mx-auto mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-green-900 mb-4 tracking-tight">Explore Our Courses</h2>
-              <p className="text-lg text-green-700">Carefully curated agricultural education programs for every level</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-green-900 mb-4 tracking-tight">Explore PPSC Preparation Programs</h2>
+              <p className="text-lg text-green-700">Specialized agricultural competitive exam tracks designed for high success rates</p>
             </div>
 
-            {/* Courses Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {/* Programs Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
               {[
                 {
-                  title: "Introduction to Agriculture",
-                  desc: "Learn the fundamentals of modern farming and crop cultivation.",
-                  badge: "Beginner",
-                  duration: "6 weeks"
+                  title: "Water Management Officer (BS-17) | PPSC Preparation",
+                  desc: "Comprehensive preparation program for Water Management Officer (BS-17) PPSC exams, covering irrigation techniques, soil physics, hydrology, and agricultural engineering concepts.",
+                  badge: "BS-17 Track",
+                  duration: "PPSC Prep"
                 },
                 {
-                  title: "Crop Science Basics",
-                  desc: "Understand soil health, plant biology, and nutrient management.",
-                  badge: "Beginner",
-                  duration: "8 weeks"
+                  title: "Agriculture Officer (BS-17) | PPSC Preparation",
+                  desc: "Complete syllabus coverage for Agriculture Officer (BS-17) competitive test, focusing on agronomy, plant pathology, entomology, and agricultural economics.",
+                  badge: "BS-17 Track",
+                  duration: "PPSC Prep"
                 },
                 {
-                  title: "Farm Management Essentials",
-                  desc: "Master planning, budgeting, and efficient resource management.",
-                  badge: "Intermediate",
-                  duration: "10 weeks"
-                },
-                {
-                  title: "Sustainable Farming Practices",
-                  desc: "Explore organic farming, water conservation, and eco-friendly methods.",
-                  badge: "Intermediate",
-                  duration: "8 weeks"
-                },
-                {
-                  title: "Advanced Livestock Management",
-                  desc: "Professional techniques for raising and managing livestock effectively.",
-                  badge: "Advanced",
-                  duration: "12 weeks"
-                },
-                {
-                  title: "Digital Agriculture Technology",
-                  desc: "Learn about IoT, precision farming, and agricultural data analytics.",
-                  badge: "Advanced",
-                  duration: "10 weeks"
+                  title: "Assistant Director (BS-18) | PPSC Preparation",
+                  desc: "Specialized executive prep track for Assistant Director (BS-18) selection exams, featuring high-yield study materials, past paper analysis, and mock tests.",
+                  badge: "BS-18 Track",
+                  duration: "PPSC Prep"
                 }
-              ].map((course, i) => (
+              ].map((program, i) => (
                 <div key={i} className="bg-white rounded-2xl border border-green-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col">
-                  {/* Thumbnail */}
-                  <div className="w-full h-40 bg-green-50 border-b border-green-200 flex items-center justify-center">
-                    <div className="text-green-300 text-5xl">🌾</div>
+                  {/* Banner Header */}
+                  <div className="w-full h-44 bg-gradient-to-br from-green-700 to-green-900 p-6 flex flex-col justify-between text-white relative overflow-hidden">
+                    <div className="absolute right-[-20px] bottom-[-20px] opacity-10 text-8xl font-black select-none">🌾</div>
+                    <span className="inline-block self-start px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-xs font-bold rounded-full border border-white/30">
+                      {program.badge}
+                    </span>
+                    <h3 className="text-lg font-bold text-white leading-snug drop-shadow-sm">{program.title}</h3>
                   </div>
 
                   {/* Content */}
                   <div className="p-6 flex flex-col gap-3 flex-grow">
-                    <h3 className="text-lg font-bold text-green-900 line-clamp-2">{course.title}</h3>
-                    <p className="text-sm text-green-700 line-clamp-2 flex-grow">{course.desc}</p>
-
-                    {/* Badge and Duration */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="inline-block px-2.5 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">{course.badge}</span>
-                      <span className="text-xs text-slate-600">{course.duration}</span>
+                    <p className="text-sm text-slate-600 leading-relaxed flex-grow">{program.desc}</p>
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs font-bold text-slate-500">
+                      <span>Course Module</span>
+                      <span className="text-green-700 bg-green-50 px-2.5 py-1 rounded-md">{program.duration}</span>
                     </div>
                   </div>
 
                   {/* Button */}
                   <div className="px-6 pb-6">
-                    <Link href="#" className="w-full py-2.5 bg-green-700 hover:bg-green-800 text-white rounded-lg font-semibold text-sm transition-all text-center">
-                      View Course
+                    <Link href="/signup" className="block w-full py-3 bg-green-700 hover:bg-green-800 text-white rounded-xl font-bold text-sm transition-all text-center shadow-md hover:shadow-lg">
+                      Enroll Now
                     </Link>
                   </div>
                 </div>
@@ -376,7 +345,6 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
-      </main>
 
       {/* Footer */}
       <footer className="w-full bg-white text-slate-600 py-20 px-6 relative overflow-hidden border-t border-green-100">
@@ -394,11 +362,11 @@ export default function LandingPage() {
                 aria-label="Scroll to top"
               >
                 <Image 
-                  src="/logo.png" 
-                  alt="Zarat.pk Logo" 
+                  src="/SOA_logo.jpeg" 
+                  alt="School of Agriculture Logo" 
                   width={56}
                   height={56}
-                  className="h-14 w-auto object-contain"
+                  className="h-14 w-auto object-contain rounded-full"
                 />
               </button>
               <p className="text-slate-500 mb-8 leading-relaxed max-w-sm text-sm">

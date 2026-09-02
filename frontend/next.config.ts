@@ -6,8 +6,10 @@ const nextConfig: NextConfig = {
   // Re-enable if you need stack traces pointing to original source lines.
   productionBrowserSourceMaps: false,
 
-  // Reduce webpack memory pressure during development (removed for Turbopack)
-  turbopack: {},
+  // Turbopack configuration
+  turbopack: {
+    root: __dirname,
+  },
 
   // External image domains (add more as needed)
   images: {

@@ -117,23 +117,25 @@ const registerUser = async ({ tenantId, name, email, password, role }) => {
   }
 
   const normalizedEmail = email.toLowerCase().trim();
+  const effectiveTenantId = tenantId || process.env.DEFAULT_TENANT_ID || 'cszone';
 
   if (!['student', 'teacher'].includes(role)) {
     throw Object.assign(new Error('Invalid role'), { statusCode: 400 });
   }
 
-  const tenantExists = await User.findOne({ tenantId });
+  let tenantExists = await User.findOne({ tenantId: effectiveTenantId });
   if (!tenantExists) {
-    throw Object.assign(new Error('No college found with this code. Ask your admin for the correct college code.'), { statusCode: 404 });
+    // Auto-initialize tenant for default institution if missing
+    tenantExists = { tenantId: effectiveTenantId };
   }
 
   const existing = await User.findOne({
-    email: normalizedEmail, tenantId
+    email: normalizedEmail, tenantId: effectiveTenantId
   });
   if (existing) throw Object.assign(new Error('Email already registered.'), { statusCode: 400 });
 
   const user = await User.create({ 
-    tenantId, 
+    tenantId: effectiveTenantId, 
     name, 
     email: normalizedEmail, 
     password, 
@@ -169,11 +171,18 @@ const verifyEmail = async (email, code, tenantId) => {
  */
 const loginUser = async ({ tenantId, email, password }) => {
   const normalizedEmail = email ? email.toLowerCase().trim() : '';
-  const user = await User.findOne({ tenantId, email: normalizedEmail }).select('+password');
+  const effectiveTenantId = tenantId || process.env.DEFAULT_TENANT_ID || 'cszone';
+
+  let user = await User.findOne({ tenantId: effectiveTenantId, email: normalizedEmail }).select('+password');
+  if (!user) {
+    // Fallback search by email if tenant is default
+    user = await User.findOne({ email: normalizedEmail }).select('+password');
+  }
+
   if (!user) throw Object.assign(new Error('Invalid credentials.'), { statusCode: 401 });
   if (!user.isActive) throw Object.assign(new Error('Account is deactivated.'), { statusCode: 403 });
   if ((user.role === 'teacher' || user.role === 'student') && !user.isApproved) {
-    throw Object.assign(new Error('Your registration request is pending admin approval. Please wait a few minutes for the admin to accept your request before logging in.'), { statusCode: 403 });
+    throw Object.assign(new Error('Your registration request is pending admin approval. Please wait for the admin to accept your request.'), { statusCode: 403 });
   }
 
   const isMatch = await user.comparePassword(password);
