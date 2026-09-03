@@ -19,14 +19,6 @@ const WORK_EXPERIENCE_OPTIONS = [
   "More than 5 Years"
 ];
 
-const DEFAULT_PROGRAMS = [
-  { _id: "water-management-bs17", name: "Water Management Officer (BS-17) | PPSC Preparation", code: "WMO-BS17" },
-  { _id: "agriculture-officer-bs17", name: "Agriculture Officer (BS-17) | PPSC Preparation", code: "AO-BS17" },
-  { _id: "assistant-director-bs18", name: "Assistant Director (BS-18) | PPSC Preparation", code: "AD-BS18" },
-  { _id: "bsc-agriculture", name: "B.Sc. (Hons) Agriculture", code: "BSC-AGRI" },
-  { _id: "msc-agriculture", name: "M.Sc. (Hons) Agriculture", code: "MSC-AGRI" }
-];
-
 function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -39,46 +31,52 @@ function SignupForm() {
   const [degreeQualification, setDegreeQualification] = useState("");
   const [workExperience, setWorkExperience] = useState("No Experience");
   const [currentJobTitle, setCurrentJobTitle] = useState("");
-  const [programId, setProgramId] = useState(initialProgramId || DEFAULT_PROGRAMS[0]._id);
+  const [programId, setProgramId] = useState(initialProgramId || "");
   const [password, setPassword] = useState("");
   const [tenantId, setTenantId] = useState("cszone");
 
-  const [programs, setPrograms] = useState<any[]>(DEFAULT_PROGRAMS);
+  const [programs, setPrograms] = useState<any[]>([]);
+  const [isProgramsLoading, setIsProgramsLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  // Fetch available programs dynamically and merge with defaults
+  // Fetch only programs that actually exist in the database
   useEffect(() => {
     const fetchPrograms = async () => {
+      setIsProgramsLoading(true);
       try {
         let list: any[] = [];
         try {
-          const res = await api.get("/auth/programs");
-          if (res.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
-            list = res.data.data;
+          const res: any = await api.get("/auth/programs");
+          const data = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : res?.data?.data);
+          if (Array.isArray(data) && data.length > 0) {
+            list = data;
           }
         } catch {
           // Fallback to lms public endpoint
           try {
-            const res2 = await api.get("/lms/programs/public");
-            if (res2.data?.data && Array.isArray(res2.data.data) && res2.data.data.length > 0) {
-              list = res2.data.data;
+            const res2: any = await api.get("/lms/programs/public");
+            const data2 = Array.isArray(res2?.data) ? res2.data : (Array.isArray(res2) ? res2 : res2?.data?.data);
+            if (Array.isArray(data2) && data2.length > 0) {
+              list = data2;
             }
           } catch {}
         }
 
+        setPrograms(list);
         if (list.length > 0) {
-          setPrograms(list);
           if (initialProgramId) {
             const matched = list.find((p: any) => p._id === initialProgramId || p.code === initialProgramId);
-            if (matched) setProgramId(matched._id);
-          } else {
-            setProgramId(list[0]._id);
+            if (matched) {
+              setProgramId(matched._id);
+            }
           }
         }
       } catch (e) {
-        // Fallback to DEFAULT_PROGRAMS
+        setPrograms([]);
+      } finally {
+        setIsProgramsLoading(false);
       }
     };
     fetchPrograms();
@@ -194,7 +192,13 @@ function SignupForm() {
                   onChange={(e) => setProgramId(e.target.value)}
                   className="block w-full px-4 py-3 bg-green-50/60 border-2 border-green-200 rounded-xl text-slate-900 text-sm font-semibold focus:ring-2 focus:ring-green-400 focus:border-green-600 focus:bg-white transition-all outline-none appearance-none cursor-pointer"
                 >
-                  <option value="">-- Choose Program Track (Required) --</option>
+                  <option value="">
+                    {isProgramsLoading
+                      ? "-- Loading available programs... --"
+                      : programs.length === 0
+                      ? "-- No programs available --"
+                      : "-- Choose Program Track (Required) --"}
+                  </option>
                   {programs.map((prog) => (
                     <option key={prog._id} value={prog._id}>
                       {prog.name} {prog.code ? `(${prog.code})` : ""}

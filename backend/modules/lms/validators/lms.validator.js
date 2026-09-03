@@ -493,6 +493,8 @@ const createProgramVal = [
   body('degreeLevel').optional().isIn(['undergraduate', 'postgraduate', 'diploma', 'certificate', 'other']).withMessage('Invalid degree level'),
   body('totalCreditHours').optional().isFloat({ min: 0 }).withMessage('Credit hours must be >= 0'),
   body('passingGradePercent').optional().isFloat({ min: 0, max: 100 }).withMessage('Passing grade must be 0–100'),
+  body('thumbnail').optional().isString(),
+  body('featuredOnHomepage').optional().isBoolean(),
 ];
 
 const updateProgramVal = [
@@ -500,6 +502,8 @@ const updateProgramVal = [
   body('name').optional().trim().isLength({ min: 2, max: 150 }).withMessage('Program name must be 2–150 chars'),
   body('degreeLevel').optional().isIn(['undergraduate', 'postgraduate', 'diploma', 'certificate', 'other']).withMessage('Invalid degree level'),
   body('status').optional().isIn(['active', 'archived']).withMessage('Status must be active or archived'),
+  body('thumbnail').optional().isString(),
+  body('featuredOnHomepage').optional().isBoolean(),
 ];
 
 const createMajorVal = [

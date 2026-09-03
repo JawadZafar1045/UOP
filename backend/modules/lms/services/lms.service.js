@@ -114,6 +114,18 @@ const createCourse = async (tenantId, data, userId) => {
   }
 
   const course = await Course.create({ instructor: userId, ...data, tenantId });
+  if (course.programId) {
+    const User = require('../../auth/models/user.model');
+    const programStudents = await User.find({ tenantId, role: 'student', programId: course.programId, isApproved: true }).select('_id');
+    if (programStudents.length > 0) {
+      const studentIds = programStudents.map(s => s._id);
+      await Course.updateOne(
+        { _id: course._id },
+        { $addToSet: { enrolledStudents: { $each: studentIds } } }
+      );
+      course.enrolledStudents = studentIds;
+    }
+  }
   await logActivity({ userId, tenantId, action: 'CREATE_COURSE', entityType: 'Course', entityId: course._id });
   return course;
 };
@@ -1547,10 +1559,15 @@ const revokeCertificate = async (tenantId, certId) => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 // ── Programs ───────────────────────────────────────────────────────────────────
+// ── Programs ───────────────────────────────────────────────────────────────────
 const getPrograms = async (tenantId, userId = null, role = null) => {
   if (role === 'student' && userId) {
+    const User = require('../../auth/models/user.model');
+    const studentUser = await User.findOne({ _id: userId, tenantId }).select('programId requestedProgramId').lean();
     const enrolledCourses = await Course.find({ tenantId, enrolledStudents: userId, status: 'active' }).select('programId').lean();
     const progIds = enrolledCourses.map(c => c.programId).filter(Boolean);
+    if (studentUser?.programId) progIds.push(studentUser.programId);
+    if (studentUser?.requestedProgramId) progIds.push(studentUser.requestedProgramId);
     return Program.find({ tenantId, _id: { $in: progIds } }).sort({ name: 1 }).lean();
   }
   return Program.find({ tenantId }).sort({ name: 1 }).lean();
@@ -1569,7 +1586,7 @@ const createProgram = async (tenantId, data) => {
 };
 
 const updateProgram = async (tenantId, programId, data) => {
-  const ALLOWED = ['name', 'code', 'school', 'faculty', 'description', 'degreeLevel', 'totalCreditHours', 'passingGradePercent', 'status'];
+  const ALLOWED = ['name', 'code', 'school', 'faculty', 'description', 'degreeLevel', 'totalCreditHours', 'passingGradePercent', 'thumbnail', 'featuredOnHomepage', 'status'];
   const update = {};
   ALLOWED.forEach(f => { if (data[f] !== undefined) update[f] = data[f]; });
   const updated = await Program.findOneAndUpdate({ _id: programId, tenantId }, { $set: update }, { new: true, runValidators: true });
@@ -1580,9 +1597,47 @@ const updateProgram = async (tenantId, programId, data) => {
 const deleteProgram = async (tenantId, programId) => {
   const prog = await Program.findOneAndDelete({ _id: programId, tenantId });
   if (!prog) throw err('Program not found.', 404);
-  // Cascade: remove majors in this program, null-out courses
+
+  // Find all courses under this program to cascade delete them completely
+  const courses = await Course.find({ tenantId, programId }).select('_id');
+  const courseIds = courses.map(c => c._id);
+
+  if (courseIds.length > 0) {
+    const Quiz = require('../models/quiz.model');
+    const QuizQuestion = require('../models/quizQuestion.model');
+    const QuizAttempt = require('../models/quizAttempt.model');
+    const Session = require('../models/session.model');
+    const Attendance = require('../models/attendance.model');
+    const Assignment = require('../models/assignment.model');
+    const LmsDocument = require('../models/lmsDocument.model');
+    const VideoLecture = require('../models/videoLecture.model');
+
+    const quizIds = (await Quiz.find({ courseId: { $in: courseIds }, tenantId }).select('_id')).map(q => q._id);
+
+    await Promise.all([
+      Session.deleteMany({ courseId: { $in: courseIds }, tenantId }),
+      Attendance.deleteMany({ courseId: { $in: courseIds }, tenantId }),
+      Assignment.deleteMany({ courseId: { $in: courseIds }, tenantId }),
+      Quiz.deleteMany({ courseId: { $in: courseIds }, tenantId }),
+      QuizQuestion.deleteMany({ quizId: { $in: quizIds }, tenantId }),
+      QuizAttempt.deleteMany({ courseId: { $in: courseIds }, tenantId }),
+      LmsDocument.deleteMany({ courseId: { $in: courseIds }, tenantId }),
+      VideoLecture.deleteMany({ courseId: { $in: courseIds }, tenantId }),
+      Certificate.deleteMany({ courseId: { $in: courseIds }, tenantId }),
+      Course.deleteMany({ _id: { $in: courseIds }, tenantId }),
+    ]);
+  }
+
+  // Remove majors in this program
   await Major.deleteMany({ tenantId, programId });
-  await Course.updateMany({ tenantId, programId }, { $set: { programId: null, majorId: null, isCommon: false } });
+
+  // Clear programId from any users assigned to this program
+  const User = require('../../auth/models/user.model');
+  await User.updateMany(
+    { tenantId, programId },
+    { $set: { programId: null, requestedProgramId: null, majorId: null } }
+  );
+
   return { success: true };
 };
 
@@ -1591,9 +1646,18 @@ const getMajors = async (tenantId, programId, userId = null, role = null) => {
   const filter = { tenantId };
   if (programId) filter.programId = programId;
   if (role === 'student' && userId) {
+    const User = require('../../auth/models/user.model');
+    const studentUser = await User.findOne({ _id: userId, tenantId }).select('programId majorId').lean();
     const enrolledCourses = await Course.find({ tenantId, enrolledStudents: userId, status: 'active' }).select('majorId').lean();
     const majorIds = enrolledCourses.map(c => c.majorId).filter(Boolean);
-    filter._id = { $in: majorIds };
+    if (studentUser?.majorId) majorIds.push(studentUser.majorId);
+
+    const targetProgramId = programId || studentUser?.programId;
+    if (targetProgramId) {
+      filter.programId = targetProgramId;
+    } else if (majorIds.length > 0) {
+      filter._id = { $in: majorIds };
+    }
   }
   return Major.find(filter).populate('programId', 'name code').sort({ name: 1 }).lean();
 };
@@ -1626,7 +1690,11 @@ const deleteMajor = async (tenantId, majorId) => {
 // ── Academic Hierarchy Tree ───────────────────────────────────────────────────
 const getAcademicHierarchyTree = async (tenantId, userId = null, role = null) => {
   const courseFilter = { tenantId };
+  let studentProgramId = null;
   if (role === 'student' && userId) {
+    const User = require('../../auth/models/user.model');
+    const studentUser = await User.findOne({ _id: userId, tenantId }).select('programId requestedProgramId').lean();
+    studentProgramId = studentUser?.programId ? String(studentUser.programId) : (studentUser?.requestedProgramId ? String(studentUser.requestedProgramId) : null);
     courseFilter.enrolledStudents = userId;
     courseFilter.status = 'active';
   }
@@ -1650,12 +1718,12 @@ const getAcademicHierarchyTree = async (tenantId, userId = null, role = null) =>
     return {
       ...prog,
       commonSubjects,
-      majors: role === 'student' ? mappedMajors.filter(m => m.subjects.length > 0) : mappedMajors,
+      majors: mappedMajors,
     };
   });
 
   if (role === 'student') {
-    return tree.filter(p => p.commonSubjects.length > 0 || p.majors.length > 0);
+    return tree.filter(p => (studentProgramId && String(p._id) === studentProgramId) || p.commonSubjects.length > 0 || p.majors.length > 0);
   }
 
   return tree;

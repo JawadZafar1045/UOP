@@ -28,16 +28,23 @@ import {
 
 export default function LandingPage() {
   const [publicPrograms, setPublicPrograms] = useState<any[]>([]);
+  const [isProgramsLoading, setIsProgramsLoading] = useState(true);
 
   useEffect(() => {
     const fetchPublicPrograms = async () => {
+      setIsProgramsLoading(true);
       try {
-        const res = await api.get('/lms/programs/public');
-        if (res.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
-          setPublicPrograms(res.data.data);
+        const res: any = await api.get('/lms/programs/public');
+        const data = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : res?.data?.data);
+        if (Array.isArray(data)) {
+          setPublicPrograms(data);
+        } else {
+          setPublicPrograms([]);
         }
       } catch (e) {
-        // Fallback to static programs list if server is starting
+        setPublicPrograms([]);
+      } finally {
+        setIsProgramsLoading(false);
       }
     };
     fetchPublicPrograms();
@@ -414,61 +421,81 @@ export default function LandingPage() {
 
             {/* Programs Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              {(publicPrograms.length > 0 ? publicPrograms : [
-                {
-                  _id: "",
-                  name: "Water Management Officer (BS-17) | PPSC Preparation",
-                  description: "Comprehensive preparation program for Water Management Officer (BS-17) PPSC exams, covering irrigation techniques, soil physics, hydrology, and agricultural engineering concepts.",
-                  degreeLevel: "BS-17 Track",
-                  code: "WMO-PPSC"
-                },
-                {
-                  _id: "",
-                  name: "Agriculture Officer (BS-17) | PPSC Preparation",
-                  description: "Complete syllabus coverage for Agriculture Officer (BS-17) competitive test, focusing on agronomy, plant pathology, entomology, and agricultural economics.",
-                  degreeLevel: "BS-17 Track",
-                  code: "AO-PPSC"
-                },
-                {
-                  _id: "",
-                  name: "Assistant Director (BS-18) | PPSC Preparation",
-                  description: "Specialized executive prep track for Assistant Director (BS-18) selection exams, featuring high-yield study materials, past paper analysis, and mock tests.",
-                  degreeLevel: "BS-18 Track",
-                  code: "AD-PPSC"
-                }
-              ]).map((program: any, i: number) => (
-                <div key={program._id || i} className="bg-white rounded-2xl border border-green-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col">
-                  {/* Banner Header */}
-                  <div className="w-full h-44 bg-gradient-to-br from-green-700 to-green-900 p-6 flex flex-col justify-between text-white relative overflow-hidden">
-                    <div className="absolute right-[-20px] bottom-[-20px] opacity-10 text-8xl font-black select-none">🌾</div>
-                    <span className="inline-block self-start px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-xs font-bold rounded-full border border-white/30">
-                      {program.degreeLevel || "PPSC Track"}
-                    </span>
-                    <h3 className="text-lg font-bold text-white leading-snug drop-shadow-sm">{program.name || program.title}</h3>
-                  </div>
+              {isProgramsLoading ? (
+                <div className="col-span-full py-16 text-center text-slate-400 font-medium">
+                  Loading programs...
+                </div>
+              ) : publicPrograms.length > 0 ? (
+                publicPrograms.map((program: any, i: number) => (
+                  <div key={program._id || i} className="bg-white rounded-2xl border border-green-200 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col">
+                    {/* Thumbnail / Header Banner */}
+                    {program.thumbnail ? (
+                      <div className="w-full h-52 relative overflow-hidden bg-slate-100 group">
+                        <img
+                          src={program.thumbnail}
+                          alt={program.name || "Program thumbnail"}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute top-3 left-3 z-10">
+                          <span className="px-3 py-1 bg-green-800/85 backdrop-blur-md text-white text-xs font-bold rounded-full shadow-sm">
+                            {program.degreeLevel || "PPSC Track"}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="w-full h-44 bg-gradient-to-br from-green-700 to-green-900 p-6 flex flex-col justify-between text-white relative overflow-hidden">
+                        <div className="absolute right-[-20px] bottom-[-20px] opacity-10 text-8xl font-black select-none">🌾</div>
+                        <span className="inline-block self-start px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-xs font-bold rounded-full border border-white/30 z-10">
+                          {program.degreeLevel || "PPSC Track"}
+                        </span>
+                        <h3 className="text-lg font-bold text-white leading-snug drop-shadow-sm z-10">{program.name || program.title}</h3>
+                      </div>
+                    )}
 
-                  {/* Content */}
-                  <div className="p-6 flex flex-col gap-3 flex-grow">
-                    <p className="text-sm text-slate-600 leading-relaxed flex-grow">
-                      {program.description || program.desc || "Target-oriented competitive examination preparation track with comprehensive syllabus coverage, video lectures, and notes."}
-                    </p>
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs font-bold text-slate-500">
-                      <span>Program Code</span>
-                      <span className="text-green-700 bg-green-50 px-2.5 py-1 rounded-md">{program.code || "PPSC Prep"}</span>
+                    {/* Content */}
+                    <div className="p-6 flex flex-col gap-3 flex-grow">
+                      {program.thumbnail && (
+                        <h3 className="text-lg font-bold text-slate-900 leading-snug">
+                          {program.name || program.title}
+                        </h3>
+                      )}
+                      <p className="text-sm text-slate-600 leading-relaxed flex-grow">
+                        {program.description || program.desc || "Target-oriented competitive examination preparation track with comprehensive syllabus coverage, video lectures, and notes."}
+                      </p>
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs font-bold text-slate-500">
+                        <span>Program Code</span>
+                        <span className="text-green-700 bg-green-50 px-2.5 py-1 rounded-md">{program.code || "PPSC Prep"}</span>
+                      </div>
+                    </div>
+
+                    {/* Button */}
+                    <div className="px-6 pb-6">
+                      <Link 
+                        href={program._id ? `/signup?programId=${program._id}` : "/signup"} 
+                        className="block w-full py-3 bg-green-700 hover:bg-green-800 text-white rounded-xl font-bold text-sm transition-all text-center shadow-md hover:shadow-lg active:scale-[0.98]"
+                      >
+                        Enroll Now
+                      </Link>
                     </div>
                   </div>
-
-                  {/* Button */}
-                  <div className="px-6 pb-6">
-                    <Link 
-                      href={program._id ? `/signup?programId=${program._id}` : "/signup"} 
-                      className="block w-full py-3 bg-green-700 hover:bg-green-800 text-white rounded-xl font-bold text-sm transition-all text-center shadow-md hover:shadow-lg active:scale-[0.98]"
-                    >
-                      Enroll Now
-                    </Link>
+                ))
+              ) : (
+                <div className="col-span-full py-16 text-center bg-slate-50 border border-dashed border-green-200 rounded-3xl p-8 max-w-lg mx-auto flex flex-col items-center">
+                  <div className="w-14 h-14 rounded-2xl bg-green-100 text-green-700 flex items-center justify-center mb-4">
+                    <BookOpen className="w-7 h-7" />
                   </div>
+                  <h3 className="text-lg font-bold text-slate-800">No Programs Currently Listed</h3>
+                  <p className="text-sm text-slate-500 mt-1.5 leading-relaxed">
+                    Programs added in the Admin Panel will appear here automatically with their custom thumbnails and details.
+                  </p>
+                  <Link
+                    href="/login"
+                    className="mt-5 text-xs font-bold text-green-700 bg-white border border-green-300 px-5 py-2.5 rounded-full hover:bg-green-50 shadow-xs transition-all"
+                  >
+                    Go to Admin Portal
+                  </Link>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </section>

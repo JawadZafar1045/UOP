@@ -203,31 +203,6 @@ export default function AcademicProgramsPage() {
     }
   };
 
-  // ── Seed Demo ────────────────────────────────────────────────────────────
-  const handleSeedDemo = async () => {
-    setSaving(true);
-    try {
-      const prog = await lmsService.createProgram({
-        name: "BSc Agriculture",
-        code: "BSC-AGRI",
-        school: "School of Agriculture",
-        degreeLevel: "undergraduate",
-        totalCreditHours: 136,
-        passingGradePercent: 60,
-        description: "Bachelor of Science in Agriculture – a 4-year undergraduate program.",
-      });
-      await Promise.all([
-        lmsService.createMajor({ programId: prog._id, name: "Agronomy", code: "AGRON", description: "Study of crops and soil management." }),
-        lmsService.createMajor({ programId: prog._id, name: "Entomology", code: "ENTO", description: "Study of insects and pest management." }),
-        lmsService.createMajor({ programId: prog._id, name: "Agricultural Extension", code: "AGEXT", description: "Bridging research and farming communities." }),
-      ]);
-      await fetchAll();
-    } catch (err: any) {
-      alert(err?.response?.data?.message || err?.message || "Seed failed.");
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const filteredTree = tree.filter(n =>
     n.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -267,13 +242,6 @@ export default function AcademicProgramsPage() {
         </div>
         {isAdmin && (
           <div className="flex items-center gap-2 flex-wrap">
-            {tree.length === 0 && (
-              <button onClick={handleSeedDemo} disabled={saving}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-amber-700 bg-amber-50 border border-amber-200 hover:bg-amber-100 rounded-xl transition-all">
-                <Sparkles className="w-4 h-4" />
-                Seed Agriculture Demo
-              </button>
-            )}
             <button onClick={() => setMajorModal({ open: true, editing: emptyMajor(programs[0]?._id || ""), defaultProgramId: programs[0]?._id || "" })}
               disabled={programs.length === 0}
               className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-green-800 bg-green-50 border border-green-200 hover:bg-green-100 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed">

@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Loader from "@/components/ui/Loader";
+import * as lmsService from "@/services/lms.service";
 
 interface GroupedMajor {
   id: string;
@@ -46,12 +47,40 @@ export default function LMSPage() {
   const { user } = useStore();
   const [selectedProgramId, setSelectedProgramId] = useState<string | null>(null);
   const [selectedMajorFilter, setSelectedMajorFilter] = useState<string>("all");
+  const [enrolledPrograms, setEnrolledPrograms] = useState<any[]>([]);
+  const [isProgramsLoading, setIsProgramsLoading] = useState(true);
 
   const isTeacherOrAdmin = user?.role === "teacher" || user?.role === "admin";
 
   useEffect(() => {
     fetchCourses();
-  }, [fetchCourses]);
+    setIsProgramsLoading(true);
+    lmsService.getPrograms()
+      .then(res => {
+        const list = Array.isArray(res) ? res : (res?.data || []);
+        if (list.length > 0) {
+          setEnrolledPrograms(list);
+        } else if (user?.programId) {
+          lmsService.getProgramById(user.programId)
+            .then(p => {
+              if (p) setEnrolledPrograms([p]);
+            })
+            .catch(() => {});
+        }
+      })
+      .catch(() => {
+        if (user?.programId) {
+          lmsService.getProgramById(user.programId)
+            .then(p => {
+              if (p) setEnrolledPrograms([p]);
+            })
+            .catch(() => {});
+        }
+      })
+      .finally(() => {
+        setIsProgramsLoading(false);
+      });
+  }, [fetchCourses, user?.programId]);
 
   const visibleCourses = useMemo(() => {
     if (!courses) return [];
@@ -69,57 +98,73 @@ export default function LMSPage() {
   }, [courses, user]);
 
   const groupedPrograms = useMemo<GroupedProgram[]>(() => {
-    if (!visibleCourses || visibleCourses.length === 0) return [];
-
     const programMap = new Map<string, GroupedProgram>();
 
-    visibleCourses.forEach(course => {
-      const prog = course.programId;
-      const progId = prog?._id ? String(prog._id) : (prog ? String(prog) : 'general');
-      const progName = prog?.name || (progId === 'general' ? 'General Academic Courses' : 'Degree Program');
-      const progCode = prog?.code;
-      const progSchool = prog?.school;
-      const progFaculty = prog?.faculty;
-      const progDegreeLevel = prog?.degreeLevel;
-
-      if (!programMap.has(progId)) {
-        programMap.set(progId, {
-          id: progId,
-          name: progName,
-          code: progCode,
-          school: progSchool,
-          faculty: progFaculty,
-          degreeLevel: progDegreeLevel,
-          majors: []
-        });
-      }
-
-      const program = programMap.get(progId)!;
-
-      const maj = course.majorId;
-      const isCommon = course.isCommon || !maj;
-      const majId = isCommon ? 'common' : (maj?._id ? String(maj._id) : (maj ? String(maj) : 'other'));
-      const majName = isCommon ? 'Core & Common Subjects' : (maj?.name || 'Specialized Major');
-      const majCode = isCommon ? 'CORE' : maj?.code;
-      const majDesc = maj?.description;
-
-      let major = program.majors.find(m => m.id === majId);
-      if (!major) {
-        major = {
-          id: majId,
-          name: majName,
-          code: majCode,
-          description: majDesc,
-          courses: []
-        };
-        program.majors.push(major);
-      }
-
-      major.courses.push(course);
+    // Pre-populate with student's enrolled program(s)
+    enrolledPrograms.forEach(prog => {
+      const progId = String(prog._id);
+      programMap.set(progId, {
+        id: progId,
+        name: prog.name,
+        code: prog.code,
+        school: prog.school,
+        faculty: prog.faculty,
+        degreeLevel: prog.degreeLevel,
+        majors: []
+      });
     });
 
+    if (visibleCourses && visibleCourses.length > 0) {
+      visibleCourses.forEach(course => {
+        const prog = course.programId;
+        const progId = prog?._id ? String(prog._id) : (prog ? String(prog) : null);
+        if (!progId || progId === 'general') return; // Remove general fallback
+
+        const progName = prog?.name || 'Degree Program';
+        const progCode = prog?.code;
+        const progSchool = prog?.school;
+        const progFaculty = prog?.faculty;
+        const progDegreeLevel = prog?.degreeLevel;
+
+        if (!programMap.has(progId)) {
+          programMap.set(progId, {
+            id: progId,
+            name: progName,
+            code: progCode,
+            school: progSchool,
+            faculty: progFaculty,
+            degreeLevel: progDegreeLevel,
+            majors: []
+          });
+        }
+
+        const program = programMap.get(progId)!;
+
+        const maj = course.majorId;
+        const isCommon = course.isCommon || !maj;
+        const majId = isCommon ? 'common' : (maj?._id ? String(maj._id) : (maj ? String(maj) : 'other'));
+        const majName = isCommon ? 'Core & Common Subjects' : (maj?.name || 'Specialized Major');
+        const majCode = isCommon ? 'CORE' : maj?.code;
+        const majDesc = maj?.description;
+
+        let major = program.majors.find(m => m.id === majId);
+        if (!major) {
+          major = {
+            id: majId,
+            name: majName,
+            code: majCode,
+            description: majDesc,
+            courses: []
+          };
+          program.majors.push(major);
+        }
+
+        major.courses.push(course);
+      });
+    }
+
     return Array.from(programMap.values());
-  }, [visibleCourses]);
+  }, [visibleCourses, enrolledPrograms]);
 
   // Set initial selected program when programs load
   useEffect(() => {
@@ -154,7 +199,15 @@ export default function LMSPage() {
       : [];
   }, [activeProgram, selectedMajorFilter]);
 
-  if (user?.role === 'student' && visibleCourses.length === 0 && !isLoading && !error) {
+  if (isLoading || isProgramsLoading) {
+    return (
+      <div className="min-h-screen bg-green-50/30 flex items-center justify-center p-6">
+        <Loader size="lg" text="Loading program & majors..." />
+      </div>
+    );
+  }
+
+  if (user?.role === 'student' && groupedPrograms.length === 0 && enrolledPrograms.length === 0 && !error) {
     return (
       <div className="min-h-screen bg-green-50/30 flex items-center justify-center p-6">
         <div className="text-center py-16 px-8 bg-white border border-slate-200/60 rounded-3xl shadow-sm max-w-lg w-full">
@@ -374,8 +427,12 @@ export default function LMSPage() {
                 {/* Clean Direct Course Cards Grid under Program */}
                 <div className="p-6 sm:p-8 bg-slate-50/40">
                   {displayedCourses.length === 0 ? (
-                    <div className="text-center py-12 text-slate-400 text-sm">
-                      No courses found in this major.
+                    <div className="text-center py-16 text-slate-400 text-sm flex flex-col items-center">
+                      <BookOpen className="w-10 h-10 text-slate-300 mb-2" />
+                      <p className="font-semibold text-slate-700">No courses or subjects published yet</p>
+                      <p className="text-xs text-slate-400 mt-1 max-w-sm">
+                        You are enrolled in this program track. Your instructors will publish lectures, quizzes, and course modules here soon.
+                      </p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
