@@ -11,6 +11,16 @@ interface User {
   phone?: string;
   location?: string;
   bio?: string;
+  programId?: string;
+  requestedProgramId?: string;
+  majorId?: string;
+  isApproved?: boolean;
+  isActive?: boolean;
+  isVerified?: boolean;
+  district?: string;
+  degreeQualification?: string;
+  workExperience?: string;
+  currentJobTitle?: string;
 }
 
 interface AppState {
