@@ -231,11 +231,18 @@ const unenrollStudent = async (tenantId, courseId, studentId, userId) => {
   return course;
 };
 
-const getTenantStudents = async (tenantId) => {
+const getTenantStudents = async (tenantId, query = {}) => {
   const User = require('../../auth/models/user.model');
-  return User.find({ tenantId, role: 'student', isActive: true, isApproved: true })
-    .select('name email _id avatar')
-    .lean();
+  const filter = { tenantId, role: 'student', isActive: true };
+  if (query && (query.approvedOnly === 'true' || query.approvedOnly === true)) {
+    filter.isApproved = true;
+  }
+  return User.find(filter)
+    .populate('requestedProgramId', 'name code degreeLevel')
+    .populate('programId', 'name code degreeLevel')
+    .select('name email _id avatar isApproved programId requestedProgramId phone whatsappNumber createdAt')
+    .lean()
+    .sort({ createdAt: -1 });
 };
 
 // ── Legacy attendance ──────────────────────────────────────────────────────────

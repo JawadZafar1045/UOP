@@ -99,15 +99,26 @@ export default function AcademicProgramsPage() {
     setLoading(true);
     setError("");
     try {
-      const [t, p, m, stds] = await Promise.all([
+      const [t, p, m, stds, adminUsers] = await Promise.all([
         lmsService.getAcademicTree(),
         lmsService.getPrograms(),
         lmsService.getMajors(),
         lmsService.getTenantStudents().catch(() => []),
+        lmsService.getAdminUsers().catch(() => []),
       ]);
       setTree(t || []);
       setPrograms(p || []);
       setMajors(m || []);
+
+      let allStds: any[] = [];
+      if (Array.isArray(adminUsers) && adminUsers.length > 0) {
+        allStds = adminUsers.filter((u: any) => u.role === 'student');
+      }
+      if (allStds.length === 0 && Array.isArray(stds) && stds.length > 0) {
+        allStds = stds;
+      }
+      setStudents(allStds);
+
       // Auto-expand all programs if few
       if ((t || []).length <= 5) {
         setExpandedPrograms(new Set((t || []).map((n: AcademicNode) => n._id)));
@@ -386,7 +397,20 @@ export default function AcademicProgramsPage() {
                           className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors">
                           <BarChart3 className="w-3.5 h-3.5" />Performance
                         </Link>
-                        <button onClick={e => { e.stopPropagation(); setEnrollModal({ open: true, program }); setSelectedStudentId(""); }}
+                        <button onClick={async e => {
+                          e.stopPropagation();
+                          setEnrollModal({ open: true, program });
+                          setSelectedStudentId("");
+                          try {
+                            const adminUsers = await lmsService.getAdminUsers().catch(() => []);
+                            if (Array.isArray(adminUsers) && adminUsers.length > 0) {
+                              setStudents(adminUsers.filter((u: any) => u.role === 'student'));
+                            } else {
+                              const stds = await lmsService.getTenantStudents().catch(() => []);
+                              setStudents(stds || []);
+                            }
+                          } catch {}
+                        }}
                           className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-green-800 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg transition-colors">
                           <Users className="w-3.5 h-3.5" />Enroll Student
                         </button>
@@ -787,16 +811,21 @@ export default function AcademicProgramsPage() {
                 prog.commonSubjects.forEach(s => s._id && courseIds.push(s._id));
                 prog.majors.forEach(m => m.subjects.forEach(s => s._id && courseIds.push(s._id)));
 
-                if (courseIds.length === 0) {
-                  alert("No courses found under this program yet. Add majors/courses first!");
-                  setEnrolling(false);
-                  return;
+                // 1. Approve student & bind to this program (if pending or unassigned)
+                try {
+                  await lmsService.approveUser(selectedStudentId, prog._id);
+                } catch (approveErr) {
+                  console.warn("User approval handled or student already approved:", approveErr);
                 }
 
-                // Enroll student into all courses of this program
-                await Promise.all(courseIds.map(cId => lmsService.enrollStudent(cId, selectedStudentId)));
-                alert("Student enrolled successfully into all majors/courses of this program!");
+                // 2. Enroll student into all courses of this program
+                if (courseIds.length > 0) {
+                  await Promise.all(courseIds.map(cId => lmsService.enrollStudent(cId, selectedStudentId)));
+                }
+
+                alert(`Student approved and enrolled successfully into ${prog.name}!`);
                 setEnrollModal({ open: false, program: null });
+                setSelectedStudentId("");
                 await fetchAll();
               } catch (err: any) {
                 alert(err?.response?.data?.message || err?.message || "Failed to enroll student.");
@@ -804,22 +833,92 @@ export default function AcademicProgramsPage() {
                 setEnrolling(false);
               }
             }}>
-              <div className="px-6 py-5 space-y-4">
-                <div className="p-3 bg-green-50 rounded-xl border border-green-100">
-                  <span className="text-xs font-bold text-green-700 uppercase tracking-wider block">Target Program</span>
-                  <span className="text-sm font-bold text-slate-900">{enrollModal.program.name}</span>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-600 mb-1.5">Select Approved Student *</label>
-                  <select required value={selectedStudentId} onChange={e => setSelectedStudentId(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
-                    <option value="">Select student...</option>
-                    {students.map(s => (
-                      <option key={s._id} value={s._id}>{s.name} ({s.email})</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+              {(() => {
+                const targetProgId = enrollModal.program?._id;
+                const targetProgName = (enrollModal.program?.name || '').toLowerCase().trim();
+
+                const requestedThisProgram = students.filter(s => {
+                  const reqProgId = s.requestedProgramId?._id || s.requestedProgramId || s.programId?._id || s.programId;
+                  const reqProgName = (s.requestedProgramId?.name || s.programId?.name || '').toLowerCase().trim();
+                  return (reqProgId && reqProgId === targetProgId) || (targetProgName && reqProgName === targetProgName);
+                });
+
+                const otherStudents = students.filter(s => !requestedThisProgram.some(r => r._id === s._id));
+                const selectedStudent = students.find(s => s._id === selectedStudentId);
+
+                return (
+                  <div className="px-6 py-5 space-y-4">
+                    <div className="p-3 bg-green-50 rounded-xl border border-green-100">
+                      <span className="text-xs font-bold text-green-700 uppercase tracking-wider block">Target Program</span>
+                      <span className="text-sm font-bold text-slate-900">{enrollModal.program.name}</span>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-xs font-bold text-slate-600">Select Approved Student *</label>
+                        <span className="text-[11px] text-slate-400 font-medium">
+                          {students.length} student{students.length !== 1 ? 's' : ''} available
+                        </span>
+                      </div>
+                      <select
+                        required
+                        value={selectedStudentId}
+                        onChange={e => setSelectedStudentId(e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-400 bg-white"
+                      >
+                        <option value="">Select student...</option>
+                        {requestedThisProgram.length > 0 && (
+                          <optgroup label="📋 Requested This Program">
+                            {requestedThisProgram.map(s => (
+                              <option key={s._id} value={s._id}>
+                                {s.name} ({s.email}) {s.isApproved === false ? '— [Pending Request]' : '— [Approved]'}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                        {otherStudents.length > 0 && (
+                          <optgroup label={requestedThisProgram.length > 0 ? "All Other Registered Students" : "Registered Students"}>
+                            {otherStudents.map(s => (
+                              <option key={s._id} value={s._id}>
+                                {s.name} ({s.email}) {s.isApproved === false ? '— [Pending Request]' : '— [Approved]'}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                      </select>
+                    </div>
+
+                    {selectedStudent && (
+                      <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-500 font-medium">Student Name:</span>
+                          <span className="text-slate-900 font-bold">{selectedStudent.name}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-500 font-medium">Email Address:</span>
+                          <span className="text-slate-900 font-semibold">{selectedStudent.email}</span>
+                        </div>
+                        {(selectedStudent.whatsappNumber || selectedStudent.phone) && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-slate-500 font-medium">Contact:</span>
+                            <span className="text-slate-700">{selectedStudent.whatsappNumber || selectedStudent.phone}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-500 font-medium">Status:</span>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            selectedStudent.isApproved === false
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-green-100 text-green-800'
+                          }`}>
+                            {selectedStudent.isApproved === false ? 'Pending Approval (Will approve & activate)' : 'Approved & Active'}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
               <div className="flex gap-3 px-6 py-4 border-t border-slate-100">
                 <button type="button" onClick={() => setEnrollModal({ open: false, program: null })}
                   className="flex-1 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">

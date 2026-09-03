@@ -15,12 +15,18 @@ import {
   X,
   Phone,
   Send,
-  Menu
+  Menu,
+  BookOpen,
+  Target,
+  BarChart3,
+  Briefcase,
+  Trophy,
+  Award,
+  CheckCircle2,
+  Sparkles
 } from 'lucide-react';
 
 export default function LandingPage() {
-  const [studentCount, setStudentCount] = useState(250);
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [publicPrograms, setPublicPrograms] = useState<any[]>([]);
 
   useEffect(() => {
@@ -36,28 +42,6 @@ export default function LandingPage() {
     };
     fetchPublicPrograms();
   }, []);
-
-  const calculatePricePerStudent = () => {
-    let basePrice = 2.50;
-    if (studentCount > 5000) basePrice = 0.75;
-    else if (studentCount > 1500) basePrice = 1.00;
-    else if (studentCount > 500) basePrice = 1.50;
-    else if (studentCount > 100) basePrice = 2.00;
-
-    if (billingCycle === 'yearly') {
-      basePrice = basePrice * 0.8;
-    }
-    return parseFloat(basePrice.toFixed(2));
-  };
-
-  const calculateTotalPrice = () => {
-    const rate = calculatePricePerStudent();
-    const total = rate * studentCount;
-    if (billingCycle === 'yearly') {
-      return Math.round(total * 12).toLocaleString();
-    }
-    return Math.round(total).toLocaleString();
-  };
 
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -113,19 +97,27 @@ export default function LandingPage() {
           </button>
           
           {/* Desktop/Tablet Links */}
-          <div className="hidden md:flex items-center gap-4 md:gap-6 shrink-0">
-            <Link href="#pricing" className="text-xs font-bold text-slate-600 hover:text-green-700 transition-colors uppercase tracking-widest whitespace-nowrap">
-              Pricing
+          <div className="hidden md:flex items-center gap-3 lg:gap-5 shrink-0">
+            <Link href="#about" className="text-xs font-bold text-slate-600 hover:text-green-700 transition-colors uppercase tracking-wider whitespace-nowrap">
+              About
             </Link>
             <div className="h-3 w-[1px] bg-slate-200"></div>
-            <button onClick={() => setIsContactOpen(true)} className="text-xs font-bold text-slate-600 hover:text-green-700 transition-colors uppercase tracking-widest whitespace-nowrap bg-transparent border-0 p-0 cursor-pointer outline-none">
+            <Link href="#courses" className="text-xs font-bold text-slate-600 hover:text-green-700 transition-colors uppercase tracking-wider whitespace-nowrap">
+              Programs
+            </Link>
+            <div className="h-3 w-[1px] bg-slate-200"></div>
+            <Link href="#mentorship" className="text-xs font-bold text-slate-600 hover:text-green-700 transition-colors uppercase tracking-wider whitespace-nowrap">
+              Mentorship
+            </Link>
+            <div className="h-3 w-[1px] bg-slate-200"></div>
+            <button onClick={() => setIsContactOpen(true)} className="text-xs font-bold text-slate-600 hover:text-green-700 transition-colors uppercase tracking-wider whitespace-nowrap bg-transparent border-0 p-0 cursor-pointer outline-none">
               Contact
             </button>
             <div className="h-3 w-[1px] bg-slate-200"></div>
-            <Link href="/login" className="text-xs font-bold text-slate-600 hover:text-green-700 transition-colors uppercase tracking-widest whitespace-nowrap">
+            <Link href="/login" className="text-xs font-bold text-slate-600 hover:text-green-700 transition-colors uppercase tracking-wider whitespace-nowrap">
               Login
             </Link>
-            <Link href="/signup" className="text-xs font-bold bg-green-700 text-white px-5 py-2.5 rounded-full hover:bg-green-800 transition-all shadow-md hover:scale-105 active:scale-95 uppercase tracking-widest whitespace-nowrap shrink-0">
+            <Link href="/signup" className="text-xs font-bold bg-green-700 text-white px-5 py-2.5 rounded-full hover:bg-green-800 transition-all shadow-md hover:scale-105 active:scale-95 uppercase tracking-wider whitespace-nowrap shrink-0">
               Join with us
             </Link>
           </div>
@@ -140,18 +132,24 @@ export default function LandingPage() {
 
           {/* Mobile Dropdown Menu */}
           {isMobileMenuOpen && (
-            <div className="absolute top-full mt-2 right-0 w-48 bg-white border border-slate-200 rounded-2xl p-4 shadow-xl flex flex-col gap-4 md:hidden z-50">
-              <Link href="#pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-slate-600 hover:text-green-700 transition-colors">
-                Pricing
+            <div className="absolute top-full mt-2 right-0 w-52 bg-white border border-slate-200 rounded-2xl p-4 shadow-xl flex flex-col gap-3 md:hidden z-50">
+              <Link href="#about" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-slate-600 hover:text-green-700 transition-colors">
+                About
+              </Link>
+              <Link href="#courses" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-slate-600 hover:text-green-700 transition-colors">
+                Programs
+              </Link>
+              <Link href="#mentorship" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-slate-600 hover:text-green-700 transition-colors">
+                Mentorship
               </Link>
               <button onClick={() => { setIsContactOpen(true); setIsMobileMenuOpen(false); }} className="text-left text-sm font-bold text-slate-600 hover:text-green-700 transition-colors bg-transparent border-0 p-0 cursor-pointer outline-none">
                 Contact
               </button>
-              <div className="h-[1px] w-full bg-slate-100"></div>
+              <div className="h-[1px] w-full bg-slate-100 my-1"></div>
               <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="text-sm font-bold text-slate-600 hover:text-green-700 transition-colors">
                 Login
               </Link>
-              <Link href="/signup" onClick={() => setIsMobileMenuOpen(false)} className="text-center text-sm font-bold bg-green-700 text-white px-4 py-2 rounded-xl hover:bg-green-800 transition-all shadow-md">
+              <Link href="/signup" onClick={() => setIsMobileMenuOpen(false)} className="text-center text-sm font-bold bg-green-700 text-white px-4 py-2.5 rounded-xl hover:bg-green-800 transition-all shadow-md">
                 Join with us
               </Link>
             </div>
@@ -165,7 +163,7 @@ export default function LandingPage() {
           <div className="text-center max-w-3xl mx-auto space-y-6">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-100/80 border border-green-200 text-green-800 text-xs font-bold uppercase tracking-wider shadow-sm">
               <span className="w-2 h-2 rounded-full bg-green-600 animate-pulse"></span>
-              Zarat.pk is Live
+              School of Agriculture LMS • Live Portal
             </div>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-slate-900 tracking-tight leading-tight">
               School of Agriculture <br />
@@ -173,6 +171,17 @@ export default function LandingPage() {
                 PPSC Preparation Platform
               </span>
             </h1>
+
+            <div className="pt-2 pb-1 space-y-3">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm font-black tracking-wider shadow-xs">
+                <span className="text-amber-600 font-bold">★</span>
+                <span>7 YEARS OF LEGACY. 800+ SUCCESS STORIES.</span>
+              </div>
+              <p className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight">
+                Now, a smarter way to learn, prepare &amp; succeed
+              </p>
+            </div>
+
             <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto font-normal leading-relaxed">
               Empowering agriculture professionals in Pakistan with target-oriented learning, course modules, practice papers, and live interactive guidance.
             </p>
@@ -197,7 +206,7 @@ export default function LandingPage() {
         {/* Branding / Partners Section */}
         <section className="w-full bg-white pt-4 pb-16 border-b border-slate-200/50">
           <div className="max-w-5xl mx-auto px-6 text-center">
-            <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-10">Zarat.pk is proudly supported by</p>
+            <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-10">School of Agriculture is proudly supported by</p>
             <div className="flex flex-col md:flex-row items-center justify-center gap-16 md:gap-28">
 
               <div className="flex flex-col items-center gap-3 group cursor-default">
@@ -216,45 +225,155 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Features Section */}
-        <section id="features" className="w-full bg-green-50 py-24 border-y border-green-200">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="text-center max-w-2xl mx-auto mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-green-900 mb-4">Everything you need to succeed in agriculture</h2>
-              <p className="text-lg text-green-700">Comprehensive learning platform with practical tools and expert guidance for modern farming.</p>
+        {/* Welcome to School of Agriculture & Features Section */}
+        <section id="about" className="w-full bg-gradient-to-b from-green-50 via-white to-green-50/50 py-24 border-y border-green-200/80 scroll-mt-20">
+          <div className="max-w-6xl mx-auto px-6 space-y-20">
+            
+            {/* Header / Intro */}
+            <div className="text-center max-w-3xl mx-auto space-y-5">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-100 border border-green-300/80 text-green-800 text-xs sm:text-sm font-extrabold tracking-wide uppercase shadow-xs">
+                <Sparkles className="w-3.5 h-3.5 text-green-700" />
+                <span>Learn. Prepare. Get Selected.</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
+                Welcome to <span className="text-green-800">School of Agriculture</span>
+              </h2>
+              <div className="space-y-4 text-slate-600 text-base sm:text-lg leading-relaxed pt-2 text-justify sm:text-center">
+                <p>
+                  <strong className="text-slate-800 font-semibold">School of Agriculture (SoA)</strong> is a dedicated learning platform built to empower agriculture students, graduates, and aspiring professionals with <span className="text-green-900 font-semibold">quality education, competitive exam preparation, career guidance, and practical knowledge</span>.
+                </p>
+                <p>
+                  For years, we have been helping agrarians turn <span className="text-green-800 font-semibold">knowledge into opportunities</span> — from PPSC and FPSC examinations to government jobs, scholarships, and professional careers.
+                </p>
+                <p className="font-medium text-slate-700">
+                  Now, with our <span className="text-green-700 font-bold">LMS-based learning system</span>, your preparation is more organized, measurable, and accessible than ever.
+                </p>
+              </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {[
-                { icon: <GraduationCap className="w-6 h-6 text-green-700" />, title: "Course Catalog", desc: "Browse agriculture courses from crop science to sustainable farming practices." },
-                { icon: <Users className="w-6 h-6 text-green-700" />, title: "Student Management", desc: "Track your progress, grades, and learning achievements in one place." },
-                { icon: <FileText className="w-6 h-6 text-green-700" />, title: "Resource Library", desc: "Access study materials, guides, and research papers on agriculture." },
-                { icon: <MessageSquare className="w-6 h-6 text-green-700" />, title: "Expert Support", desc: "Connect with instructors and fellow learners through community forums." }
-              ].map((feature, i) => (
-                <div key={i} className="p-6 rounded-2xl bg-white border border-green-200 hover:border-green-400 hover:shadow-md transition-all group">
-                  <div className="w-12 h-12 bg-green-50 rounded-xl border border-green-200 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
-                    {feature.icon}
+
+            {/* Officer / Mentor Cards - Reference Image 2 */}
+            <div id="mentorship" className="pt-4 scroll-mt-24">
+              <div className="text-center max-w-2xl mx-auto mb-10">
+                <span className="text-xs font-bold uppercase tracking-wider text-green-700 bg-green-100/80 px-3.5 py-1 rounded-full border border-green-200">
+                  Field Leadership &amp; Mentorship
+                </span>
+                <h3 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-3">
+                  Expert-Led Guidance from Officers &amp; Field Professionals
+                </h3>
+                <p className="text-sm text-slate-500 mt-2 font-medium">
+                  Learn from top officers serving in the Agriculture Department Punjab.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {[
+                  {
+                    name: "Saad ur Rehman Saadi",
+                    detail: "Agriculture Officer (Ext.) Tehsil Bahawalpur",
+                    image: "/saad.jpeg",
+                    badge: "Agriculture Officer"
+                  },
+                  {
+                    name: "Zeeshan Ubaid",
+                    detail: "Agriculture Officer Extension Tehsil Toba Tek Singh",
+                    image: "/zeeshan_headshot.jpeg",
+                    badge: "Agriculture Officer"
+                  },
+                  {
+                    name: "Muhammad Aamir Mushtaq",
+                    detail: "Director Technical, PMU Agriculture Punjab, Lahore",
+                    image: "/aamir.jpeg",
+                    badge: "Director Technical"
+                  },
+                  {
+                    name: "Amin Zahid Lodhi",
+                    detail: "Assistant Director Pest Warning Pakpattan",
+                    image: "/amin_headshot.jpeg",
+                    badge: "Assistant Director"
+                  }
+                ].map((officer, i) => (
+                  <div
+                    key={i}
+                    className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#14532D] via-[#166534] to-[#0f3d21] border border-green-700/40 p-5 shadow-lg flex items-center gap-4 hover:shadow-xl transition-all group"
+                  >
+                    {/* Background leaf accent glow */}
+                    <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-green-400/10 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform" />
+
+                    <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-white/90 shadow-md shrink-0 bg-white">
+                      <img
+                        src={officer.image}
+                        alt={officer.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+
+                    <div className="flex-1 min-w-0 z-10">
+                      <div className="inline-block mb-1.5">
+                        <span className="text-[10px] font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-green-900/80 text-green-200 border border-green-600/40">
+                          {officer.badge}
+                        </span>
+                      </div>
+                      <h4 className="text-base sm:text-lg font-black text-white leading-tight truncate">
+                        {officer.name}
+                      </h4>
+                      <p className="text-xs sm:text-sm text-green-100/90 font-medium leading-snug mt-1">
+                        {officer.detail}
+                      </p>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-bold text-green-900 mb-2">{feature.title}</h3>
-                  <p className="text-green-700 leading-relaxed">{feature.desc}</p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
+
+            {/* Closing Callout / Vision Box */}
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-green-900 via-green-800 to-emerald-900 text-white p-8 sm:p-12 shadow-2xl text-center">
+              <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+              <div className="relative z-10 max-w-3xl mx-auto space-y-4">
+                <p className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight leading-snug text-green-100">
+                  &ldquo;Your agriculture degree is the beginning.<br />
+                  <span className="text-white font-black underline decoration-amber-400 underline-offset-4">Let School of Agriculture help you turn it into a career.&rdquo;</span>
+                </p>
+                <div className="pt-2">
+                  <p className="text-sm sm:text-base font-bold text-amber-300 uppercase tracking-widest">
+                    ★ Welcome to a smarter way of preparing. ★
+                  </p>
+                  <p className="text-xs sm:text-sm text-green-200/80 italic mt-1 font-medium">
+                    School of Agriculture — Where Agrarians Prepare to Lead
+                  </p>
+                </div>
+                <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <Link
+                    href="/signup"
+                    className="w-full sm:w-auto px-8 py-3.5 bg-white text-green-900 font-bold rounded-xl shadow-md hover:bg-green-50 transition-all text-sm flex items-center justify-center gap-2"
+                  >
+                    Start Your Preparation <ArrowRight className="w-4 h-4" />
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="w-full sm:w-auto px-8 py-3.5 bg-green-950/60 hover:bg-green-950/80 text-white font-bold rounded-xl border border-green-600/40 transition-all text-sm flex items-center justify-center"
+                  >
+                    Access Student LMS
+                  </Link>
+                </div>
+              </div>
+            </div>
+
           </div>
         </section>
 
         {/* How It Works */}
-        <section className="w-full max-w-6xl mx-auto px-6 py-24">
+        <section id="how-it-works" className="w-full max-w-6xl mx-auto px-6 py-24 scroll-mt-20">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-green-900 mb-4 tracking-tight">How Zarat.pk Works</h2>
-            <p className="text-lg text-green-700">Start your agricultural learning journey in four simple steps.</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-green-900 mb-4 tracking-tight">How School of Agriculture Works</h2>
+            <p className="text-lg text-green-700">Start your agricultural career and exam journey in four simple steps.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { step: "01", title: "Sign Up", desc: "Create your free account in minutes to get started." },
-              { step: "02", title: "Explore Courses", desc: "Browse our collection of agriculture and farming courses." },
-              { step: "03", title: "Learn & Practice", desc: "Study materials, complete assignments, and gain practical skills." },
-              { step: "04", title: "Get Certified", desc: "Earn certificates to showcase your agricultural expertise." }
+              { step: "01", title: "Sign Up", desc: "Create your student account in minutes to access the LMS portal." },
+              { step: "02", title: "Explore Programs", desc: "Browse specialized PPSC & competitive exam preparation tracks." },
+              { step: "03", title: "Learn & Practice", desc: "Access lectures, practice topic-wise MCQs, and track attendance." },
+              { step: "04", title: "Get Certified", desc: "Clear competitive examinations and earn verified credentials." }
             ].map((step, i) => (
               <div
                 key={i}
@@ -286,7 +405,7 @@ export default function LandingPage() {
         </section>
 
         {/* Programs / PPSC Preparation Courses Section */}
-        <section id="courses" className="w-full bg-white py-24 border-t border-slate-200">
+        <section id="courses" className="w-full bg-white py-24 border-t border-slate-200 scroll-mt-20">
           <div className="max-w-6xl mx-auto px-6">
             <div className="text-center max-w-2xl mx-auto mb-16">
               <h2 className="text-3xl md:text-4xl font-bold text-green-900 mb-4 tracking-tight">Explore PPSC Preparation Programs</h2>
@@ -357,14 +476,14 @@ export default function LandingPage() {
         {/* Final CTA */}
         <section className="w-full bg-green-50 py-24 px-6 border-y border-green-200">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-5xl font-extrabold text-green-900 mb-6 tracking-tight">Start Your Agricultural Journey Today</h2>
-            <p className="text-xl text-green-700 mb-10 max-w-2xl mx-auto">Join thousands of students learning modern agriculture and farming on Zarat.pk</p>
+            <h2 className="text-3xl md:text-5xl font-extrabold text-green-900 mb-6 tracking-tight">Start Your Agricultural Career Today</h2>
+            <p className="text-xl text-green-700 mb-10 max-w-2xl mx-auto">Join agrarians across Pakistan preparing for competitive success with School of Agriculture.</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/signup" className="w-full sm:w-auto px-8 py-4 bg-green-700 text-white rounded-xl font-medium text-lg hover:bg-green-800 transition-all shadow-md flex items-center justify-center gap-2">
-                Create Free Account <ArrowRight className="w-5 h-5" />
+                Create Student Account <ArrowRight className="w-5 h-5" />
               </Link>
               <Link href="/login" className="w-full sm:w-auto px-8 py-4 bg-white text-green-700 border border-green-200 rounded-xl font-medium text-lg hover:bg-green-50 transition-all shadow-sm flex items-center justify-center">
-                Sign In
+                Sign In to LMS
               </Link>
             </div>
           </div>
@@ -394,16 +513,18 @@ export default function LandingPage() {
                 />
               </button>
               <p className="text-slate-500 mb-8 leading-relaxed max-w-sm text-sm">
-                Zarat.pk.<br /> Learn modern agriculture, master farming skills, and earn recognized certificates on Pakistan's leading agricultural education platform.
+                School of Agriculture (SoA).<br /> Pakistan's dedicated preparation portal for agriculture graduates, PPSC exams, and professional career pathways.
               </p>
             </div>
 
             {/* Product Links */}
             <div className="lg:col-span-2">
-              <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest mb-8">Product</h4>
+              <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest mb-8">Navigation</h4>
               <ul className="space-y-4">
-                <li><Link href="#features" className="text-sm hover:text-green-700 transition-all hover:translate-x-1 inline-block">Features</Link></li>
-                <li><Link href="#courses" className="text-sm hover:text-green-700 transition-all hover:translate-x-1 inline-block">Courses</Link></li>
+                <li><Link href="#about" className="text-sm hover:text-green-700 transition-all hover:translate-x-1 inline-block">About</Link></li>
+                <li><Link href="#courses" className="text-sm hover:text-green-700 transition-all hover:translate-x-1 inline-block">Programs</Link></li>
+                <li><Link href="#mentorship" className="text-sm hover:text-green-700 transition-all hover:translate-x-1 inline-block">Mentorship</Link></li>
+                <li><Link href="#how-it-works" className="text-sm hover:text-green-700 transition-all hover:translate-x-1 inline-block">How It Works</Link></li>
                 <li><Link href="/login" className="text-sm hover:text-green-700 transition-all hover:translate-x-1 inline-block">Login</Link></li>
                 <li><Link href="/signup" className="text-sm hover:text-green-700 transition-all hover:translate-x-1 inline-block">Sign Up</Link></li>
               </ul>
@@ -442,7 +563,7 @@ export default function LandingPage() {
           {/* Bottom Bar */}
           <div className="pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="text-sm text-slate-500">
-              © {new Date().getFullYear()} Zarat.pk. All rights reserved.
+              © {new Date().getFullYear()} School of Agriculture (SoA). All rights reserved.
             </div>
             <div className="flex flex-wrap justify-center gap-6 text-sm text-slate-500 font-medium">
               <a href="#" className="hover:text-green-700 transition-colors">Twitter</a>
@@ -460,8 +581,8 @@ export default function LandingPage() {
             {/* Header */}
             <div className="bg-green-700 px-6 py-5 text-white flex justify-between items-center">
               <div>
-                <h3 className="font-bold text-lg md:text-xl">Contact Zarat.pk</h3>
-                <p className="text-green-100 text-xs mt-0.5">Get in touch with our team for support and inquiries</p>
+                <h3 className="font-bold text-lg md:text-xl">Contact School of Agriculture</h3>
+                <p className="text-green-100 text-xs mt-0.5">Get in touch with our team for admissions and LMS support</p>
               </div>
               <button
                 onClick={() => {

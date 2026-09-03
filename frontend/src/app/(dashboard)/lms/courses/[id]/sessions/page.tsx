@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import { useLmsStore } from '@/store/lmsStore';
 import { useStore } from '@/store/useStore';
-import { Calendar, Plus, CheckCircle2, XCircle, Clock, Users, Download, FileText, ChevronLeft, PieChart as PieIcon, Edit2 } from 'lucide-react';
+import { Calendar, Plus, CheckCircle2, XCircle, Clock, Users, Eye, FileText, ChevronLeft, PieChart as PieIcon, Edit2 } from 'lucide-react';
 import Loader from '@/components/ui/Loader';
 import Link from 'next/link';
 import api from '@/services/api'; // Assuming you have api exported, or I'll just use the service directly.
@@ -163,11 +163,10 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
     }
   };
 
-  const getDownloadUrl = (url: string) => {
-    if (url.includes('cloudinary.com') && url.includes('/upload/')) {
-      return url.replace('/upload/', '/upload/fl_attachment/');
-    }
-    return url;
+  const getViewUrl = (url: string) => {
+    if (!url) return '';
+    // Strip fl_attachment so files view/stream inline in the browser instead of triggering a download
+    return url.replace(/\/fl_attachment(:\w+)?\//, '/').replace(/\/fl_attachment\//, '/').replace('/upload/fl_attachment/', '/upload/');
   };
 
   if (isLoading && sessions.length === 0) {
@@ -280,16 +279,29 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
                     {session.materials && session.materials.length > 0 ? (
                       <div className="flex flex-col gap-1">
                         {session.materials.map((m: any, idx: number) => (
-                          <a key={idx} href={getDownloadUrl(m.url)} target="_blank" rel="noopener noreferrer" download className="flex items-center gap-1.5 text-sm text-green-600 hover:text-green-800">
-                            <Download className="w-3.5 h-3.5" />
+                          <a
+                            key={idx}
+                            href={getViewUrl(m.url)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 text-sm text-green-600 hover:text-green-800 hover:underline"
+                            title={`View ${m.name}`}
+                          >
+                            <Eye className="w-3.5 h-3.5 flex-shrink-0" />
                             <span className="truncate max-w-[150px]" title={m.name}>{m.name}</span>
                           </a>
                         ))}
                       </div>
                     ) : session.materialUrl ? (
-                      <a href={getDownloadUrl(session.materialUrl)} target="_blank" rel="noopener noreferrer" download className="flex items-center gap-1.5 text-sm text-green-600 hover:text-green-800">
-                        <Download className="w-3.5 h-3.5" />
-                        Download
+                      <a
+                        href={getViewUrl(session.materialUrl)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-sm text-green-600 hover:text-green-800 hover:underline"
+                        title="View Material"
+                      >
+                        <Eye className="w-3.5 h-3.5 flex-shrink-0" />
+                        <span>View Material</span>
                       </a>
                     ) : (
                       <span className="text-sm text-slate-400">None</span>

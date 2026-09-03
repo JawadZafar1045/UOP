@@ -219,7 +219,7 @@ const unenrollStudent = async (req, res, next) => {
 
 const getTenantStudents = async (req, res, next) => {
   try {
-    const students = await lmsService.getTenantStudents(req.tenantId);
+    const students = await lmsService.getTenantStudents(req.tenantId, req.query);
     res.json({ success: true, data: students });
   } catch (e) { next(e); }
 };
