@@ -458,6 +458,26 @@ const getSessionAttendance = async (tenantId, sessionId, userId, role) => {
   return Attendance.find({ tenantId, sessionId }).populate('studentId', 'name email');
 };
 
+const deleteSession = async (tenantId, sessionId, userId, userRole) => {
+  const session = await Session.findOne({ _id: sessionId, tenantId });
+  if (!session) throw err('Session not found.', 404);
+
+  const course = await Course.findOne({ _id: session.courseId, tenantId });
+  if (!course) throw err('Course associated with session not found.', 404);
+  if (userRole !== 'admin' && course.instructor.toString() !== userId.toString()) {
+    throw err('You do not have permission to delete this session.', 403);
+  }
+
+  // Delete all attendance records for this session
+  await Attendance.deleteMany({ tenantId, sessionId });
+
+  // Delete the session
+  await Session.findByIdAndDelete(sessionId);
+
+  await logActivity({ userId, tenantId, action: 'DELETE_SESSION', entityType: 'Session', entityId: sessionId });
+  return { success: true, message: 'Session deleted successfully.' };
+};
+
 // ── Attendance Self-Mark ──────────────────────────────────────────────────────
 const markSelfAttendance = async (tenantId, sessionId, studentId, ipAddress) => {
   const session = await Session.findOne({ _id: sessionId, tenantId });
@@ -2068,7 +2088,7 @@ module.exports = {
   getCourses, getCourseById, createCourse, updateCourse, saveDraft, deleteCourse, enrollStudent, unenrollStudent, getTenantStudents,
   markAttendance, getCourseAttendance,
   createAssignment, updateAssignment, deleteAssignment, submitAssignment, getCourseAssignments,
-  createSession, updateSession, toggleSession, getCourseSessions, getSessionAttendance, overrideAttendance,
+  createSession, updateSession, toggleSession, deleteSession, getCourseSessions, getSessionAttendance, overrideAttendance,
   markSelfAttendance, getMyAttendanceSummary,
   uploadCourseDocument, getCourseDocuments, deleteCourseDocument, getLmsDocumentById, getCourseDocumentAccess,
   gradeSubmission, getAssignmentSubmissions, getMySubmission,

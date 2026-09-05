@@ -251,6 +251,7 @@ const deleteAssignment = async (req, res, next) => {
 const createSession       = async (req, res, next) => { try { const s = await lmsService.createSession(req.tenantId, req.params.courseId, req.body, req.files, req.user._id, req.user.role); res.status(201).json({ success: true, data: s }); } catch (e) { next(e); } };
 const getCourseSessions   = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getCourseSessions(req.tenantId, req.params.courseId, req.user._id, req.user.role) }); } catch (e) { next(e); } };
 const updateSession       = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.updateSession(req.tenantId, req.params.id, req.body, req.user._id, req.user.role) }); } catch (e) { next(e); } };
+const deleteSession       = async (req, res, next) => { try { await lmsService.deleteSession(req.tenantId, req.params.id, req.user._id, req.user.role); res.json({ success: true, message: 'Session deleted successfully.' }); } catch (e) { next(e); } };
 const toggleSession       = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.toggleSession(req.tenantId, req.params.id, req.user._id, req.user.role) }); } catch (e) { next(e); } };
 const getSessionAttendance = async (req, res, next) => { try { res.json({ success: true, data: await lmsService.getSessionAttendance(req.tenantId, req.params.id, req.user._id, req.user.role) }); } catch (e) { next(e); } };
 const overrideAttendance  = async (req, res, next) => { try { const { status, reason } = req.body; res.json({ success: true, data: await lmsService.overrideAttendance(req.tenantId, req.params.id, req.params.studentId, status, reason, req.user._id, req.user.role) }); } catch (e) { next(e); } };
@@ -735,7 +736,7 @@ module.exports = {
   getCourses, getCourse, createCourse, updateCourse, saveDraft, deleteCourse, enrollStudent, unenrollStudent, getTenantStudents,
   markAttendance, getCourseAttendance,
   createAssignment, updateAssignment, deleteAssignment, submitAssignment, getCourseAssignments,
-  createSession, updateSession, getCourseSessions, toggleSession, getSessionAttendance, overrideAttendance,
+  createSession, updateSession, getCourseSessions, toggleSession, getSessionAttendance, overrideAttendance, deleteSession,
   markSelfAttendance, getMyAttendanceSummary,
   uploadCourseDocument, getCourseDocuments, deleteCourseDocument, getCourseDocumentAccess,
   gradeSubmission, getAssignmentSubmissions, getMySubmission,

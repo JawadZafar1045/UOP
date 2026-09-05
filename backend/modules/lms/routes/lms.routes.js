@@ -62,6 +62,7 @@ router.post('/assignments/:id/submit',  authorize('student'), upload.single('fil
 router.post('/courses/:courseId/sessions',                  authorize('admin', 'teacher'), upload.array('materials', 5), val.createSessionVal, validateResult, ctrl.createSession);
 router.get('/courses/:courseId/sessions',                   val.getCourseSessionsVal, validateResult, authorize('admin', 'teacher', 'student'),          ctrl.getCourseSessions);
 router.patch('/sessions/:id',                               val.updateSessionVal, validateResult, authorize('admin', 'teacher'),                     ctrl.updateSession);
+router.delete('/sessions/:id',                              authorize('admin', 'teacher'),                                                         ctrl.deleteSession);
 router.patch('/sessions/:id/toggle',                        val.toggleSessionVal, validateResult, authorize('admin', 'teacher'),                     ctrl.toggleSession);
 router.get('/sessions/:id/attendance',                      val.getSessionAttendanceVal, validateResult, authorize('admin', 'teacher'),                     ctrl.getSessionAttendance);
 router.patch('/sessions/:id/attendance/:studentId',         val.overrideAttendanceVal, validateResult, authorize('admin', 'teacher'),                     ctrl.overrideAttendance);

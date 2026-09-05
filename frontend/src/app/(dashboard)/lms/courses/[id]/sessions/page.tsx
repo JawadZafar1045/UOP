@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import { useLmsStore } from '@/store/lmsStore';
 import { useStore } from '@/store/useStore';
-import { Calendar, Plus, CheckCircle2, XCircle, Clock, Users, Eye, FileText, ChevronLeft, PieChart as PieIcon, Edit2 } from 'lucide-react';
+import { Calendar, Plus, CheckCircle2, XCircle, Clock, Users, Eye, FileText, ChevronLeft, PieChart as PieIcon, Edit2, Trash2 } from 'lucide-react';
 import Loader from '@/components/ui/Loader';
 import Link from 'next/link';
 import api from '@/services/api'; // Assuming you have api exported, or I'll just use the service directly.
@@ -32,6 +32,9 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
   const [currentAttendanceList, setCurrentAttendanceList] = useState<any[]>([]);
   const [activeSessionName, setActiveSessionName] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const isTeacherOrAdmin = user?.role === 'teacher' || user?.role === 'admin';
 
@@ -161,6 +164,35 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
     } catch (err) {
       alert('Failed to load attendance list');
     }
+  };
+
+  const handleDeleteClick = (sessionId: string) => {
+    setSessionToDelete(sessionId);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!sessionToDelete) return;
+    setIsDeleting(true);
+    try {
+      const { deleteSession } = useLmsStore.getState();
+      await deleteSession(sessionToDelete);
+      setShowDeleteConfirm(false);
+      setSessionToDelete(null);
+      alert('Session deleted successfully!');
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete session');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const isAttendanceActive = (session: any) => {
+    if (!session.isOpen) return false;
+    // If no attendanceCloseAt is set, attendance is active as long as isOpen is true
+    if (!session.attendanceCloseAt) return true;
+    // Check if current time is before attendanceCloseAt
+    return new Date() < new Date(session.attendanceCloseAt);
   };
 
   const getViewUrl = (url: string) => {
@@ -308,9 +340,9 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
                     )}
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${session.isOpen ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-slate-100 text-slate-700 border border-slate-200'}`}>
-                      {session.isOpen ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
-                      {session.isOpen ? 'Open' : 'Closed'}
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${isAttendanceActive(session) ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-slate-100 text-slate-700 border border-slate-200'}`}>
+                      {isAttendanceActive(session) ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
+                      {isAttendanceActive(session) ? 'Open' : 'Closed'}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
@@ -319,6 +351,9 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
                         <div className="flex items-center gap-2">
                           <button onClick={() => openEditModal(session)} className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all" title="Edit Session">
                             <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button onClick={() => handleDeleteClick(session._id)} disabled={isDeleting} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50" title="Delete Session">
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleToggle(session._id)}
@@ -337,11 +372,11 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
                     ) : (
                       <button 
                         onClick={() => handleMarkPresent(session._id)}
-                        disabled={!session.isOpen || session.isAttended || isMarking === session._id}
+                        disabled={!isAttendanceActive(session) || session.isAttended || isMarking === session._id}
                         className={`px-3 py-1.5 rounded-md font-medium border transition-all ${
                           session.isAttended
                             ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
-                            : session.isOpen 
+                            : isAttendanceActive(session)
                               ? 'bg-green-600 text-white border-transparent hover:bg-green-700' 
                               : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
                         }`}
@@ -350,7 +385,7 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
                           ? <span className="flex items-center gap-1"><Loader size="sm" /> Marking...</span>
                           : session.isAttended
                             ? 'Present'
-                            : session.isOpen
+                            : isAttendanceActive(session)
                               ? 'Mark Present'
                               : 'Closed'}
                       </button>
@@ -435,6 +470,42 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
             <div className="p-4 border-t border-slate-100 bg-slate-50/30 flex justify-end">
               <button onClick={() => setShowAttendanceModal(false)} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-all shadow-sm">
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm shadow-xl overflow-hidden">
+            <div className="p-6 border-b border-slate-100 flex items-center gap-3">
+              <div className="p-2 bg-red-100 rounded-lg text-red-600">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <h2 className="text-lg font-bold text-slate-900">Delete Session?</h2>
+            </div>
+            <div className="p-6">
+              <p className="text-slate-600 text-sm">Are you sure you want to delete this session? This action cannot be undone and all attendance records for this session will be removed.</p>
+            </div>
+            <div className="p-4 border-t border-slate-100 bg-slate-50/30 flex justify-end gap-3">
+              <button 
+                onClick={() => setShowDeleteConfirm(false)} 
+                disabled={isDeleting}
+                className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmDelete} 
+                disabled={isDeleting}
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 shadow-sm"
+              >
+                {isDeleting ? <><Loader size="sm" /> Deleting...</> : <>
+                  <Trash2 className="w-4 h-4" />
+                  Delete Session
+                </>}
               </button>
             </div>
           </div>

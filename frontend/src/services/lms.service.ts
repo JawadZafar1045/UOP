@@ -78,6 +78,11 @@ export const updateSession = async (sessionId: string, data: any) => {
   return res.data?.data ?? res.data;
 };
 
+export const deleteSession = async (sessionId: string) => {
+  const res = await api.delete(`/lms/sessions/${sessionId}`);
+  return res.data?.data ?? res.data;
+};
+
 export const getSessionAttendance = async (sessionId: string) => {
   const res = await api.get(`/lms/sessions/${sessionId}/attendance`);
   return res.data?.data ?? res.data;

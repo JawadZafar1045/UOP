@@ -137,6 +137,7 @@ interface LmsState {
   createSession: (courseId: string, data: any) => Promise<void>;
   toggleSession: (sessionId: string) => Promise<void>;
   markPresent: (sessionId: string) => Promise<void>;
+  deleteSession: (sessionId: string) => Promise<void>;
   
   fetchDocuments: (courseId: string) => Promise<void>;
   uploadDocument: (courseId: string, formData: FormData) => Promise<void>;
@@ -397,6 +398,20 @@ export const useLmsStore = create<LmsState>((set) => ({
       }));
     } catch (error: any) {
       set({ error: error?.message || 'Failed to update session', isLoading: false });
+      throw error;
+    }
+  },
+
+  deleteSession: async (id) => {
+    set({ isLoading: true, error: null });
+    try {
+      await lmsService.deleteSession(id);
+      set((state) => ({
+        sessions: state.sessions.filter((s) => s._id !== id),
+        isLoading: false,
+      }));
+    } catch (error: any) {
+      set({ error: error?.message || 'Failed to delete session', isLoading: false });
       throw error;
     }
   },
