@@ -4,7 +4,6 @@ const http = require('http');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
-const rateLimit = require('express-rate-limit');
 
 const connectDB = require('./config/database');
 const { initializeSocket } = require('./config/socket');
@@ -42,27 +41,26 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Sanitize inputs to prevent NoSQL Injection and XSS
-const { mongoSanitize, xssSanitize } = require('./modules/shared/middlewares/security.middleware');
+const { mongoSanitize, xssSanitize, authLimiter, generalLimiter } = require('./modules/shared/middlewares/security.middleware');
 app.use(mongoSanitize);
 app.use(xssSanitize);
 
 // ── Rate Limiter ───────────────────────────────────────────────────────────────
-const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
-  max: parseInt(process.env.RATE_LIMIT_MAX) || 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, message: 'Too many requests, please try again later.' },
+// Apply stricter rate limiter to auth routes (300 req/5min)
+app.use('/api/auth', authLimiter);
+
+// Apply general rate limiter to all /api routes (500 req/5min)
+app.use('/api', (req, res, next) => {
+  if (req.path === '/health' || req.path === '/api/health') {
+    return next();
+  }
+  generalLimiter(req, res, next);
 });
 
 // ── API Routes ─────────────────────────────────────────────────────────────────
 const apiRouter = express.Router();
 
-
-// Apply limiter to all API routes
-apiRouter.use(limiter);
-
-// Health Check
+// Health Check (no rate limiter)
 apiRouter.get('/health', (req, res) => {
   res.json({ success: true, message: 'UOP API is running', timestamp: new Date().toISOString() });
 });

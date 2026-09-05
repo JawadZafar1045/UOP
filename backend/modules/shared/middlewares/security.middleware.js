@@ -1,6 +1,72 @@
 const rateLimit = require('express-rate-limit');
+const RedisStore = require('rate-limit-redis');
+const { createClient } = require('redis');
 const path = require('path');
 
+// ==================== REDIS SETUP ====================
+let redisClient = null;
+let redisConnected = false;
+
+/**
+ * Initialize Redis Client with fallback to memory store
+ */
+async function initializeRedis() {
+  try {
+    redisClient = createClient({
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT) || 6379,
+      password: process.env.REDIS_PASSWORD || undefined,
+      socket: {
+        reconnectStrategy: (retries) => Math.min(retries * 50, 500),
+      },
+    });
+
+    redisClient.on('error', (err) => {
+      console.warn('[Redis] Connection error:', err.message);
+      redisConnected = false;
+    });
+
+    redisClient.on('connect', () => {
+      console.log('[Redis] Connected successfully');
+      redisConnected = true;
+    });
+
+    redisClient.on('ready', () => {
+      console.log('[Redis] Client ready');
+    });
+
+    await redisClient.connect();
+    redisConnected = true;
+    console.log('[Rate Limiter] Using Redis store for cluster mode support');
+  } catch (error) {
+    console.warn('[Redis] Failed to connect:', error.message);
+    console.warn('[Rate Limiter] Falling back to memory store (single instance only)');
+    redisConnected = false;
+    redisClient = null;
+  }
+}
+
+// Initialize Redis on module load
+initializeRedis();
+
+// ==================== IP DETECTION ====================
+/**
+ * Get client IP from request, checking Cloudflare and X-Forwarded-For headers
+ */
+function getClientIP(req) {
+  // Check Cloudflare header first
+  if (req.headers['cf-connecting-ip']) {
+    return req.headers['cf-connecting-ip'];
+  }
+  // Check X-Forwarded-For (for proxies)
+  if (req.headers['x-forwarded-for']) {
+    return req.headers['x-forwarded-for'].split(',')[0].trim();
+  }
+  // Fallback to direct IP
+  return req.ip || req.connection.remoteAddress || 'unknown';
+}
+
+// ==================== CUSTOM SANITIZERS ====================
 /**
  * Custom NoSQL Injection Sanitizer
  * Recursively deletes any keys starting with $ or containing a period (.) from req.body, req.query, and req.params.
@@ -73,17 +139,72 @@ const xssSanitize = (req, res, next) => {
   next();
 };
 
+// ==================== RATE LIMITERS ====================
 /**
  * Strict Rate Limiter for Authentication Endpoints (Brute Force Prevention)
+ * 300 requests per 5 minutes for /api/auth/* endpoints
  */
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // Limit each IP to 20 auth requests per window
+  store: redisConnected && redisClient
+    ? new RedisStore({
+        client: redisClient,
+        prefix: 'rate-limit:auth:',
+        sendCommand: async (cmd, args) => {
+          try {
+            return await redisClient.sendCommand(cmd, args);
+          } catch (error) {
+            console.error('[Rate Limiter Auth] Redis command error:', error);
+            throw error;
+          }
+        },
+      })
+    : undefined,
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 300, // 300 requests per window
+  keyGenerator: (req) => getClientIP(req),
+  skip: (req) => {
+    // Skip health check endpoints
+    return req.path === '/health' || req.path === '/api/health';
+  },
   standardHeaders: true,
   legacyHeaders: false,
   message: {
     success: false,
-    message: 'Too many authentication attempts. Please try again after 15 minutes.',
+    message: 'Too many authentication attempts. Please try again after 5 minutes.',
+  },
+});
+
+/**
+ * General Rate Limiter for all API endpoints
+ * 500 requests per 5 minutes for all other /api/* endpoints
+ */
+const generalLimiter = rateLimit({
+  store: redisConnected && redisClient
+    ? new RedisStore({
+        client: redisClient,
+        prefix: 'rate-limit:general:',
+        sendCommand: async (cmd, args) => {
+          try {
+            return await redisClient.sendCommand(cmd, args);
+          } catch (error) {
+            console.error('[Rate Limiter General] Redis command error:', error);
+            throw error;
+          }
+        },
+      })
+    : undefined,
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 500, // 500 requests per window
+  keyGenerator: (req) => getClientIP(req),
+  skip: (req) => {
+    // Skip health check endpoints
+    return req.path === '/health' || req.path === '/api/health';
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Too many requests. Please try again after 5 minutes.',
   },
 });
 
@@ -168,5 +289,9 @@ module.exports = {
   mongoSanitize,
   xssSanitize,
   authLimiter,
+  generalLimiter,
   validateUploadedFile,
+  redisClient,
+  redisConnected,
+  getClientIP,
 };
