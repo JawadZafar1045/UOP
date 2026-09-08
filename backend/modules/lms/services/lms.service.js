@@ -736,6 +736,7 @@ const createQuiz = async (tenantId, courseId, data, userId, role) => {
     timeLimit: data.timeLimit ? parseInt(data.timeLimit, 10) : null,
     passMark: data.passMark !== undefined ? Number(data.passMark) : 60,
     maxAttempts: data.maxAttempts !== undefined ? Number(data.maxAttempts) : 1,
+    allowRetake: data.allowRetake !== undefined ? !!data.allowRetake : true,
     shuffleQuestions: !!data.shuffleQuestions,
     showResultImmediately: data.showResultImmediately !== undefined ? !!data.showResultImmediately : true,
     enableNegativeMarking: !!data.enableNegativeMarking,
@@ -793,6 +794,7 @@ const createQuizBulk = async (tenantId, courseId, quizData, questions, userId, r
     timeLimit: quizData.timeLimit ? parseInt(quizData.timeLimit, 10) : null,
     passMark: quizData.passMark !== undefined ? Number(quizData.passMark) : 60,
     maxAttempts: quizData.maxAttempts !== undefined ? Number(quizData.maxAttempts) : 1,
+    allowRetake: quizData.allowRetake !== undefined ? !!quizData.allowRetake : true,
     shuffleQuestions: !!quizData.shuffleQuestions,
     showResultImmediately: quizData.showResultImmediately !== undefined ? !!quizData.showResultImmediately : true,
     enableNegativeMarking: !!quizData.enableNegativeMarking,
@@ -899,6 +901,7 @@ const updateQuiz = async (tenantId, quizId, data, userId, userRole) => {
   }
   if (updateData.passMark !== undefined) updateData.passMark = Number(updateData.passMark);
   if (updateData.maxAttempts !== undefined) updateData.maxAttempts = Number(updateData.maxAttempts);
+  if (updateData.allowRetake !== undefined) updateData.allowRetake = !!updateData.allowRetake;
   if (updateData.enableNegativeMarking !== undefined) updateData.enableNegativeMarking = !!updateData.enableNegativeMarking;
   if (updateData.correctMark !== undefined) updateData.correctMark = Number(updateData.correctMark);
   if (updateData.negativeMark !== undefined) updateData.negativeMark = Math.abs(Number(updateData.negativeMark));
@@ -975,9 +978,30 @@ const startQuizAttempt = async (tenantId, quizId, studentId) => {
     throw err('You are not enrolled in this course.', 403);
   }
 
-  const attemptCount = await QuizAttempt.countDocuments({ tenantId, quizId, studentId });
-  if (attemptCount >= quiz.maxAttempts) throw err('No attempts remaining.', 403);
-  const attempt = await QuizAttempt.create({ tenantId, quizId, courseId: quiz.courseId, studentId, startedAt: new Date(), attemptNumber: attemptCount + 1 });
+  // Count only completed/submitted attempts when evaluating attempt limits
+  const submittedAttemptCount = await QuizAttempt.countDocuments({ tenantId, quizId, studentId, submittedAt: { $ne: null } });
+  const allowRetake = quiz.allowRetake !== false;
+
+  if (!allowRetake && submittedAttemptCount >= (quiz.maxAttempts || 1)) {
+    throw err('Retakes are not allowed for this quiz.', 403);
+  }
+
+  if (allowRetake && quiz.maxAttempts > 1 && submittedAttemptCount >= quiz.maxAttempts) {
+    throw err(`Maximum attempt limit (${quiz.maxAttempts}) reached.`, 403);
+  }
+
+  // Discard any stale unsubmitted attempt so the student starts with a clean attempt
+  await QuizAttempt.deleteMany({ tenantId, quizId, studentId, submittedAt: null });
+
+  const totalAttempts = await QuizAttempt.countDocuments({ tenantId, quizId, studentId });
+  const attempt = await QuizAttempt.create({
+    tenantId,
+    quizId,
+    courseId: quiz.courseId,
+    studentId,
+    startedAt: new Date(),
+    attemptNumber: totalAttempts + 1
+  });
   let questions = await QuizQuestion.find({ tenantId, quizId }).lean();
   if (quiz.shuffleQuestions) questions = questions.sort(() => Math.random() - 0.5);
   const safeQuestions = questions.map(({ correctIndex, explanation, ...q }) => q);
@@ -985,7 +1009,7 @@ const startQuizAttempt = async (tenantId, quizId, studentId) => {
 };
 
 const submitQuizAttempt = async (tenantId, quizId, studentId, answers) => {
-  const attempt = await QuizAttempt.findOne({ tenantId, quizId, studentId, submittedAt: null });
+  const attempt = await QuizAttempt.findOne({ tenantId, quizId, studentId, submittedAt: null }).sort({ createdAt: -1 });
   if (!attempt) throw err('No active attempt found.', 404);
   const quiz = await Quiz.findOne({ _id: quizId, tenantId });
   if (!quiz) throw err('Quiz not found.', 404);

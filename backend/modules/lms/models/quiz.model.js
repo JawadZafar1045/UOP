@@ -12,6 +12,7 @@ const quizSchema = new mongoose.Schema(
     timeLimit:             { type: Number, default: null }, // minutes; null = no limit
     passMark:              { type: Number, default: 60 },   // percent
     maxAttempts:           { type: Number, default: 1 },
+    allowRetake:           { type: Boolean, default: true },
     shuffleQuestions:      { type: Boolean, default: false },
     showResultImmediately: { type: Boolean, default: true },
 

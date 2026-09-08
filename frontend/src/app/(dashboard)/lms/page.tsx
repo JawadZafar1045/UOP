@@ -143,7 +143,7 @@ export default function LMSPage() {
         const maj = course.majorId;
         const isCommon = course.isCommon || !maj;
         const majId = isCommon ? 'common' : (maj?._id ? String(maj._id) : (maj ? String(maj) : 'other'));
-        const majName = isCommon ? 'Core & Common Subjects' : (maj?.name || 'Specialized Major');
+        const majName = isCommon ? 'Common Subjects' : (maj?.name || 'Specialized Major');
         const majCode = isCommon ? 'CORE' : maj?.code;
         const majDesc = maj?.description;
 
@@ -447,10 +447,17 @@ export default function LMSPage() {
                             <div className="relative h-44 bg-gradient-to-br from-green-900/10 via-emerald-800/5 to-slate-100 flex items-center justify-center overflow-hidden border-b border-slate-100">
                               <PlayCircle className="w-14 h-14 text-green-600/80 group-hover:text-green-600 group-hover:scale-110 transition-all duration-300" />
 
-                              {/* Status Badge */}
-                              <div className="absolute top-3 right-3 z-10">
+                              {/* Top Badges Bar: Major Tag + Status Badge */}
+                              <div className="absolute top-3 inset-x-3 z-10 flex items-center justify-between gap-2 pointer-events-none">
+                                {course._majorName ? (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-white/95 text-green-800 px-2.5 py-1 rounded-lg shadow-xs border border-green-200 backdrop-blur-xs min-w-0 max-w-[65%]">
+                                    <Layers className="w-3 h-3 text-green-700 shrink-0" />
+                                    <span className="truncate">{course._majorName}</span>
+                                  </span>
+                                ) : <div />}
+
                                 <span
-                                  className={`text-[9px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-full shadow-sm border ${
+                                  className={`text-[9px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full shadow-xs border shrink-0 ${
                                     course.status === "active"
                                       ? "bg-green-700 text-white border-green-600"
                                       : "bg-slate-700 text-white border-slate-600"
@@ -460,28 +467,20 @@ export default function LMSPage() {
                                 </span>
                               </div>
 
-                              {/* Major Tag on Top Left */}
-                              {course._majorName && (
-                                <div className="absolute top-3 left-3 z-10">
-                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-white text-green-800 px-2.5 py-1 rounded-lg shadow-sm border border-green-200 backdrop-blur">
-                                    <Layers className="w-3 h-3 text-green-700" />
-                                    {course._majorName}
-                                  </span>
-                                </div>
-                              )}
-
                               {/* Course Code & Credit Hours on Bottom Left */}
-                              <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5">
-                                {course.courseCode && (
-                                  <span className="text-[10px] font-bold bg-white/95 text-slate-700 px-2 py-0.5 rounded shadow-sm border border-slate-200">
-                                    {course.courseCode}
-                                  </span>
-                                )}
-                                {course.creditHours && (
-                                  <span className="text-[10px] font-bold bg-green-50 text-green-800 px-2 py-0.5 rounded shadow-sm border border-green-200">
-                                    {course.creditHours} Cr Hrs
-                                  </span>
-                                )}
+                              <div className="absolute bottom-3 inset-x-3 z-10 flex items-center justify-between gap-1.5 pointer-events-none">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  {course.courseCode && (
+                                    <span className="text-[10px] font-bold bg-white/95 text-slate-700 px-2 py-0.5 rounded shadow-xs border border-slate-200">
+                                      {course.courseCode}
+                                    </span>
+                                  )}
+                                  {course.creditHours && (
+                                    <span className="text-[10px] font-bold bg-green-50 text-green-800 px-2 py-0.5 rounded shadow-xs border border-green-200">
+                                      {course.creditHours} Cr Hrs
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
 

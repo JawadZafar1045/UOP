@@ -77,6 +77,7 @@ export default function BulkQuizUploadModal({
     timeLimit: '',
     passMark: 60,
     maxAttempts: 1,
+    allowRetake: true,
     shuffleQuestions: false,
     showResultImmediately: true,
     enableNegativeMarking: false,
@@ -196,6 +197,7 @@ export default function BulkQuizUploadModal({
           timeLimit: quizForm.timeLimit ? parseInt(quizForm.timeLimit, 10) : null,
           passMark: Number(quizForm.passMark),
           maxAttempts: Number(quizForm.maxAttempts),
+          allowRetake: quizForm.allowRetake !== false,
           shuffleQuestions: quizForm.shuffleQuestions,
           showResultImmediately: quizForm.showResultImmediately,
           enableNegativeMarking: quizForm.enableNegativeMarking,
@@ -702,19 +704,39 @@ export default function BulkQuizUploadModal({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Max Attempts</label>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                      Max Attempts {quizForm.allowRetake ? '(1 or 0 for unlimited)' : '(Fixed: 1)'}
+                    </label>
                     <input
                       type="number"
                       value={quizForm.maxAttempts}
-                      onChange={(e) => setQuizForm({ ...quizForm, maxAttempts: parseInt(e.target.value) || 1 })}
-                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none"
-                      min="1"
+                      disabled={!quizForm.allowRetake}
+                      onChange={(e) => setQuizForm({ ...quizForm, maxAttempts: parseInt(e.target.value) || 0 })}
+                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none disabled:bg-slate-100 disabled:text-slate-400"
+                      min="0"
                       required
                     />
                   </div>
                 </div>
 
                 <div className="pt-2 border-t border-slate-100 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-bold text-slate-800">Allow Quiz Retakes</p>
+                      <p className="text-[11px] text-slate-500">Students can retake this quiz to practice and improve their score</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setQuizForm({ ...quizForm, allowRetake: !quizForm.allowRetake })}
+                      className="flex items-center"
+                    >
+                      {quizForm.allowRetake ? (
+                        <ToggleRight className="w-9 h-6 text-blue-600" />
+                      ) : (
+                        <ToggleLeft className="w-9 h-6 text-slate-300" />
+                      )}
+                    </button>
+                  </div>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs font-bold text-slate-800">Shuffle Questions</p>

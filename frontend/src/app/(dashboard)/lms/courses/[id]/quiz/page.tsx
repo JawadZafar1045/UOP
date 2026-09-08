@@ -7,7 +7,7 @@ import {
   CheckCircle, Plus, Play, XCircle, Clock, Users, FileText,
   Eye, Settings, BarChart3, Edit, Trash2, ToggleLeft, ToggleRight,
   ChevronLeft, ChevronRight, Award, CheckCircle2, AlertCircle, FileSpreadsheet,
-  Volume2, VolumeX, HelpCircle
+  Volume2, VolumeX, HelpCircle, RotateCcw
 } from 'lucide-react';
 import Loader from '@/components/ui/Loader';
 import Link from 'next/link';
@@ -69,6 +69,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
     timeLimit: '',
     passMark: 60,
     maxAttempts: 1,
+    allowRetake: true,
     shuffleQuestions: false,
     showResultImmediately: true,
     enableNegativeMarking: false,
@@ -126,6 +127,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
         timeLimit: createForm.timeLimit ? parseInt(createForm.timeLimit) : null,
         passMark: Number(createForm.passMark),
         maxAttempts: Number(createForm.maxAttempts),
+        allowRetake: createForm.allowRetake !== false,
         shuffleQuestions: createForm.shuffleQuestions,
         showResultImmediately: createForm.showResultImmediately,
         enableNegativeMarking: !!createForm.enableNegativeMarking,
@@ -151,6 +153,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
         timeLimit: '',
         passMark: 60,
         maxAttempts: 1,
+        allowRetake: true,
         shuffleQuestions: false,
         showResultImmediately: true,
         enableNegativeMarking: false,
@@ -177,6 +180,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
       timeLimit: quiz.timeLimit ? String(quiz.timeLimit) : '',
       passMark: quiz.passMark || 60,
       maxAttempts: quiz.maxAttempts || 1,
+      allowRetake: quiz.allowRetake !== false,
       shuffleQuestions: !!quiz.shuffleQuestions,
       showResultImmediately: !!quiz.showResultImmediately,
       enableNegativeMarking: !!quiz.enableNegativeMarking,
@@ -196,6 +200,7 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
       timeLimit: '',
       passMark: 60,
       maxAttempts: 1,
+      allowRetake: true,
       shuffleQuestions: false,
       showResultImmediately: true,
       enableNegativeMarking: false,
@@ -587,18 +592,30 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                   </div>
                 ) : (
                   <div className="flex items-center gap-3 w-full">
-                    <button
-                      onClick={() => handleStartQuiz(quiz)}
-                      disabled={quiz.status !== 'published' || ((quiz.myAttempts || 0) >= (quiz.maxAttempts || 1))}
-                      className={`flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm active:scale-[0.98] ${
-                        quiz.status === 'published' && ((quiz.myAttempts || 0) < (quiz.maxAttempts || 1))
-                          ? 'bg-green-600 text-white hover:bg-green-700'
-                          : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                      }`}
-                    >
-                      <Play className="w-4 h-4" />
-                      {(quiz.myAttempts || 0) > 0 ? 'Retake Quiz' : 'Start Quiz'}
-                    </button>
+                    {(() => {
+                      const isRetake = (quiz.myAttempts || 0) > 0;
+                      const allowRetake = quiz.allowRetake !== false;
+                      const canRetake = quiz.status === 'published' && (
+                        allowRetake
+                          ? (!quiz.maxAttempts || quiz.maxAttempts <= 1 || (quiz.myAttempts || 0) < quiz.maxAttempts)
+                          : ((quiz.myAttempts || 0) < (quiz.maxAttempts || 1))
+                      );
+
+                      return (
+                        <button
+                          onClick={() => handleStartQuiz(quiz)}
+                          disabled={!canRetake}
+                          className={`flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm active:scale-[0.98] ${
+                            canRetake
+                              ? 'bg-green-600 text-white hover:bg-green-700'
+                              : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                          }`}
+                        >
+                          {isRetake ? <RotateCcw className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                          {isRetake ? 'Retake Quiz' : 'Start Quiz'}
+                        </button>
+                      );
+                    })()}
                     
                     {((quiz.myAttempts || 0) > 0 || quiz.bestScore !== null) && (
                       <button
@@ -705,19 +722,39 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Max Attempts</label>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                      Max Attempts {createForm.allowRetake ? '(1 or 0 for unlimited)' : '(Fixed: 1)'}
+                    </label>
                     <input
                       type="number"
                       value={createForm.maxAttempts}
-                      onChange={(e) => setCreateForm({...createForm, maxAttempts: parseInt(e.target.value) || 1})}
-                      className="w-full rounded-xl border border-slate-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-green-600 outline-none"
-                      min="1"
+                      disabled={!createForm.allowRetake}
+                      onChange={(e) => setCreateForm({...createForm, maxAttempts: parseInt(e.target.value) || 0})}
+                      className="w-full rounded-xl border border-slate-300 px-3 py-1.5 text-sm focus:ring-2 focus:ring-green-600 outline-none disabled:bg-slate-100 disabled:text-slate-400"
+                      min="0"
                       required
                     />
                   </div>
                 </div>
 
                 <div className="pt-2 border-t border-slate-100 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-bold text-slate-800">Allow Quiz Retakes</p>
+                      <p className="text-[11px] text-slate-500">Students can retake the quiz to improve their score</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setCreateForm({...createForm, allowRetake: !createForm.allowRetake})}
+                      className="flex items-center"
+                    >
+                      {createForm.allowRetake ? (
+                        <ToggleRight className="w-8 h-5 text-green-600" />
+                      ) : (
+                        <ToggleLeft className="w-8 h-5 text-slate-300" />
+                      )}
+                    </button>
+                  </div>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs font-bold text-slate-800">Shuffle Questions</p>
@@ -1311,7 +1348,21 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                   )}
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {[{label:'Questions', val: quizPlayerQuiz.questionCount || '?'},{label:'Time Limit', val: quizPlayerQuiz.timeLimit ? `${quizPlayerQuiz.timeLimit} min` : 'None'},{label:'Pass Mark', val:`${quizPlayerQuiz.passMark}%`},{label:'Max Attempts', val: quizPlayerQuiz.maxAttempts}].map(s=>(
+                    {[{
+                      label:'Questions', 
+                      val: quizPlayerQuiz.questionCount || '?'
+                    },{
+                      label:'Time Limit', 
+                      val: quizPlayerQuiz.timeLimit ? `${quizPlayerQuiz.timeLimit} min` : 'None'
+                    },{
+                      label:'Pass Mark', 
+                      val:`${quizPlayerQuiz.passMark}%`
+                    },{
+                      label:'Max Attempts', 
+                      val: quizPlayerQuiz.allowRetake === false 
+                        ? (quizPlayerQuiz.maxAttempts || 1) 
+                        : (quizPlayerQuiz.maxAttempts > 1 ? quizPlayerQuiz.maxAttempts : 'Unlimited')
+                    }].map(s=>(
                       <div key={s.label} className="bg-slate-50 rounded-xl p-4 text-center border border-slate-100">
                         <p className="text-xl font-bold text-slate-900">{s.val}</p>
                         <p className="text-[10px] text-slate-500 mt-0.5 uppercase tracking-wider">{s.label}</p>
@@ -1806,7 +1857,17 @@ export default function QuizzesPage({ params }: { params: Promise<{ id: string }
                     );
                   })()}
                 </div>
-                <div className="p-4 border-t border-slate-100 flex justify-end">
+                <div className="p-4 border-t border-slate-100 flex items-center justify-between gap-3">
+                  {quizPlayerQuiz && (quizPlayerQuiz.allowRetake !== false || (quizPlayerQuiz.myAttempts || 0) < (quizPlayerQuiz.maxAttempts || 1)) ? (
+                    <button
+                      onClick={handleBeginAttempt}
+                      disabled={isSubmitting}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-xl shadow-sm transition-all active:scale-95 disabled:opacity-60"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      Retake Quiz
+                    </button>
+                  ) : <div />}
                   <button onClick={() => setShowQuizPlayer(false)} className="px-6 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-slate-800 transition-all shadow-sm">Close</button>
                 </div>
               </>

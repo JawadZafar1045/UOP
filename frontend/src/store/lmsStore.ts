@@ -80,6 +80,7 @@ interface Quiz {
   timeLimit?: number;
   passMark: number;
   maxAttempts: number;
+  allowRetake?: boolean;
   shuffleQuestions: boolean;
   showResultImmediately: boolean;
   enableNegativeMarking?: boolean;
