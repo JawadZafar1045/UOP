@@ -1,37 +1,33 @@
 module.exports = {
   apps: [
     {
-      name: 'uop-backend',
-      script: './backend/server.js',
+      name: 'agri-school-backend',
+      script: 'server.js',
+      cwd: '/var/www/agri-school/UOP/backend',
       instances: 4,
       exec_mode: 'cluster',
-      watch: false,
-      max_memory_restart: '2G',
-      node_args: '--max-old-space-size=2048',
-      env_production: {
-        NODE_ENV: 'production',
-        PORT: 5000,
+      env: {
+        PORT: 5020,
+        NODE_ENV: 'production'
       },
-      error_file: './logs/backend-error.log',
-      out_file: './logs/backend-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      max_memory_restart: '1G',
+      kill_timeout: 5000,
+      listen_timeout: 5000,
+      max_restarts: 10,
+      min_uptime: '10s'
     },
     {
-      name: 'uop-frontend',
+      name: 'agri-school-frontend',
       script: 'npm',
       args: 'start',
-      cwd: './frontend',
-      instances: 2,
-      exec_mode: 'cluster',
-      watch: false,
-      max_memory_restart: '1G',
-      env_production: {
-        NODE_ENV: 'production',
-        PORT: 3000,
+      cwd: '/var/www/agri-school/UOP/frontend',
+      instances: 1,
+      exec_mode: 'fork',
+      env: {
+        PORT: 3020,
+        NODE_ENV: 'production'
       },
-      error_file: './logs/frontend-error.log',
-      out_file: './logs/frontend-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss',
-    },
-  ],
+      max_memory_restart: '1G'
+    }
+  ]
 };
