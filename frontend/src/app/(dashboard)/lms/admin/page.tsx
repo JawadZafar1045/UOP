@@ -127,9 +127,9 @@ export default function AdminDashboardPage() {
         setUsers(prev => prev.filter(u => u._id !== id));
       } else if (type === "approveUser") {
         await lmsService.approveUser(id, confirmAction.programId);
-        setUsers(prev => prev.map(u => u._id === id ? { 
-          ...u, 
-          isApproved: true, 
+        setUsers(prev => prev.map(u => u._id === id ? {
+          ...u,
+          isApproved: true,
           isActive: true,
           programId: programs.find(p => p._id === confirmAction.programId) || u.programId
         } : u));
@@ -190,11 +190,10 @@ export default function AdminDashboardPage() {
       <div className="flex overflow-x-auto gap-1 bg-slate-100 p-1 rounded-xl w-full md:w-fit">
         {tabs.map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all shrink-0 ${
-              activeTab === tab.id
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all shrink-0 ${activeTab === tab.id
                 ? "bg-green-700 text-white shadow-sm font-bold"
                 : "text-slate-600 hover:text-slate-900"
-            }`}>
+              }`}>
             {tab.icon}{tab.label}
           </button>
         ))}
@@ -270,13 +269,12 @@ export default function AdminDashboardPage() {
                   <button
                     key={f.id}
                     onClick={() => setUserStatusFilter(f.id)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                      userStatusFilter === f.id
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${userStatusFilter === f.id
                         ? "bg-green-700 text-white shadow-sm"
                         : f.highlight
-                        ? "bg-amber-100 text-amber-800 border border-amber-200 hover:bg-amber-200"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                    }`}
+                          ? "bg-amber-100 text-amber-800 border border-amber-200 hover:bg-amber-200"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      }`}
                   >
                     {f.label}
                   </button>
@@ -438,11 +436,10 @@ export default function AdminDashboardPage() {
                         <span className="font-bold text-slate-700">{c.studentCount ?? (c.enrolledStudents?.length ?? 0)}</span>
                       </td>
                       <td className="px-5 py-4">
-                        <span className={`inline-flex px-2.5 py-1 text-xs font-bold rounded-full border ${
-                          c.status === "active" || c.status === "published"
+                        <span className={`inline-flex px-2.5 py-1 text-xs font-bold rounded-full border ${c.status === "active" || c.status === "published"
                             ? "bg-green-50 text-green-800 border-green-200"
                             : "bg-amber-50 text-amber-700 border-amber-100"
-                        }`}>
+                          }`}>
                           {c.status || "draft"}
                         </span>
                       </td>
@@ -550,11 +547,10 @@ export default function AdminDashboardPage() {
               <div>
                 <h3 className="text-xl font-bold text-slate-900">{selectedApplicant.name}</h3>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold border ${
-                    selectedApplicant.isApproved === false
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold border ${selectedApplicant.isApproved === false
                       ? "bg-amber-100 text-amber-800 border-amber-200"
                       : "bg-green-50 text-green-800 border-green-200"
-                  }`}>
+                    }`}>
                     {selectedApplicant.isApproved === false ? "Pending Approval" : "Approved & Active"}
                   </span>
                   <span className="text-xs text-slate-400 font-medium capitalize">{selectedApplicant.role || "Student"}</span>
@@ -695,9 +691,8 @@ export default function AdminDashboardPage() {
                 Cancel
               </button>
               <button onClick={handleConfirm} disabled={isConfirming}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-white rounded-xl transition-colors disabled:opacity-50 ${
-                  confirmAction.type === "approveUser" || confirmAction.type === "activate" ? "bg-green-700 hover:bg-green-800" : "bg-red-600 hover:bg-red-700"
-                }`}>
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold text-white rounded-xl transition-colors disabled:opacity-50 ${confirmAction.type === "approveUser" || confirmAction.type === "activate" ? "bg-green-700 hover:bg-green-800" : "bg-red-600 hover:bg-red-700"
+                  }`}>
                 {isConfirming ? <><Loader size="sm" /> Confirming...</> : 'Confirm'}
               </button>
             </div>

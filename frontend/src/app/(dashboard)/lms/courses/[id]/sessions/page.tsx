@@ -3,15 +3,10 @@
 import { useEffect, useState, use } from 'react';
 import { useLmsStore } from '@/store/lmsStore';
 import { useStore } from '@/store/useStore';
-import { Calendar, Plus, CheckCircle2, XCircle, Clock, Users, Eye, FileText, ChevronLeft, PieChart as PieIcon, Edit2, Trash2 } from 'lucide-react';
+import { Calendar, Plus, CheckCircle2, XCircle, Users, Eye, ChevronLeft, Edit2, Trash2 } from 'lucide-react';
 import Loader from '@/components/ui/Loader';
 import Link from 'next/link';
-import api from '@/services/api'; // Assuming you have api exported, or I'll just use the service directly.
 import * as lmsService from '@/services/lms.service';
-import { Doughnut } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, DoughnutController } from 'chart.js';
-
-ChartJS.register(ArcElement, Tooltip, Legend, DoughnutController);
 
 export default function SessionsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -28,7 +23,6 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
   const [isEditing, setIsEditing] = useState(false);
   const [editSessionId, setEditSessionId] = useState<string | null>(null);
   const { updateSession } = useLmsStore();
-  const [attendanceSummary, setAttendanceSummary] = useState<{ total: number, present: number, percentage: number } | null>(null);
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
   const [currentAttendanceList, setCurrentAttendanceList] = useState<any[]>([]);
   const [activeSessionName, setActiveSessionName] = useState('');
@@ -38,35 +32,9 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
 
   const isTeacherOrAdmin = user?.role === 'teacher' || user?.role === 'admin';
 
-  const attDoughnutData = {
-    datasets: [
-      {
-        data: [attendanceSummary?.present || 0, (attendanceSummary?.total || 0) - (attendanceSummary?.present || 0)],
-        backgroundColor: ['#16a34a', '#E2E8F0'],
-        borderWidth: 0,
-        hoverOffset: 0,
-      },
-    ],
-  };
-
-  const attDoughnutOptions = {
-    cutout: '75%',
-    plugins: {
-      legend: { display: false },
-      tooltip: { enabled: false },
-    },
-    maintainAspectRatio: false,
-    responsive: true,
-  };
-
   useEffect(() => {
     fetchSessions(courseId);
-    if (!isTeacherOrAdmin) {
-      lmsService.getMyAttendanceSummary(courseId)
-        .then(res => setAttendanceSummary(res))
-        .catch(console.error);
-    }
-  }, [courseId, fetchSessions, isTeacherOrAdmin]);
+  }, [courseId, fetchSessions]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,9 +112,6 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
       // Refresh to update summary and session list
       if (!isTeacherOrAdmin) {
         fetchSessions(courseId);
-        lmsService.getMyAttendanceSummary(courseId)
-          .then(res => setAttendanceSummary(res))
-          .catch(console.error);
       }
     } catch (err: any) {
       alert(err.message || 'Failed to mark attendance.');
@@ -233,54 +198,6 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
 
       {error && <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-100">{error}</div>}
 
-      {!isTeacherOrAdmin && attendanceSummary && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 bg-green-50 border border-green-100 rounded-3xl p-8 flex flex-col sm:flex-row items-center justify-between shadow-sm">
-            <div className="flex items-center gap-6">
-              <div className="p-4 bg-green-100/50 rounded-2xl text-green-600">
-                <PieIcon className="w-8 h-8" />
-              </div>
-              <div>
-                <h3 className="text-green-900 font-bold text-xl mb-1">My Attendance Summary</h3>
-                <p className="text-green-700/80 font-medium text-sm sm:text-base">You have attended <span className="text-green-900 font-bold">{attendanceSummary.present}</span> out of <span className="text-green-900 font-bold">{attendanceSummary.total}</span> sessions.</p>
-                <div className="mt-4 flex gap-3">
-                  <span className="px-3 py-1 bg-white/60 rounded-full text-[10px] font-bold text-green-600 border border-green-100 uppercase tracking-wider">
-                    Target: 75%
-                  </span>
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider ${attendanceSummary.percentage >= 75 ? 'bg-green-50 text-green-600 border-green-100' : 'bg-slate-50 text-slate-500 border-slate-200'}`}>
-                    {attendanceSummary.percentage >= 75 ? 'On Track' : 'Below Target'}
-                  </span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="relative w-32 h-32 mt-6 sm:mt-0">
-              {attendanceSummary.total === 0 ? (
-                <div className="w-32 h-32 rounded-full border-4 border-slate-100 flex flex-col items-center justify-center text-center">
-                  <span className="text-xl font-bold text-slate-300 leading-none">—</span>
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter mt-1">No data</span>
-                </div>
-              ) : (
-                <>
-                  <Doughnut data={attDoughnutData} options={attDoughnutOptions} />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none -mt-1">
-                    <span className="text-xl font-bold text-green-900 leading-none">{attendanceSummary.percentage}%</span>
-                    <span className="text-[9px] font-bold text-green-600 uppercase tracking-tighter mt-1">Attended</span>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-          
-          <div className="bg-white border border-slate-200 rounded-3xl p-8 flex flex-col items-center justify-center text-center shadow-sm">
-            <div className="p-3 bg-green-50 text-green-600 rounded-2xl mb-4">
-              <Clock className="w-6 h-6" />
-            </div>
-            <h4 className="font-bold text-slate-900 mb-1">Next Session</h4>
-            <p className="text-slate-500 text-sm font-medium">No upcoming sessions scheduled.</p>
-          </div>
-        </div>
-      )}
 
       {sessions.length === 0 ? (
         <div className="bg-white border border-slate-200 rounded-xl p-12 text-center">
