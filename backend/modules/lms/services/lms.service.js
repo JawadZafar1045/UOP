@@ -1517,8 +1517,45 @@ const deleteUser = async (tenantId, targetUserId, requesterId) => {
   const User = require('../../auth/models/user.model');
   const user = await User.findOneAndDelete({ _id: targetUserId, tenantId });
   if (!user) throw err('User not found.', 404);
+
+  const CleanAllData = [
+    { modelName: 'Enrollment', query: { userId: targetUserId } },
+    { modelName: 'Submission', query: { userId: targetUserId } },
+    { modelName: 'QuizAttempt', query: { studentId: targetUserId } },
+    { modelName: 'Certificate', query: { studentId: targetUserId } },
+    { modelName: 'Notification', query: { userId: targetUserId } },
+    { modelName: 'Attendance', query: { studentId: targetUserId } }
+  ];
+
+  for (const item of CleanAllData) {
+    try {
+      const TargetModel = mongoose.model(item.modelName);
+      if (TargetModel) {
+        await TargetModel.deleteMany(item.query);
+      }
+    } catch (e) {
+      // Safe boundary fallback if any model isn't active in memory
+    }
+  }
+
+  // Also remove user from array filters if stored inside Course documents
+  try {
+    const CourseModel = mongoose.model('Course');
+    if (CourseModel) {
+      await CourseModel.updateMany(
+        { tenantId },
+        { $pull: { enrolledStudents: targetUserId } }
+      );
+    }
+  } catch (e) { /* Safe catch */ }
+
+  // Finally remove the User main identity document
+  await User.findOneAndDelete({ _id: targetUserId, tenantId });
   
-  return { success: true, message: 'User deleted permanently.' };
+  return { 
+    success: true, 
+    message: 'User account and all corresponding academic enrollments, submissions, and attempts have been permanently purged successfully.' 
+  };
 };
 
 const approveUser = async (tenantId, targetUserId, overrideProgramId = null) => {

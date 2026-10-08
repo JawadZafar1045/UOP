@@ -44,6 +44,17 @@ const updateProfileValidation = [
   body('avatar').optional().trim().escape(),
 ];
 
+// ── Forget Password ─────────────────────────────────────────────────────────────────────
+const forgotPasswordValidation = [
+  body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+];
+
+const resetPasswordValidation = [
+  body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+  body('otp').notEmpty().withMessage('OTP verification code is required'),
+  body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters'),
+];
+
 // ── Helper ─────────────────────────────────────────────────────────────────────
 const validate = (req, res) => {
   const errors = validationResult(req);
@@ -217,6 +228,34 @@ const getPublicPrograms = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+/** POST /api/auth/forgot-password */
+const forgotPassword = async (req, res, next) => {
+  try {
+    if (!validate(req, res)) return;
+    
+    const { email } = req.body;
+    const result = await authService.initiateForgotPassword(email);
+    
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+/** POST /api/auth/reset-password */
+const resetPassword = async (req, res, next) => {
+  try {
+    if (!validate(req, res)) return;
+    
+    const { email, otp, newPassword } = req.body;
+    const result = await authService.verifyOtpAndResetPassword(email, otp, newPassword);
+    
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   registerAdmin,
   register,
@@ -234,5 +273,9 @@ module.exports = {
   getMe,
   getUsers,
   updateProfile,
-  updatePassword
+  updatePassword,
+  forgotPassword,
+  resetPassword,
+  forgotPasswordValidation,
+  resetPasswordValidation
 };

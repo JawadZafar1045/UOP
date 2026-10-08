@@ -89,6 +89,9 @@ router.patch('/submissions/:assignmentId/grade/:studentId', val.gradeSubmissionV
 router.get('/assignments/:id/submissions',                  val.getAssignmentSubmissionsVal, validateResult, authorize('admin', 'teacher'),                    ctrl.getAssignmentSubmissions);
 router.get('/assignments/:id/submissions/mine',             val.getMySubmissionVal, validateResult, authorize('student'),                             ctrl.getMySubmission);
 
+// ── Delete User ─────────────────────────────────────────────────────────
+router.delete('/admin/users/:id', authorize('admin'), ctrl.deleteUser);
+
 // ── Quizzes ────────────────────────────────────────────────────────────────────
 router.get('/quizzes/template',                               authorize('admin', 'teacher'),                                                     ctrl.downloadQuizTemplate);
 router.post('/courses/:courseId/quizzes/validate-excel',      authorize('admin', 'teacher'), upload.single('file'), val.validateQuizExcelVal, validateResult, ctrl.validateQuizExcel);

@@ -2,7 +2,17 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const User = require('../models/user.model');
+const nodemailer = require('nodemailer');
 
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || '://gmail.com',
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: false, 
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 /**
  * Generate access + refresh JWT token pair.
  */
@@ -355,5 +365,65 @@ const updatePassword = async (userId, currentPwd, newPwd) => {
   
   return user;
 };
+/**
+ * Forgot Password - Initiate Request (Send OTP)
+ */
+const initiateForgotPassword = async (email) => {
+  const normalizedEmail = email ? email.toLowerCase().trim() : '';
+  const user = await User.findOne({ email: normalizedEmail });
+  if (!user) {
+    throw Object.assign(new Error('No account found with this email address.'), { statusCode: 404 });
+  }
 
-module.exports = { registerAdmin, registerUser, verifyEmail, loginUser, refreshAccessToken, logoutUser, getTenantUsers, generateTokens, updateUser, updatePassword };
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  user.verificationCode = otp; 
+  user.verificationCodeExpires = Date.now() + 10 * 60 * 1000; 
+  await user.save();
+
+  const mailOptions = {
+    from: process.env.SMTP_FROM || '"Agri School LMS" <noreply@lms.zarat.pk>',
+    to: user.email,
+    subject: 'Password Reset OTP - Agri School LMS',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+        <h2 style="color: #4CAF50; text-align: center;">Agri School LMS</h2>
+        <p>Hi ${user.name || 'User'},</p>
+        <p>You requested to reset your password. Use the following One-Time Password (OTP) to reset your account. This OTP is valid for 10 minutes:</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <span style="font-size: 24px; font-weight: bold; letter-spacing: 5px; background-color: #f5f5f5; padding: 10px 20px; border-radius: 4px; border: 1px dashed #ccc;">${otp}</span>
+        </div>
+        <p>If you did not request this, please ignore this email.</p>
+      </div>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+  return { success: true, message: 'OTP sent successfully to email.' };
+};
+
+/**
+ * Forgot Password - Verify OTP & Reset Password
+ */
+const verifyOtpAndResetPassword = async (email, otp, newPassword) => {
+  const normalizedEmail = email ? email.toLowerCase().trim() : '';
+  const user = await User.findOne({
+    email: normalizedEmail,
+    verificationCode: otp,
+    verificationCodeExpires: { $gt: Date.now() }
+  });
+
+  if (!user) {
+    throw Object.assign(new Error('Invalid OTP or OTP has expired.'), { statusCode: 400 });
+  }
+
+  user.password = newPassword;
+  user.verificationCode = undefined;
+  user.verificationCodeExpires = undefined;
+  await user.save();
+
+  return { success: true, message: 'Password has been reset successfully.' };
+};
+
+
+
+module.exports = { registerAdmin, registerUser, verifyEmail, loginUser, refreshAccessToken, logoutUser, getTenantUsers, generateTokens, updateUser, updatePassword, initiateForgotPassword, verifyOtpAndResetPassword };
