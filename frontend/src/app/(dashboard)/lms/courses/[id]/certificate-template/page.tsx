@@ -129,41 +129,41 @@ export default function CertificateTemplatePage({ params }: { params: Promise<{ 
 
 <div className="flex flex-col lg:flex-row gap-6 min-h-[800px]">
       {/* LEFT - CONTROLS (40%) */}
-      <div className="w-full lg:w-2/5 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-        <div className="p-5 border-b border-slate-100 bg-slate-50 flex flex-col gap-4">
-          <Link href={`/lms/courses/${courseId}`} className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all group active:scale-[0.98] shadow-blue-500/20 w-fit">
+      <div className="w-full lg:w-2/5 bg-white rounded-2xl shadow-sm border border-[#d5e0e8] overflow-hidden flex flex-col">
+        <div className="p-5 border-b border-slate-100 bg-[#f4f8fb] flex flex-col gap-4">
+          <Link href={`/lms/courses/${courseId}`} className="inline-flex items-center gap-2 px-4 py-2 bg-[#0b6f7c] text-white text-sm font-bold rounded-xl shadow-md hover:bg-[#021F37] transition-all group active:scale-[0.98] shadow-[#0E8696]/20 w-fit">
             <ChevronLeft className="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" />
             Back to Course
           </Link>
           <div className="flex items-center justify-between">
-            <h2 className="font-bold text-slate-800">Certificate Designer</h2>
+            <h2 className="font-bold text-[#021F37]">Certificate Designer</h2>
           </div>
         </div>
         
         <div className="p-6 space-y-8 flex-1 overflow-y-auto">
           {/* Colors */}
           <section className="space-y-4">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Colors</h3>
-            <div className="grid grid-cols-3 gap-4">
+            <h3 className="text-xs font-bold text-[#5f7587] uppercase tracking-wider">Colors</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Background</label>
+                <label className="block text-xs font-semibold text-[#4d6477] mb-1.5">Background</label>
                 <div className="flex items-center gap-2">
                   <input type="color" value={backgroundColor} onChange={e => setBackgroundColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 p-0" />
-                  <span className="text-xs font-mono text-slate-500">{backgroundColor}</span>
+                  <span className="text-xs font-mono text-[#4d6477]">{backgroundColor}</span>
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Accent / Border</label>
+                <label className="block text-xs font-semibold text-[#4d6477] mb-1.5">Accent / Border</label>
                 <div className="flex items-center gap-2">
                   <input type="color" value={accentColor} onChange={e => setAccentColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 p-0" />
-                  <span className="text-xs font-mono text-slate-500">{accentColor}</span>
+                  <span className="text-xs font-mono text-[#4d6477]">{accentColor}</span>
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Text Color</label>
+                <label className="block text-xs font-semibold text-[#4d6477] mb-1.5">Text Color</label>
                 <div className="flex items-center gap-2">
                   <input type="color" value={textColor} onChange={e => setTextColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 p-0" />
-                  <span className="text-xs font-mono text-slate-500">{textColor}</span>
+                  <span className="text-xs font-mono text-[#4d6477]">{textColor}</span>
                 </div>
               </div>
             </div>
@@ -173,7 +173,7 @@ export default function CertificateTemplatePage({ params }: { params: Promise<{ 
 
           {/* Typography */}
           <section className="space-y-3">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Typography</h3>
+            <h3 className="text-xs font-bold text-[#5f7587] uppercase tracking-wider">Typography</h3>
             <div className="flex gap-2">
               {[
                 { id: "serif", label: "Serif" },
@@ -182,7 +182,7 @@ export default function CertificateTemplatePage({ params }: { params: Promise<{ 
               ].map(opt => (
                 <button key={opt.id} onClick={() => setFontStyle(opt.id)}
                   className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                    fontStyle === opt.id ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                    fontStyle === opt.id ? "bg-[#f4f8fb] border-[#d5e0e8] text-[#0b6f7c]" : "bg-white border-[#d5e0e8] text-[#4d6477] hover:bg-[#f4f8fb]"
                   }`}>
                   {opt.label}
                 </button>
@@ -194,7 +194,7 @@ export default function CertificateTemplatePage({ params }: { params: Promise<{ 
 
           {/* Border */}
           <section className="space-y-3">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Border Style</h3>
+            <h3 className="text-xs font-bold text-[#5f7587] uppercase tracking-wider">Border Style</h3>
             <div className="flex gap-2">
               {[
                 { id: "double", label: "Double" },
@@ -203,7 +203,7 @@ export default function CertificateTemplatePage({ params }: { params: Promise<{ 
               ].map(opt => (
                 <button key={opt.id} onClick={() => setBorderStyle(opt.id)}
                   className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                    borderStyle === opt.id ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                    borderStyle === opt.id ? "bg-[#f4f8fb] border-[#d5e0e8] text-[#0b6f7c]" : "bg-white border-[#d5e0e8] text-[#4d6477] hover:bg-[#f4f8fb]"
                   }`}>
                   {opt.label}
                 </button>
@@ -215,61 +215,61 @@ export default function CertificateTemplatePage({ params }: { params: Promise<{ 
 
           {/* Branding */}
           <section className="space-y-4">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">College Branding</h3>
+            <h3 className="text-xs font-bold text-[#5f7587] uppercase tracking-wider">College Branding</h3>
             
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1.5">Institute Logo</label>
+              <label className="block text-sm font-semibold text-[#021F37] mb-1.5">Institute Logo</label>
               <div className="flex items-center gap-4">
                 {logoUrl ? (
                   <div className="relative">
-                    <img src={logoUrl} alt="Logo" className="h-12 object-contain bg-slate-50 rounded border border-slate-200 p-1" />
+                    <img src={logoUrl} alt="Logo" className="h-12 object-contain bg-[#f4f8fb] rounded border border-[#d5e0e8] p-1" />
                     <button onClick={() => { setLogoUrl(""); setLogoFile(null); }} className="text-[10px] text-red-500 hover:underline mt-1 block">Remove logo</button>
                   </div>
                 ) : (
-                  <div className="w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center">
-                    <ImageIcon className="w-5 h-5 text-slate-400" />
+                  <div className="w-12 h-12 rounded-lg bg-slate-100 border border-[#d5e0e8] flex items-center justify-center">
+                    <ImageIcon className="w-5 h-5 text-[#5f7587]" />
                   </div>
                 )}
                 <div className="flex-1">
-                  <input type="file" accept="image/*" onChange={handleLogoChange} className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                  <input type="file" accept="image/*" onChange={handleLogoChange} className="text-sm text-[#4d6477] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#f4f8fb] file:text-[#0b6f7c] hover:file:bg-[#eaf3f7]" />
                 </div>
               </div>
             </div>
 
             <div className="space-y-3 pt-2">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">Institute Name</label>
+                <label className="block text-xs font-semibold text-[#4d6477] mb-1">Institute Name</label>
                 <input type="text" value={instituteName} onChange={e => setInstituteName(e.target.value)} placeholder="e.g. NCBAE College"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                  className="w-full px-3 py-2 bg-[#f4f8fb] border border-[#d5e0e8] rounded-lg text-sm focus:ring-2 focus:ring-[#0E8696] outline-none" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Signatory Name</label>
+                  <label className="block text-xs font-semibold text-[#4d6477] mb-1">Signatory Name</label>
                   <input type="text" value={signatoryName} onChange={e => setSignatoryName(e.target.value)} placeholder="e.g. Dr. Ahmed"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                    className="w-full px-3 py-2 bg-[#f4f8fb] border border-[#d5e0e8] rounded-lg text-sm focus:ring-2 focus:ring-[#0E8696] outline-none" />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">Signatory Title</label>
+                  <label className="block text-xs font-semibold text-[#4d6477] mb-1">Signatory Title</label>
                   <input type="text" value={signatoryTitle} onChange={e => setSignatoryTitle(e.target.value)} placeholder="e.g. Director"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                    className="w-full px-3 py-2 bg-[#f4f8fb] border border-[#d5e0e8] rounded-lg text-sm focus:ring-2 focus:ring-[#0E8696] outline-none" />
                 </div>
               </div>
             </div>
           </section>
         </div>
 
-        <div className="p-5 border-t border-slate-100 bg-slate-50">
-          <button onClick={handleSave} disabled={saving} className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors disabled:opacity-50">
+        <div className="p-5 border-t border-slate-100 bg-[#f4f8fb]">
+          <button onClick={handleSave} disabled={saving} className="w-full py-3 bg-[#0E8696] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#0b6f7c] transition-colors disabled:opacity-50">
             {saving ? "Saving..." : <><Save className="w-4 h-4" /> Save Template</>}
           </button>
         </div>
       </div>
 
       {/* RIGHT - LIVE PREVIEW (60%) */}
-      <div className="w-full lg:w-3/5 flex flex-col bg-slate-100 rounded-2xl overflow-hidden border border-slate-200">
-        <div className="p-4 bg-slate-200/50 border-b border-slate-200 flex items-center justify-between">
-          <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-emerald-500" /> Live Preview (A4 Scaled)
+      <div className="w-full lg:w-3/5 flex flex-col bg-slate-100 rounded-2xl overflow-hidden border border-[#d5e0e8]">
+        <div className="p-4 bg-slate-200/50 border-b border-[#d5e0e8] flex items-center justify-between">
+          <h3 className="text-sm font-bold text-[#021F37] flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 text-green-500" /> Live Preview (A4 Scaled)
           </h3>
         </div>
         <div className="flex-1 flex items-center justify-start lg:justify-center p-4 md:p-8 overflow-auto relative bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] min-h-[500px]">

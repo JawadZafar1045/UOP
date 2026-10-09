@@ -111,20 +111,20 @@ function LMSContent() {
     <div className="space-y-8 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 font-sans">
       
       {/* Header Banner - Bright Executive Theme */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-blue-50/80 via-white to-slate-50 border border-slate-200 rounded-3xl p-8 sm:p-10 text-slate-900 shadow-xs">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-50" />
-        <div className="absolute top-0 right-1/4 w-[500px] h-[250px] bg-blue-100/50 blur-[90px] pointer-events-none rounded-full animate-blob" />
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#f4f8fb]/80 via-white to-slate-50 border border-[#d5e0e8] rounded-3xl p-8 sm:p-10 text-[#021F37] shadow-xs">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#d5e0e8_1px,transparent_1px),linear-gradient(to_bottom,#d5e0e8_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-50" />
+        <div className="absolute top-0 right-1/4 w-[500px] h-[250px] bg-[#eaf3f7]/50 blur-[90px] pointer-events-none rounded-full animate-blob" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-slate-700 text-xs font-semibold uppercase tracking-wider shadow-xs animate-fade-in-down">
-              <Sparkles className="w-3.5 h-3.5 text-blue-600 animate-pulse-glow" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#d5e0e8] text-[#021F37] text-xs font-semibold uppercase tracking-wider shadow-xs animate-fade-in-down">
+              <Sparkles className="w-3.5 h-3.5 text-[#0E8696] animate-pulse-glow" />
               Student Learning Hub
             </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 animate-fade-in-up">
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#021F37] animate-fade-in-up">
               Welcome back, {user?.name || "Learner"}!
             </h1>
-            <p className="text-slate-600 text-sm sm:text-base max-w-xl animate-fade-in-up animation-delay-100">
+            <p className="text-[#4d6477] text-sm sm:text-base max-w-xl animate-fade-in-up animation-delay-100">
               Access your enrolled training tracks, track video progress, and explore specialized cybersecurity certifications.
             </p>
           </div>
@@ -133,7 +133,7 @@ function LMSContent() {
             {user?.role === "student" && (
               <button
                 onClick={() => handleTabChange(filterTab === "all" ? "unlocked" : "all")}
-                className="px-5 py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs hover:shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                className="px-5 py-3 bg-[#0b6f7c] hover:bg-[#021F37] active:scale-95 text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs hover:shadow-md transition-all flex items-center gap-2 cursor-pointer"
               >
                 {filterTab === "all" ? (
                   <>
@@ -151,7 +151,7 @@ function LMSContent() {
             {isTeacherOrAdmin && (
               <Link
                 href="/lms/admin"
-                className="px-5 py-3 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 text-xs sm:text-sm font-bold rounded-xl border border-slate-200 shadow-xs hover:border-slate-300 transition-all cursor-pointer"
+                className="px-5 py-3 bg-white hover:bg-[#f4f8fb] text-[#021F37] hover:text-[#021F37] text-xs sm:text-sm font-bold rounded-xl border border-[#d5e0e8] shadow-xs hover:border-slate-300 transition-all cursor-pointer"
               >
                 Admin Panel
               </Link>
@@ -162,31 +162,31 @@ function LMSContent() {
 
       {/* Continue Learning Hero Card (if active learning item exists) */}
       {continueLearning && (
-        <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs relative overflow-hidden animate-fade-in-up animation-delay-200">
+        <div className="bg-white rounded-3xl border border-[#d5e0e8] p-6 sm:p-8 shadow-xs relative overflow-hidden animate-fade-in-up animation-delay-200">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="space-y-2 flex-1">
-              <div className="flex items-center gap-2 text-blue-600 text-xs font-extrabold uppercase tracking-widest">
+              <div className="flex items-center gap-2 text-[#0E8696] text-xs font-extrabold uppercase tracking-widest">
                 <PlayCircle className="w-4 h-4 animate-pulse-glow" />
                 Jump Back In
               </div>
-              <h2 className="text-2xl font-black text-slate-900">
+              <h2 className="text-2xl font-black text-[#021F37]">
                 {continueLearning.title}
               </h2>
               {continueLearning.lastLecture && (
-                <p className="text-sm text-slate-500">
-                  Last lecture: <strong className="text-slate-700 font-semibold">{continueLearning.lastLecture.title}</strong>
+                <p className="text-sm text-[#4d6477]">
+                  Last lecture: <strong className="text-[#021F37] font-semibold">{continueLearning.lastLecture.title}</strong>
                 </p>
               )}
 
               {/* Progress bar */}
               <div className="pt-2 max-w-md space-y-1.5">
                 <div className="flex items-center justify-between text-xs font-bold">
-                  <span className="text-slate-500">Overall Progress</span>
-                  <span className="text-blue-600">{continueLearning.progressPercent || 0}%</span>
+                  <span className="text-[#4d6477]">Overall Progress</span>
+                  <span className="text-[#0E8696]">{continueLearning.progressPercent || 0}%</span>
                 </div>
                 <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-blue-600 rounded-full transition-all duration-500"
+                    className="h-full bg-[#0E8696] rounded-full transition-all duration-500"
                     style={{ width: `${continueLearning.progressPercent || 0}%` }}
                   />
                 </div>
@@ -195,7 +195,7 @@ function LMSContent() {
 
             <Link
               href={`/learn/${continueLearning.slug || continueLearning._id}`}
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold rounded-2xl shadow-xs hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer text-sm"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#0b6f7c] hover:bg-[#021F37] active:scale-95 text-white font-extrabold rounded-2xl shadow-xs hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer text-sm"
             >
               <Play className="w-4 h-4 fill-current" />
               Resume Learning
@@ -208,7 +208,7 @@ function LMSContent() {
       <div className="space-y-6 animate-fade-in-up animation-delay-300">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-2xl font-extrabold text-[#021F37] tracking-tight">
               {user?.role === "student"
                 ? filterTab === "unlocked"
                   ? "My Enrolled Courses"
@@ -217,14 +217,14 @@ function LMSContent() {
                   : "All Courses"
                 : "All Managed Courses"}
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500">
+            <p className="text-xs sm:text-sm text-[#4d6477]">
               {user?.role === "student"
                 ? filterTab === "unlocked"
                   ? "Courses you have unlocked and are currently learning."
                   : filterTab === "locked"
                   ? "Specialized professional tracks available for admission."
                   : "Explore all available certification tracks, interactive lectures, and training modules."
-                : "Active courses on the CSZone platform."}
+                : "Active courses on the School of Information Security platform."}
             </p>
           </div>
 
@@ -235,8 +235,8 @@ function LMSContent() {
                 onClick={() => handleTabChange("all")}
                 className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   filterTab === "all"
-                    ? "bg-white text-slate-900 shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-white text-[#021F37] shadow-xs"
+                    : "text-[#4d6477] hover:text-[#021F37]"
                 }`}
               >
                 All Courses ({courses.length})
@@ -245,8 +245,8 @@ function LMSContent() {
                 onClick={() => handleTabChange("unlocked")}
                 className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   filterTab === "unlocked"
-                    ? "bg-blue-600 text-white shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-[#0b6f7c] text-white shadow-xs"
+                    : "text-[#4d6477] hover:text-[#021F37]"
                 }`}
               >
                 My Enrolled ({unlockedCourses.length})
@@ -257,7 +257,7 @@ function LMSContent() {
                   className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
                     filterTab === "locked"
                       ? "bg-slate-900 text-white shadow-xs"
-                      : "text-slate-600 hover:text-slate-900"
+                      : "text-[#4d6477] hover:text-[#021F37]"
                   }`}
                 >
                   <Lock className="w-3 h-3" />
@@ -286,12 +286,12 @@ function LMSContent() {
                   key={course._id}
                   className={`group bg-white rounded-2xl border transition-all duration-300 overflow-hidden flex flex-col justify-between ${
                     isLocked
-                      ? "border-slate-200 shadow-xs hover:border-slate-300 hover:shadow-md"
-                      : "border-slate-200 shadow-xs hover:shadow-xl hover:border-blue-400 hover:-translate-y-1.5"
+                      ? "border-[#d5e0e8] shadow-xs hover:border-slate-300 hover:shadow-md"
+                      : "border-[#d5e0e8] shadow-xs hover:shadow-xl hover:border-[#0b4a66] hover:-translate-y-1.5"
                   }`}
                 >
                   {/* Thumbnail Stage */}
-                  <div className="relative aspect-video w-full bg-slate-100 border-b border-slate-200 overflow-hidden">
+                  <div className="relative aspect-video w-full bg-slate-100 border-b border-[#d5e0e8] overflow-hidden">
                     {course.thumbnail ? (
                       <img
                         src={course.thumbnail}
@@ -301,12 +301,12 @@ function LMSContent() {
                         }`}
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-blue-50 via-slate-50 to-blue-100/60 flex flex-col items-center justify-center text-slate-700 p-4 relative select-none">
-                        <div className="absolute inset-0 bg-[linear-gradient(to_right,#cbd5e1_1px,transparent_1px),linear-gradient(to_bottom,#cbd5e1_1px,transparent_1px)] bg-[size:1.25rem_1.25rem] opacity-35" />
-                        <div className="w-11 h-11 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-center text-blue-600 mb-1 group-hover:scale-110 group-hover:rotate-2 transition-all duration-300 relative z-10">
+                      <div className="w-full h-full bg-gradient-to-br from-[#f4f8fb] via-slate-50 to-[#eaf3f7]/60 flex flex-col items-center justify-center text-[#021F37] p-4 relative select-none">
+                        <div className="absolute inset-0 bg-[linear-gradient(to_right,#d5e0e8_1px,transparent_1px),linear-gradient(to_bottom,#d5e0e8_1px,transparent_1px)] bg-[size:1.25rem_1.25rem] opacity-35" />
+                        <div className="w-11 h-11 rounded-2xl bg-white border border-[#d5e0e8] shadow-xs flex items-center justify-center text-[#0E8696] mb-1 group-hover:scale-110 group-hover:rotate-2 transition-all duration-300 relative z-10">
                           <BookOpen className="w-6 h-6" />
                         </div>
-                        <span className="text-xs font-bold text-slate-700 uppercase tracking-wider relative z-10">CSZone</span>
+                        <span className="text-xs font-bold text-[#021F37] uppercase tracking-wider relative z-10">School of Information Security</span>
                       </div>
                     )}
 
@@ -318,15 +318,15 @@ function LMSContent() {
                           LOCKED • PRO TRACK
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-extrabold bg-blue-600 text-white shadow-xs">
-                          <CheckCircle2 className="w-3 h-3 text-blue-100" />
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-extrabold bg-[#0b6f7c] text-white shadow-xs">
+                          <CheckCircle2 className="w-3 h-3 text-white/80" />
                           UNLOCKED
                         </span>
                       )}
                     </div>
 
                     <div className="absolute bottom-3 left-3 z-10">
-                      <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-white/90 backdrop-blur-md text-slate-800 border border-slate-200 shadow-xs">
+                      <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-white/90 backdrop-blur-md text-[#021F37] border border-[#d5e0e8] shadow-xs">
                         {course.category || "General"}
                       </span>
                     </div>
@@ -335,12 +335,12 @@ function LMSContent() {
                   {/* Body */}
                   <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                     <div className="space-y-2">
-                      <h3 className="font-bold text-slate-900 text-base line-clamp-2 hover:text-blue-600 transition-colors">
+                      <h3 className="font-bold text-[#021F37] text-base line-clamp-2 hover:text-[#0E8696] transition-colors">
                         <Link href={isLocked ? `/courses/${safeSlug}` : `/learn/${safeSlug}`}>
                           {course.title}
                         </Link>
                       </h3>
-                      <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-[#4d6477] line-clamp-2 leading-relaxed">
                         {course.shortDescription || course.description}
                       </p>
                     </div>
@@ -351,8 +351,8 @@ function LMSContent() {
                         /* Locked Course Details & Unlock CTA */
                         <div className="space-y-2.5">
                           <div className="flex items-center justify-between text-xs">
-                            <span className="font-bold text-slate-400 uppercase text-[10px] tracking-wider">Tuition</span>
-                            <span className="font-black text-slate-900 text-sm">
+                            <span className="font-bold text-[#5f7587] uppercase text-[10px] tracking-wider">Tuition</span>
+                            <span className="font-black text-[#021F37] text-sm">
                               {course.currency || "PKR"} {(course.price || 0).toLocaleString()}
                             </span>
                           </div>
@@ -381,14 +381,14 @@ function LMSContent() {
                         <div className="space-y-3">
                           <div className="space-y-1">
                             <div className="flex items-center justify-between text-[11px] font-bold">
-                              <span className="text-slate-500">
+                              <span className="text-[#4d6477]">
                                 {completedCount}/{totalLectures} lectures completed
                               </span>
-                              <span className="text-blue-600 font-extrabold">{progress}%</span>
+                              <span className="text-[#0E8696] font-extrabold">{progress}%</span>
                             </div>
                             <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                               <div
-                                className="h-full bg-blue-600 rounded-full transition-all"
+                                className="h-full bg-[#0E8696] rounded-full transition-all"
                                 style={{ width: `${progress}%` }}
                               />
                             </div>
@@ -396,7 +396,7 @@ function LMSContent() {
 
                           <Link
                             href={`/learn/${safeSlug}`}
-                            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl text-center block shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                            className="w-full py-2.5 bg-[#0b6f7c] hover:bg-[#021F37] text-white font-bold text-xs rounded-xl text-center block shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
                           >
                             <Play className="w-3.5 h-3.5 fill-current" />
                             Go to Classroom
@@ -410,12 +410,12 @@ function LMSContent() {
             })}
           </div>
         ) : (
-          <div className="text-center py-16 bg-white rounded-3xl border border-slate-200 p-8 max-w-lg mx-auto space-y-4 shadow-xs">
-            <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center mx-auto">
+          <div className="text-center py-16 bg-white rounded-3xl border border-[#d5e0e8] p-8 max-w-lg mx-auto space-y-4 shadow-xs">
+            <div className="w-16 h-16 rounded-2xl bg-[#f4f8fb] text-[#0E8696] border border-[#eaf3f7] flex items-center justify-center mx-auto">
               <BookOpen className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900">No Courses Found</h3>
-            <p className="text-sm text-slate-500 leading-relaxed">
+            <h3 className="text-xl font-bold text-[#021F37]">No Courses Found</h3>
+            <p className="text-sm text-[#4d6477] leading-relaxed">
               {filterTab === "unlocked"
                 ? "You have not enrolled in any courses yet."
                 : "No courses currently match the selected filter."}
@@ -423,7 +423,7 @@ function LMSContent() {
             <div className="pt-2">
               <button
                 onClick={() => handleTabChange("all")}
-                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
+                className="px-6 py-2.5 bg-[#0b6f7c] hover:bg-[#021F37] text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
               >
                 View All Courses
               </button>

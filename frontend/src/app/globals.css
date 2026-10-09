@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  --color-blue-50: #f0f4f8;
-  --color-blue-100: #d9e2ec;
-  --color-blue-200: #bcccdc;
-  --color-blue-300: #9fb3c8;
-  --color-blue-400: #486581;
-  --color-blue-500: #102a43;
-  --color-blue-600: #003066; /* CSZone Primary Company Brand Color */
-  --color-blue-700: #00244d;
-  --color-blue-800: #001833;
-  --color-blue-900: #000c1a;
-  --color-blue-950: #00060d;
+  --color-blue-50: #f4f8fb;
+  --color-blue-100: #eaf3f7;
+  --color-blue-200: #d5e0e8;
+  --color-blue-300: #9fd4db;
+  --color-blue-400: #0b4a66;
+  --color-blue-500: #0E8696;
+  --color-blue-600: #0E8696;
+  --color-blue-700: #0b6f7c;
+  --color-blue-800: #021F37;
+  --color-blue-900: #021F37;
+  --color-blue-950: #021F37;
 
   --animate-fade-in-up: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-fade-in-down: fadeInDown 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -79,27 +79,69 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%; /* Slate 50 */
-    --foreground: 222.2 84% 4.9%;
+    --background: 204 41% 98%;
+    --foreground: 204 93% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 204 93% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 212 100% 20%; /* #003066 Brand Navy */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%; /* Slate 500 */
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --popover-foreground: 204 93% 11%;
+    --primary: 190 83% 32%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 204 41% 98%;
+    --secondary-foreground: 204 93% 11%;
+    --muted: 204 41% 98%;
+    --muted-foreground: 208 22% 38%;
+    --accent: 204 41% 98%;
+    --accent-foreground: 204 93% 11%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 212 100% 20%;
+    --border: 206 29% 87%;
+    --input: 206 29% 87%;
+    --ring: 190 83% 32%;
     --radius: 0.5rem;
   }
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #5f7587;
+  opacity: 1;
+}
+
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid #0E8696;
+  outline-offset: 2px;
+}
+
+:is(
+  [class~="bg-slate-800"],
+  [class~="bg-slate-900"],
+  [class~="bg-slate-950"],
+  [class~="bg-[#021F37]"],
+  [class*="from-[#021F37]"]
+):is(
+  [class~="text-[#021F37]"],
+  [class~="text-[#0b4a66]"],
+  [class~="text-[#0b6f7c]"],
+  [class~="text-[#0E8696]"],
+  [class~="text-[#4d6477]"],
+  [class~="text-[#5f7587]"]
+):not([class~="bg-white"]):not([class~="bg-[#f4f8fb]"]):not([class~="bg-[#eaf3f7]"]),
+:is(
+  [class~="bg-slate-800"],
+  [class~="bg-slate-900"],
+  [class~="bg-slate-950"],
+  [class~="bg-[#021F37]"],
+  [class*="from-[#021F37]"]
+):not([class~="bg-white"] *):not([class~="bg-[#f4f8fb]"] *):not([class~="bg-[#eaf3f7]"] *) :is(
+  [class~="text-[#021F37]"],
+  [class~="text-[#0b4a66]"],
+  [class~="text-[#0b6f7c]"],
+  [class~="text-[#0E8696]"],
+  [class~="text-[#4d6477]"],
+  [class~="text-[#5f7587]"]
+) {
+  color: #ffffffcc !important;
 }
 
 /* Professional clean elevations */
@@ -118,6 +160,3 @@
 .animation-delay-500 { animation-delay: 500ms; }
 .animation-delay-2000 { animation-delay: 2s; }
 .animation-delay-4000 { animation-delay: 4s; }
-
-
-

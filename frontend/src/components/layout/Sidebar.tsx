@@ -48,16 +48,16 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   };
 
   return (
-    <aside className={`w-[260px] bg-white border-r border-slate-200 h-[100dvh] fixed top-0 left-0 flex flex-col shadow-sm z-40 transition-transform duration-300 lg:translate-x-0 ${
+    <aside className={`w-[260px] bg-white border-r border-[#d5e0e8] h-[100dvh] fixed top-0 left-0 flex flex-col shadow-sm z-40 transition-transform duration-300 lg:translate-x-0 ${
       isOpen ? "translate-x-0" : "-translate-x-full"
     }`}>
       <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100">
         <Link href="/dashboard" className="flex items-center hover:opacity-90 transition-opacity cursor-pointer">
-          <img src="/cszone-logo.png" alt="CSZone" className="h-9 w-auto object-contain" />
+          <img src="/SIS-logo.png" alt="School of Information Security" className="h-10 w-auto object-contain" />
         </Link>
         <button
           onClick={onClose}
-          className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg lg:hidden"
+          className="p-3 text-[#5f7587] hover:text-[#4d6477] hover:bg-[#f4f8fb] rounded-lg lg:hidden"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -66,7 +66,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       </div>
       
       <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
-        <p className="px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-3">Modules</p>
+        <p className="px-3 text-[11px] font-semibold text-[#5f7587] uppercase tracking-widest mb-3">Modules</p>
         
         {/* Admin Panel link — admin only */}
         {user?.role === 'admin' && (
@@ -74,8 +74,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             href="/lms/admin"
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
               pathname.startsWith('/lms/admin')
-                ? 'bg-blue-50 text-blue-700 font-semibold border border-blue-200'
-                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                ? 'bg-[#f4f8fb] text-[#0b6f7c] font-semibold border border-[#d5e0e8]'
+                : 'text-[#4d6477] hover:bg-[#f4f8fb] hover:text-[#021F37]'
             }`}
           >
             <span className="text-base">🛡️</span>
@@ -94,8 +94,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 href={item.href}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   isActive
-                    ? "bg-blue-50 text-blue-700 font-semibold"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    ? "bg-[#f4f8fb] text-[#0b6f7c] font-semibold"
+                    : "text-[#4d6477] hover:bg-[#f4f8fb] hover:text-[#021F37]"
                 }`}
               >
                 <span className="text-base">{item.icon}</span>
@@ -108,8 +108,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     href="/lms?tab=all" 
                     className={`block px-3 py-2 rounded-md text-sm transition-colors ${
                       pathname === '/lms' && currentTab === 'all'
-                        ? 'text-blue-700 font-semibold bg-blue-50/50' 
-                        : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+                        ? 'text-[#0b6f7c] font-semibold bg-[#f4f8fb]/50'
+                        : 'text-[#4d6477] hover:text-[#021F37] hover:bg-[#f4f8fb]'
                     }`}
                   >
                     All Courses
@@ -118,8 +118,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     href="/lms?tab=unlocked" 
                     className={`block px-3 py-2 rounded-md text-sm transition-colors ${
                       pathname === '/lms' && (currentTab === 'unlocked' || currentTab === 'my')
-                        ? 'text-blue-700 font-semibold bg-blue-50/50' 
-                        : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+                        ? 'text-[#0b6f7c] font-semibold bg-[#f4f8fb]/50'
+                        : 'text-[#4d6477] hover:text-[#021F37] hover:bg-[#f4f8fb]'
                     }`}
                   >
                     My Courses
@@ -128,8 +128,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     href="/lms/certificates" 
                     className={`block px-3 py-2 rounded-md text-sm transition-colors ${
                       pathname.startsWith('/lms/certificates') 
-                        ? 'text-blue-700 font-semibold bg-blue-50/50' 
-                        : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+                        ? 'text-[#0b6f7c] font-semibold bg-[#f4f8fb]/50'
+                        : 'text-[#4d6477] hover:text-[#021F37] hover:bg-[#f4f8fb]'
                     }`}
                   >
                     Certificates
@@ -141,27 +141,27 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         })}
         </nav>
 
-      <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
+      <div className="p-4 border-t border-slate-100 bg-[#f4f8fb]/50 flex items-center justify-between">
         <Link href="/profile" className="flex items-center gap-3 group flex-1 min-w-0">
           {user?.avatar?.startsWith('nice:') ? (
-            <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-300 group-hover:border-blue-300 transition-colors flex-shrink-0 flex items-center justify-center bg-slate-50">
+            <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-300 group-hover:border-[#9fd4db] transition-colors flex-shrink-0 flex items-center justify-center bg-[#f4f8fb]">
               <NiceAvatar style={{ width: '100%', height: '100%' }} {...(PRESETS.find(p => p.url === user.avatar)?.config || genConfig(user.avatar))} />
             </div>
           ) : user?.avatar ? (
-            <img src={user.avatar} alt="avatar" className="w-9 h-9 rounded-full object-cover border border-slate-300 group-hover:border-blue-300 transition-colors flex-shrink-0" />
+            <img src={user.avatar} alt="avatar" className="w-9 h-9 rounded-full object-cover border border-slate-300 group-hover:border-[#9fd4db] transition-colors flex-shrink-0" />
           ) : (
-            <div className="w-9 h-9 flex-shrink-0 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center text-slate-600 font-semibold text-sm group-hover:border-blue-300 group-hover:bg-blue-50 transition-colors">
+            <div className="w-9 h-9 flex-shrink-0 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center text-[#4d6477] font-semibold text-sm group-hover:border-[#9fd4db] group-hover:bg-[#f4f8fb] transition-colors">
               {user?.name?.charAt(0) || 'U'}
             </div>
           )}
           <div className="overflow-hidden">
-            <p className="text-sm font-medium text-slate-900 truncate group-hover:text-blue-700 transition-colors">{user?.name || 'User'}</p>
-            <p className="text-xs text-slate-500 truncate">{user?.role || 'Role'}</p>
+            <p className="text-sm font-medium text-[#021F37] truncate group-hover:text-[#0b6f7c] transition-colors">{user?.name || 'User'}</p>
+            <p className="text-xs text-[#4d6477] truncate">{user?.role || 'Role'}</p>
           </div>
         </Link>
         <button 
           onClick={handleLogout}
-          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors ml-2 flex-shrink-0"
+          className="p-1.5 text-[#5f7587] hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors ml-2 flex-shrink-0"
           title="Sign out"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

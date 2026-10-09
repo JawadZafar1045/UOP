@@ -2,15 +2,15 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'CSZone Academy — Public Learning Platform',
+  title: 'School of Information Security — Public Learning Platform',
   description: 'Practical cybersecurity, programming, and technology courses.',
   icons: {
     icon: [
-      { url: '/cszone-logo.png', type: 'image/png' },
+      { url: '/SIS-logo.png', type: 'image/png' },
       { url: '/favicon.svg', type: 'image/svg+xml' }
     ],
-    shortcut: '/cszone-logo.png',
-    apple: '/cszone-logo.png',
+    shortcut: '/SIS-logo.png',
+    apple: '/SIS-logo.png',
   },
 };
 
@@ -21,7 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="font-sans antialiased bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white">
+      <body className="font-sans antialiased bg-[#f4f8fb] text-[#021F37] selection:bg-[#0E8696] selection:text-white">
         {children}
       </body>
     </html>

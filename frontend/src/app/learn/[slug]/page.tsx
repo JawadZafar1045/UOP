@@ -251,7 +251,7 @@ export default function CourseLearningClassroom({
           <AlertCircle className="w-8 h-8" />
         </div>
         <h2 className="text-2xl font-bold">Classroom Access Error</h2>
-        <p className="text-slate-400 text-sm mt-2 max-w-md mb-6">
+        <p className="text-[#5f7587] text-sm mt-2 max-w-md mb-6">
           {error || 'The requested course classroom could not be found or requires enrollment.'}
         </p>
         <div className="flex items-center gap-3">
@@ -263,7 +263,7 @@ export default function CourseLearningClassroom({
           </Link>
           <Link
             href="/lms"
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition-all cursor-pointer"
+            className="px-5 py-2.5 bg-[#0b6f7c] hover:bg-[#021F37] text-white font-bold rounded-xl text-xs transition-all cursor-pointer"
           >
             Back to Dashboard
           </Link>
@@ -282,7 +282,7 @@ export default function CourseLearningClassroom({
         <div className="flex items-center gap-4 min-w-0">
           <Link
             href="/lms"
-            className="flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white transition-colors bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg shrink-0"
+            className="flex items-center gap-1.5 text-xs font-bold text-[#5f7587] hover:text-white transition-colors bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg shrink-0"
           >
             <ArrowLeft className="w-4 h-4" />
             Dashboard
@@ -298,23 +298,23 @@ export default function CourseLearningClassroom({
         {/* Progress Bar & Toggle */}
         <div className="flex items-center gap-4 shrink-0">
           <div className="hidden sm:flex items-center gap-3">
-            <span className="text-xs font-semibold text-slate-400">
+            <span className="text-xs font-semibold text-[#5f7587]">
               {courseData.completedLectures} / {courseData.totalLectures} completed
             </span>
             <div className="w-28 h-2 bg-slate-800 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-500 rounded-full"
+                className="h-full bg-gradient-to-r from-[#0E8696] to-[#0b4a66] transition-all duration-500 rounded-full"
                 style={{ width: `${courseData.overallProgressPercent || 0}%` }}
               />
             </div>
-            <span className="text-xs font-black text-blue-400">
+            <span className="text-xs font-black text-[#0b4a66]">
               {courseData.overallProgressPercent || 0}%
             </span>
           </div>
 
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+            className="p-2 text-[#5f7587] hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
             title="Toggle Curriculum Sidebar"
           >
             <Menu className="w-5 h-5" />
@@ -331,19 +331,19 @@ export default function CourseLearningClassroom({
           {/* Video Container Box */}
           <div className="w-full bg-black aspect-video max-h-[70vh] flex items-center justify-center relative shadow-2xl">
             {!hasLectures ? (
-              <div className="text-center p-12 text-slate-300 max-w-md mx-auto space-y-3">
-                <div className="w-14 h-14 bg-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center mx-auto">
+              <div className="text-center p-12 text-[#5f7587] max-w-md mx-auto space-y-3">
+                <div className="w-14 h-14 bg-[#0E8696]/20 text-[#0b4a66] rounded-2xl flex items-center justify-center mx-auto">
                   <BookOpen className="w-7 h-7" />
                 </div>
                 <h3 className="text-lg font-bold text-white">Curriculum In Preparation</h3>
-                <p className="text-xs text-slate-400">
-                  Recorded lectures for this course are currently being uploaded by the CSZone instruction team.
+                <p className="text-xs text-[#5f7587]">
+                  Recorded lectures for this course are currently being uploaded by the School of Information Security instruction team.
                 </p>
                 {user?.role === 'admin' && (
                   <div className="pt-2">
                     <Link
                       href="/lms/admin"
-                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0b6f7c] hover:bg-[#021F37] text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer"
                     >
                       <span>🛠️</span>
                       Add Modules & Upload Videos in Course Builder
@@ -393,10 +393,10 @@ export default function CourseLearningClassroom({
               }
 
               return (
-                <div className="text-center p-8 text-slate-400">
-                  <Play className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                  <h4 className="text-base font-bold text-slate-300">Video lecture stream ready</h4>
-                  <p className="text-xs text-slate-500 mt-1">
+                <div className="text-center p-8 text-[#5f7587]">
+                  <Play className="w-12 h-12 text-[#4d6477] mx-auto mb-3" />
+                  <h4 className="text-base font-bold text-[#5f7587]">Video lecture stream ready</h4>
+                  <p className="text-xs text-[#4d6477] mt-1">
                     {currentLecture?.description || 'Select a lecture from the curriculum sidebar to begin watching.'}
                   </p>
                 </div>
@@ -409,7 +409,7 @@ export default function CourseLearningClassroom({
             <div className="p-6 sm:p-8 space-y-6 max-w-4xl">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
                 <div>
-                  <div className="flex items-center gap-2 text-xs text-blue-400 font-bold uppercase tracking-wider mb-1">
+                  <div className="flex items-center gap-2 text-xs text-[#0b4a66] font-bold uppercase tracking-wider mb-1">
                     Module {currentModuleIndex + 1} • Lecture {currentLectureIndex + 1}
                   </div>
                   <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
@@ -438,7 +438,7 @@ export default function CourseLearningClassroom({
                         disabled={isFirstLecture}
                         className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5 ${
                           isFirstLecture
-                            ? 'bg-slate-800/40 text-slate-600 cursor-not-allowed'
+                            ? 'bg-slate-800/40 text-[#4d6477] cursor-not-allowed'
                             : 'bg-slate-800 hover:bg-slate-700 text-slate-200 cursor-pointer'
                         }`}
                       >
@@ -451,10 +451,10 @@ export default function CourseLearningClassroom({
                         title={!canMarkComplete ? 'Watch at least 50% of the video to mark complete' : ''}
                         className={`px-4 py-2 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5 ${
                           currentLecture?.completed
-                            ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40 cursor-default'
+                            ? 'bg-[#0E8696]/20 text-[#2fc3d4] border border-[#0E8696]/40 cursor-default'
                             : canMarkComplete
-                            ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer'
-                            : 'bg-slate-700/50 text-slate-500 cursor-not-allowed'
+                            ? 'bg-[#0E8696] hover:bg-[#0b6f7c] text-white cursor-pointer'
+                            : 'bg-slate-700/50 text-[#4d6477] cursor-not-allowed'
                         }`}
                       >
                         <Check className="w-4 h-4" />
@@ -465,7 +465,7 @@ export default function CourseLearningClassroom({
                         disabled={isLastLecture}
                         className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5 ${
                           isLastLecture
-                            ? 'bg-slate-800/40 text-slate-600 cursor-not-allowed'
+                            ? 'bg-slate-800/40 text-[#4d6477] cursor-not-allowed'
                             : 'bg-slate-800 hover:bg-slate-700 text-slate-200 cursor-pointer'
                         }`}
                       >
@@ -478,9 +478,9 @@ export default function CourseLearningClassroom({
               </div>
 
               {/* Lecture Notes & Instructor Info */}
-              <div className="space-y-4 text-slate-300 text-sm leading-relaxed">
+              <div className="space-y-4 text-[#5f7587] text-sm leading-relaxed">
                 <h3 className="text-base font-bold text-white">About this Lecture</h3>
-                <p className="whitespace-pre-line text-slate-400">
+                <p className="whitespace-pre-line text-[#5f7587]">
                   {currentLecture?.description || 'No additional notes provided for this lecture.'}
                 </p>
               </div>
@@ -499,7 +499,7 @@ export default function CourseLearningClassroom({
             <h3 className="font-bold text-sm text-white">Course Curriculum</h3>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+              className="p-1 text-[#5f7587] hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -515,11 +515,11 @@ export default function CourseLearningClassroom({
                 <div key={mod._id || mIdx} className="bg-slate-900/60">
                   
                   {/* Module Header */}
-                  <div className="p-3.5 bg-slate-900/90 font-bold text-xs text-slate-300 flex items-center justify-between">
+                  <div className="p-3.5 bg-slate-900/90 font-bold text-xs text-[#5f7587] flex items-center justify-between">
                     <span className="truncate max-w-[240px]">
                       {mIdx + 1}. {mod.title}
                     </span>
-                    <span className="text-[11px] text-slate-500 font-mono">
+                    <span className="text-[11px] text-[#4d6477] font-mono">
                       {lectures.filter((l: any) => l.completed).length}/{lectures.length}
                     </span>
                   </div>
@@ -536,15 +536,15 @@ export default function CourseLearningClassroom({
                           onClick={() => selectLecture(mIdx, lIdx)}
                           className={`w-full p-3.5 flex items-center justify-between text-left transition-colors cursor-pointer ${
                             isSelected
-                              ? 'bg-blue-600/20 text-blue-200 border-l-4 border-blue-500'
-                              : 'hover:bg-slate-800/60 text-slate-300'
+                              ? 'bg-[#0E8696]/20 text-[#d5e0e8] border-l-4 border-[#0E8696]'
+                              : 'hover:bg-slate-800/60 text-[#5f7587]'
                           }`}
                         >
                           <div className="flex items-center gap-3 min-w-0">
                             {isDone ? (
-                              <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0" />
+                              <CheckCircle2 className="w-4 h-4 text-[#0b4a66] shrink-0" />
                             ) : isSelected ? (
-                              <Play className="w-4 h-4 text-blue-400 fill-current shrink-0" />
+                              <Play className="w-4 h-4 text-[#0b4a66] fill-current shrink-0" />
                             ) : (
                               <div className="w-4 h-4 rounded-full border border-slate-600 shrink-0" />
                             )}
@@ -553,7 +553,7 @@ export default function CourseLearningClassroom({
                               <p className={`text-xs font-semibold truncate ${isSelected ? 'text-white font-bold' : ''}`}>
                                 {lec.title}
                               </p>
-                              <span className="text-[10px] text-slate-500">
+                              <span className="text-[10px] text-[#4d6477]">
                                 {lec.duration > 0 ? formatDuration(lec.duration) : 'Video'}
                               </span>
                             </div>

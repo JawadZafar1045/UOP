@@ -191,7 +191,7 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
       {/* Header Section */}
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <Link href={`/lms/courses/${courseId}`} className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all group active:scale-[0.98] shadow-blue-500/20">
+          <Link href={`/lms/courses/${courseId}`} className="inline-flex items-center gap-2 px-4 py-2 bg-[#0b6f7c] text-white text-sm font-bold rounded-xl shadow-md hover:bg-[#021F37] transition-all group active:scale-[0.98] shadow-[#0E8696]/20">
             <ChevronLeft className="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" />
             Back to Course
           </Link>
@@ -199,7 +199,7 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
           {isTeacherOrAdmin && (
             <button 
               onClick={openCreateModal} 
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all active:scale-[0.98] shadow-blue-500/20"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0b6f7c] text-white text-sm font-bold rounded-xl shadow-md hover:bg-[#021F37] transition-all active:scale-[0.98] shadow-[#0E8696]/20"
             >
               <Plus className="w-4.5 h-4.5" />
               Create Assignment
@@ -208,8 +208,8 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
         </div>
 
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Assignments</h1>
-          <p className="text-slate-500 mt-1.5 text-[15px]">Manage and review student course work and submissions.</p>
+          <h1 className="text-3xl font-bold text-[#021F37] tracking-tight">Assignments</h1>
+          <p className="text-[#4d6477] mt-1.5 text-[15px]">Manage and review student course work and submissions.</p>
         </div>
       </div>
 
@@ -220,12 +220,12 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
       )}
 
       {assignments.length === 0 ? (
-        <div className="bg-white border border-slate-200/60 rounded-3xl p-16 flex flex-col items-center justify-center text-center shadow-sm">
-          <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mb-6 shadow-inner">
-            <FileText className="w-10 h-10 text-slate-300" />
+        <div className="bg-white border border-[#d5e0e8]/60 rounded-3xl p-16 flex flex-col items-center justify-center text-center shadow-sm">
+          <div className="w-20 h-20 bg-[#f4f8fb] rounded-3xl flex items-center justify-center mb-6 shadow-inner">
+            <FileText className="w-10 h-10 text-[#5f7587]" />
           </div>
-          <h3 className="text-2xl font-bold text-slate-900 mb-2">No assignments yet</h3>
-          <p className="text-slate-500 text-base max-w-sm leading-relaxed">
+          <h3 className="text-2xl font-bold text-[#021F37] mb-2">No assignments yet</h3>
+          <p className="text-[#4d6477] text-base max-w-sm leading-relaxed">
             Create your first assignment to engage your students and track their progress.
           </p>
         </div>
@@ -236,27 +236,27 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
             const status = mySub ? mySub.status : 'Not Submitted';
             
             return (
-              <div key={assignment._id} className="bg-white rounded-2xl border border-slate-200/60 hover:border-blue-200/60 shadow-sm hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 flex flex-col group p-7">
+              <div key={assignment._id} className="bg-white rounded-2xl border border-[#d5e0e8]/60 hover:border-[#d5e0e8]/60 shadow-sm hover:shadow-xl hover:shadow-[#0E8696]/5 transition-all duration-300 flex flex-col group p-7">
                 <div className="flex justify-between items-start mb-4 gap-4">
-                  <h3 className="font-bold text-slate-900 text-xl leading-snug group-hover:text-blue-600 transition-colors">
+                  <h3 className="font-bold text-[#021F37] text-xl leading-snug group-hover:text-[#0E8696] transition-colors">
                     {assignment.title}
                   </h3>
                   <div className="flex flex-col items-end gap-2 shrink-0">
-                    <span className="inline-flex items-center px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-full border border-indigo-100 shadow-sm">
+                    <span className="inline-flex items-center px-3 py-1 bg-[#f4f8fb] text-[#0b6f7c] text-xs font-bold rounded-full border border-[#eaf3f7] shadow-sm">
                       {assignment.maxMarks} pts
                     </span>
                     {isTeacherOrAdmin && (
                       <div className="flex items-center gap-1.5">
                         <button 
                           onClick={() => openEditModal(assignment)}
-                          className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                          className="p-1.5 text-[#5f7587] hover:text-[#0E8696] hover:bg-[#f4f8fb] rounded-lg transition-all"
                           title="Edit Assignment"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button 
                           onClick={() => handleDeleteAssignment(assignment._id, assignment.title)}
-                          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                          className="p-1.5 text-[#5f7587] hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                           title="Delete Assignment"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -266,19 +266,19 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
                   </div>
                 </div>
                 
-                <p className="text-[15px] text-slate-500 line-clamp-2 leading-relaxed mb-6">
+                <p className="text-[15px] text-[#4d6477] line-clamp-2 leading-relaxed mb-6">
                   {assignment.description || 'No description provided for this assignment.'}
                 </p>
                 
                 {assignment.materials && assignment.materials.length > 0 && (
                   <div className="mb-6">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Materials</p>
+                    <p className="text-[10px] font-bold text-[#5f7587] uppercase tracking-widest mb-3">Materials</p>
                     <div className="flex flex-wrap gap-2">
                       {assignment.materials.map((m: any, idx: number) => (
                         <button 
                           key={idx} 
                           onClick={() => handleFileDownload(m.url, m.name)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-xs font-semibold hover:bg-blue-50 hover:text-blue-700 border border-slate-100 transition-all"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#f4f8fb] text-[#4d6477] rounded-lg text-xs font-semibold hover:bg-[#f4f8fb] hover:text-[#0b6f7c] border border-slate-100 transition-all"
                         >
                           <Download className="w-3.5 h-3.5" />
                           <span className="truncate max-w-[140px]">{m.name}</span>
@@ -289,8 +289,8 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
                 )}
                 
                 <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-slate-400">
-                    <Calendar className="w-4 h-4 text-blue-400/60" />
+                  <div className="flex items-center gap-2 text-[#5f7587]">
+                    <Calendar className="w-4 h-4 text-[#0b4a66]/60" />
                     <span className="text-xs font-medium">
                       {assignment.dueDate ? `Due: ${new Date(assignment.dueDate).toLocaleDateString()}` : 'No due date'}
                     </span>
@@ -299,7 +299,7 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
                   {isTeacherOrAdmin ? (
                     <button 
                       onClick={() => { setActiveAssignment(assignment); fetchAssignmentSubmissions(assignment._id); setShowSubmissionsModal(true); }}
-                      className="inline-flex items-center gap-1.5 text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors group/btn"
+                      className="inline-flex items-center gap-1.5 text-sm font-bold text-[#0E8696] hover:text-[#0b6f7c] transition-colors group/btn"
                     >
                       Submissions ({assignment.submissions?.length || 0})
                       <ArrowRight className="w-4 h-4 transform group-hover/btn:translate-x-1 transition-transform" />
@@ -309,13 +309,13 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
                       {status === 'Not Submitted' ? (
                         <button 
                           onClick={() => { setActiveAssignment(assignment); setShowModal(true); }}
-                          className="inline-flex items-center justify-center px-5 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 shadow-md shadow-blue-500/10 transition-all active:scale-[0.98]"
+                          className="inline-flex items-center justify-center px-5 py-2 bg-[#0b6f7c] text-white text-sm font-bold rounded-xl hover:bg-[#021F37] shadow-md shadow-[#0E8696]/10 transition-all active:scale-[0.98]"
                         >
                           Submit Work
                         </button>
                       ) : status === 'graded' ? (
                         <div className="flex flex-col items-end gap-2">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 font-bold text-xs rounded-lg border border-emerald-100">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 font-bold text-xs rounded-lg border border-green-100">
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             {mySub.marks}/{assignment.maxMarks} Marks
                           </span>
@@ -340,42 +340,42 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl w-full max-w-2xl shadow-xl my-8 overflow-y-auto max-h-[90vh]">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h2 className="text-xl font-bold text-slate-900">{isEditing ? 'Edit Assignment' : 'Create New Assignment'}</h2>
-              <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-slate-600">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-[#f4f8fb]/50">
+              <h2 className="text-xl font-bold text-[#021F37]">{isEditing ? 'Edit Assignment' : 'Create New Assignment'}</h2>
+              <button onClick={() => setShowCreateModal(false)} className="text-[#5f7587] hover:text-[#4d6477]">
                 <XCircle className="w-6 h-6" />
               </button>
             </div>
             <form onSubmit={handleSaveAssignment} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Title</label>
-                  <input type="text" required value={createData.title} onChange={e => setCreateData({...createData, title: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none" placeholder="Assignment Title" />
+                  <label className="block text-sm font-medium text-[#021F37] mb-1">Title</label>
+                  <input type="text" required value={createData.title} onChange={e => setCreateData({...createData, title: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-[#0E8696] outline-none" placeholder="Assignment Title" />
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Description (Short summary)</label>
-                  <input type="text" value={createData.description} onChange={e => setCreateData({...createData, description: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none" placeholder="A brief description for the card view" />
+                  <label className="block text-sm font-medium text-[#021F37] mb-1">Description (Short summary)</label>
+                  <input type="text" value={createData.description} onChange={e => setCreateData({...createData, description: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-[#0E8696] outline-none" placeholder="A brief description for the card view" />
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Detailed Instructions</label>
-                  <textarea rows={4} value={createData.instructions} onChange={e => setCreateData({...createData, instructions: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none" placeholder="Provide detailed instructions for the students..." />
+                  <label className="block text-sm font-medium text-[#021F37] mb-1">Detailed Instructions</label>
+                  <textarea rows={4} value={createData.instructions} onChange={e => setCreateData({...createData, instructions: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-[#0E8696] outline-none" placeholder="Provide detailed instructions for the students..." />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Max Marks</label>
-                  <input type="number" required value={createData.maxMarks} onChange={e => setCreateData({...createData, maxMarks: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none" />
+                  <label className="block text-sm font-medium text-[#021F37] mb-1">Max Marks</label>
+                  <input type="number" required value={createData.maxMarks} onChange={e => setCreateData({...createData, maxMarks: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-[#0E8696] outline-none" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Due Date (Deadline)</label>
-                  <input type="datetime-local" required value={createData.dueDate} onChange={e => setCreateData({...createData, dueDate: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none" />
+                  <label className="block text-sm font-medium text-[#021F37] mb-1">Due Date (Deadline)</label>
+                  <input type="datetime-local" required value={createData.dueDate} onChange={e => setCreateData({...createData, dueDate: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-[#0E8696] outline-none" />
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Reference Materials (Optional)</label>
-                  <input type="file" multiple onChange={e => setMaterialFiles(Array.from(e.target.files || []))} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none bg-white file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                  <label className="block text-sm font-medium text-[#021F37] mb-1">Reference Materials (Optional)</label>
+                  <input type="file" multiple onChange={e => setMaterialFiles(Array.from(e.target.files || []))} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-[#0E8696] outline-none bg-white file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-[#f4f8fb] file:text-[#0b6f7c] hover:file:bg-[#eaf3f7]" />
                 </div>
               </div>
               <div className="pt-4 flex justify-end gap-3 border-t border-slate-100 mt-4">
-                <button type="button" onClick={() => setShowCreateModal(false)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800">Cancel</button>
-                <button type="submit" disabled={isSubmitting} className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-sm font-medium text-white rounded-lg shadow-sm hover:bg-blue-700 disabled:opacity-50">
+                <button type="button" onClick={() => setShowCreateModal(false)} className="px-4 py-2 text-sm font-medium text-[#4d6477] hover:text-[#021F37]">Cancel</button>
+                <button type="submit" disabled={isSubmitting} className="flex items-center gap-2 px-6 py-2 bg-[#0b6f7c] text-sm font-medium text-white rounded-lg shadow-sm hover:bg-[#021F37] disabled:opacity-50">
                   {isSubmitting ? <><Loader size="sm" />{isEditing ? 'Updating...' : 'Creating...'}</> : (isEditing ? 'Update Assignment' : 'Create Assignment')}
                 </button>
               </div>
@@ -390,10 +390,10 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
           <div className="bg-white rounded-2xl w-full max-w-4xl shadow-xl h-[80vh] flex flex-col overflow-hidden">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center">
               <div>
-                <h2 className="text-xl font-bold text-slate-900">Submissions: {activeAssignment.title}</h2>
-                <p className="text-sm text-slate-500">Max Marks: {activeAssignment.maxMarks}</p>
+                <h2 className="text-xl font-bold text-[#021F37]">Submissions: {activeAssignment.title}</h2>
+                <p className="text-sm text-[#4d6477]">Max Marks: {activeAssignment.maxMarks}</p>
               </div>
-              <button onClick={() => setShowSubmissionsModal(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setShowSubmissionsModal(false)} className="text-[#5f7587] hover:text-[#4d6477]">
                 <XCircle className="w-6 h-6" />
               </button>
             </div>
@@ -402,34 +402,34 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
               {/* Submission List */}
               <div className="w-full sm:w-1/2 border-b sm:border-b-0 sm:border-r border-slate-100 sm:overflow-y-auto p-4 space-y-4 min-h-[30vh] sm:min-h-0">
                 {currentAssignmentSubmissions?.submissions?.length === 0 ? (
-                  <div className="text-center py-12 text-slate-400">No submissions yet.</div>
+                  <div className="text-center py-12 text-[#5f7587]">No submissions yet.</div>
                 ) : (
                   currentAssignmentSubmissions?.submissions?.map((sub: any) => (
                     <div 
                       key={sub._id} 
                       onClick={() => setGradingData({ studentId: sub.studentId._id, score: sub.marks || '', feedback: sub.feedback || '' })}
-                      className={`p-4 rounded-xl border cursor-pointer transition-all ${gradingData.studentId === sub.studentId._id ? 'border-blue-500 bg-blue-50 shadow-sm' : 'border-slate-100 hover:border-slate-200 bg-white'}`}
+                      className={`p-4 rounded-xl border cursor-pointer transition-all ${gradingData.studentId === sub.studentId._id ? 'border-[#0E8696] bg-[#f4f8fb] shadow-sm' : 'border-slate-100 hover:border-[#d5e0e8] bg-white'}`}
                     >
                       <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-semibold text-slate-900">{sub.studentId.name}</h4>
-                        <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${sub.status === 'graded' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                        <h4 className="font-semibold text-[#021F37]">{sub.studentId.name}</h4>
+                        <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${sub.status === 'graded' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
                           {sub.status}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 mb-3">{new Date(sub.submittedAt).toLocaleString()}</p>
-                      {sub.text && <p className="text-xs text-slate-600 line-clamp-1 italic">"{sub.text}"</p>}
-                      {sub.fileUrl && <div className="mt-2 text-[10px] text-blue-500 font-medium flex items-center gap-1"><Download className="w-3 h-3" /> File attached</div>}
+                      <p className="text-xs text-[#4d6477] mb-3">{new Date(sub.submittedAt).toLocaleString()}</p>
+                      {sub.text && <p className="text-xs text-[#4d6477] line-clamp-1 italic">"{sub.text}"</p>}
+                      {sub.fileUrl && <div className="mt-2 text-[10px] text-[#0E8696] font-medium flex items-center gap-1"><Download className="w-3 h-3" /> File attached</div>}
                     </div>
                   ))
                 )}
               </div>
 
               {/* Grading Panel */}
-              <div className="w-full sm:w-1/2 p-6 bg-slate-50/50 sm:overflow-y-auto">
+              <div className="w-full sm:w-1/2 p-6 bg-[#f4f8fb]/50 sm:overflow-y-auto">
                 {gradingData.studentId ? (
                   <form onSubmit={handleGrade} className="space-y-6">
-                    <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                    <h3 className="font-bold text-[#021F37] flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5 text-green-500" />
                       Grade Student
                     </h3>
                     
@@ -438,17 +438,17 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
                       const sub = currentAssignmentSubmissions?.submissions?.find((s: any) => s.studentId._id === gradingData.studentId);
                       if (!sub) return null;
                       return (
-                        <div className="bg-white border border-slate-200 rounded-xl p-4 mb-6 shadow-sm">
-                          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Student Submission</p>
+                        <div className="bg-white border border-[#d5e0e8] rounded-xl p-4 mb-6 shadow-sm">
+                          <p className="text-xs font-bold text-[#5f7587] uppercase tracking-widest mb-3">Student Submission</p>
                           {sub.text && (
                             <div className="mb-4">
-                              <p className="text-sm text-slate-800 whitespace-pre-wrap bg-slate-50 p-3 rounded-lg border border-slate-100">{sub.text}</p>
+                              <p className="text-sm text-[#021F37] whitespace-pre-wrap bg-[#f4f8fb] p-3 rounded-lg border border-slate-100">{sub.text}</p>
                             </div>
                           )}
                           {sub.fileUrl && (
                             <button 
                               onClick={() => handleFileDownload(sub.fileUrl, `submission_${sub.studentId?.name || 'student'}`)}
-                              className="flex items-center gap-2 w-full justify-center py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-all shadow-sm"
+                              className="flex items-center gap-2 w-full justify-center py-2.5 bg-[#0b6f7c] text-white rounded-lg text-sm font-semibold hover:bg-[#021F37] transition-all shadow-sm"
                             >
                               <Download className="w-4 h-4" />
                               Download Submitted File
@@ -459,19 +459,19 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
                     })()}
 
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Score (Out of {activeAssignment.maxMarks})</label>
-                      <input type="number" required max={activeAssignment.maxMarks} value={gradingData.score} onChange={e => setGradingData({...gradingData, score: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none" />
+                      <label className="block text-sm font-medium text-[#021F37] mb-1">Score (Out of {activeAssignment.maxMarks})</label>
+                      <input type="number" required max={activeAssignment.maxMarks} value={gradingData.score} onChange={e => setGradingData({...gradingData, score: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-[#0E8696] outline-none" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Feedback for Student</label>
-                      <textarea rows={4} value={gradingData.feedback} onChange={e => setGradingData({...gradingData, feedback: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none" placeholder="Provide constructive feedback..." />
+                      <label className="block text-sm font-medium text-[#021F37] mb-1">Feedback for Student</label>
+                      <textarea rows={4} value={gradingData.feedback} onChange={e => setGradingData({...gradingData, feedback: e.target.value})} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-[#0E8696] outline-none" placeholder="Provide constructive feedback..." />
                     </div>
-                    <button type="submit" disabled={isSubmitting} className="flex items-center justify-center gap-2 w-full py-3 bg-blue-600 text-sm font-bold text-white rounded-xl shadow-md hover:bg-blue-700 disabled:opacity-50 transition-all">
+                    <button type="submit" disabled={isSubmitting} className="flex items-center justify-center gap-2 w-full py-3 bg-[#0b6f7c] text-sm font-bold text-white rounded-xl shadow-md hover:bg-[#021F37] disabled:opacity-50 transition-all">
                       {isSubmitting ? <><Loader size="sm" /> Saving...</> : 'Submit Grade & Feedback'}
                     </button>
                   </form>
                 ) : (
-                  <div className="h-full flex flex-col items-center justify-center text-slate-400">
+                  <div className="h-full flex flex-col items-center justify-center text-[#5f7587]">
                     <AlertCircle className="w-12 h-12 mb-4 opacity-20" />
                     <p>Select a submission to start grading</p>
                   </div>
@@ -487,32 +487,32 @@ export default function AssignmentsPage({ params }: { params: Promise<{ id: stri
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-y-auto max-h-[90vh]">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-slate-900">Submit: {activeAssignment.title}</h2>
-              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600">
+              <h2 className="text-xl font-bold text-[#021F37]">Submit: {activeAssignment.title}</h2>
+              <button onClick={() => setShowModal(false)} className="text-[#5f7587] hover:text-[#4d6477]">
                 <XCircle className="w-6 h-6" />
               </button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Your Answer (Optional)</label>
+                <label className="block text-sm font-medium text-[#021F37] mb-1">Your Answer (Optional)</label>
                 <textarea 
                   rows={4} 
                   value={submissionText} 
                   onChange={e => setSubmissionText(e.target.value)} 
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 outline-none" 
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-[#0E8696] outline-none"
                   placeholder="Type your answer or comments here..." 
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Attach File (Optional)</label>
-                <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 flex flex-col items-center justify-center bg-slate-50">
-                  <UploadCloud className="w-8 h-8 text-slate-400 mb-2" />
-                  <input type="file" onChange={e => setFile(e.target.files?.[0] || null)} className="text-sm text-slate-500" />
+                <label className="block text-sm font-medium text-[#021F37] mb-1">Attach File (Optional)</label>
+                <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 flex flex-col items-center justify-center bg-[#f4f8fb]">
+                  <UploadCloud className="w-8 h-8 text-[#5f7587] mb-2" />
+                  <input type="file" onChange={e => setFile(e.target.files?.[0] || null)} className="text-sm text-[#4d6477]" />
                 </div>
               </div>
               <div className="pt-4 flex justify-end gap-3">
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800">Cancel</button>
-                <button type="submit" disabled={isSubmitting || (!submissionText && !file)} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-sm font-medium text-white rounded-lg shadow-sm hover:bg-blue-700 disabled:opacity-50">
+                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-sm font-medium text-[#4d6477] hover:text-[#021F37]">Cancel</button>
+                <button type="submit" disabled={isSubmitting || (!submissionText && !file)} className="flex items-center gap-2 px-4 py-2 bg-[#0b6f7c] text-sm font-medium text-white rounded-lg shadow-sm hover:bg-[#021F37] disabled:opacity-50">
                   {isSubmitting ? <><Loader size="sm" /> Submitting...</> : 'Submit Assignment'}
                 </button>
               </div>

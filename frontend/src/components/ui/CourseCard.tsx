@@ -39,9 +39,9 @@ export default function CourseCard({ course }: CourseCardProps) {
         icon: Terminal,
         tag: 'DEV TRACK',
         sub: 'Modern Engineering',
-        bg: 'from-blue-50 via-slate-50 to-blue-100/60',
-        accent: 'text-blue-600',
-        border: 'border-blue-200'
+        bg: 'from-[#f4f8fb] via-slate-50 to-[#eaf3f7]/60',
+        accent: 'text-[#0E8696]',
+        border: 'border-[#d5e0e8]'
       };
     }
     if (c.includes('cloud') || c.includes('devops')) {
@@ -49,18 +49,18 @@ export default function CourseCard({ course }: CourseCardProps) {
         icon: Layers,
         tag: 'INFRA TRACK',
         sub: 'Cloud Architecture',
-        bg: 'from-sky-50 via-slate-50 to-blue-100/60',
-        accent: 'text-sky-600',
-        border: 'border-sky-200'
+        bg: 'from-[#f4f8fb] via-slate-50 to-[#eaf3f7]/60',
+        accent: 'text-[#0E8696]',
+        border: 'border-[#d5e0e8]'
       };
     }
     return {
       icon: Shield,
       tag: 'SECURITY TRACK',
       sub: 'Offensive & Defensive',
-      bg: 'from-blue-50 via-slate-50 to-blue-100/60',
-      accent: 'text-blue-600',
-      border: 'border-blue-200'
+      bg: 'from-[#f4f8fb] via-slate-50 to-[#eaf3f7]/60',
+      accent: 'text-[#0E8696]',
+      border: 'border-[#d5e0e8]'
     };
   };
 
@@ -68,10 +68,10 @@ export default function CourseCard({ course }: CourseCardProps) {
   const BannerIcon = bannerTheme.icon;
 
   return (
-    <div className="group relative flex flex-col bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-xl hover:border-blue-400 hover:-translate-y-1.5 transition-all duration-300 overflow-hidden">
+    <div className="group relative flex flex-col bg-white rounded-2xl border border-[#d5e0e8] shadow-xs hover:shadow-xl hover:border-[#0b4a66] hover:-translate-y-1.5 transition-all duration-300 overflow-hidden">
       
       {/* Dynamic Banner Stage (Bright Theme) */}
-      <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100 border-b border-slate-200">
+      <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100 border-b border-[#d5e0e8]">
         {course.thumbnail ? (
           <img
             src={course.thumbnail}
@@ -81,27 +81,27 @@ export default function CourseCard({ course }: CourseCardProps) {
         ) : (
           <div className={`w-full h-full bg-gradient-to-br ${bannerTheme.bg} flex flex-col justify-between p-5 relative select-none`}>
             {/* Tech grid texture overlay */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#cbd5e1_1px,transparent_1px),linear-gradient(to_bottom,#cbd5e1_1px,transparent_1px)] bg-[size:1.25rem_1.25rem] opacity-40" />
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#d5e0e8_1px,transparent_1px),linear-gradient(to_bottom,#d5e0e8_1px,transparent_1px)] bg-[size:1.25rem_1.25rem] opacity-40" />
             
             {/* Top Row: Watermark Icon (Right Aligned to avoid overlapping top-left floating badges) */}
             <div className="relative z-10 flex items-center justify-end">
-              <div className="w-8 h-8 rounded-xl bg-white border border-slate-200 shadow-xs flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+              <div className="w-8 h-8 rounded-xl bg-white border border-[#d5e0e8] shadow-xs flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                 <BannerIcon className={`w-4 h-4 ${bannerTheme.accent}`} />
               </div>
             </div>
 
             {/* Center Graphic */}
             <div className="relative z-10 flex flex-col items-center justify-center py-2 text-center">
-              <div className="w-11 h-11 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-center mb-1 group-hover:scale-110 group-hover:rotate-2 transition-all duration-300">
+              <div className="w-11 h-11 rounded-2xl bg-white border border-[#d5e0e8] shadow-xs flex items-center justify-center mb-1 group-hover:scale-110 group-hover:rotate-2 transition-all duration-300">
                 <BannerIcon className={`w-6 h-6 ${bannerTheme.accent}`} />
               </div>
-              <span className="text-xs font-bold text-slate-700">CSZone Academy</span>
+              <span className="text-xs font-bold text-[#021F37]">School of Information Security</span>
             </div>
 
             {/* Bottom: Subtitle / Track & Level */}
-            <div className="relative z-10 flex items-center justify-between text-[10px] text-slate-500 font-medium pt-2 border-t border-slate-200/80">
-              <span className="font-semibold text-slate-600">{bannerTheme.tag} • {bannerTheme.sub}</span>
-              <span className="text-slate-700 font-bold bg-white/80 px-2 py-0.5 rounded border border-slate-200">{level}</span>
+            <div className="relative z-10 flex items-center justify-between text-[10px] text-[#4d6477] font-medium pt-2 border-t border-[#d5e0e8]/80">
+              <span className="font-semibold text-[#4d6477]">{bannerTheme.tag} • {bannerTheme.sub}</span>
+              <span className="text-[#021F37] font-bold bg-white/80 px-2 py-0.5 rounded border border-[#d5e0e8]">{level}</span>
             </div>
           </div>
         )}
@@ -111,7 +111,7 @@ export default function CourseCard({ course }: CourseCardProps) {
           <span
             className={`px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wider uppercase shadow-xs ${
               isFree
-                ? 'bg-blue-600 text-white'
+                ? 'bg-[#0b6f7c] text-white'
                 : 'bg-slate-900 text-white'
             }`}
           >
@@ -128,7 +128,7 @@ export default function CourseCard({ course }: CourseCardProps) {
         {/* Category Pill (when thumbnail is custom image) */}
         {course.thumbnail && (
           <div className="absolute bottom-3 left-3 z-20">
-            <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-white/90 backdrop-blur-md text-slate-800 border border-slate-200 shadow-xs">
+            <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-white/90 backdrop-blur-md text-[#021F37] border border-[#d5e0e8] shadow-xs">
               {category}
             </span>
           </div>
@@ -140,22 +140,22 @@ export default function CourseCard({ course }: CourseCardProps) {
         <div className="space-y-3">
           
           {/* Metadata Row: Lectures, Modules, Duration */}
-          <div className="flex items-center justify-between text-[11px] text-slate-500 font-semibold border-b border-slate-100 pb-3">
+          <div className="flex items-center justify-between text-[11px] text-[#4d6477] font-semibold border-b border-slate-100 pb-3">
             <div className="flex items-center gap-1.5">
-              <BookOpen className="w-3.5 h-3.5 text-blue-600" />
+              <BookOpen className="w-3.5 h-3.5 text-[#0E8696]" />
               <span>
                 {course.moduleCount ? `${course.moduleCount} Modules • ` : ''}
                 {course.lectureCount || 0} Lectures
               </span>
             </div>
             <div className="flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5 text-slate-400" />
+              <Clock className="w-3.5 h-3.5 text-[#5f7587]" />
               <span>{course.totalDuration || '4 Hours'}</span>
             </div>
           </div>
 
           {/* Title */}
-          <h3 className="text-base sm:text-lg font-bold text-slate-900 line-clamp-2 group-hover:text-blue-600 transition-colors leading-snug">
+          <h3 className="text-base sm:text-lg font-bold text-[#021F37] line-clamp-2 group-hover:text-[#0E8696] transition-colors leading-snug">
             <Link href={`/courses/${courseSlug}`}>
               {course.title}
             </Link>
@@ -163,7 +163,7 @@ export default function CourseCard({ course }: CourseCardProps) {
 
           {/* Description */}
           {(course.shortDescription || course.description) && (
-            <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+            <p className="text-xs text-[#4d6477] line-clamp-2 leading-relaxed">
               {course.shortDescription || course.description}
             </p>
           )}
@@ -174,9 +174,9 @@ export default function CourseCard({ course }: CourseCardProps) {
               {course.tags.slice(0, 3).map((tag, idx) => (
                 <span
                   key={idx}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-medium hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-[#021F37] text-[10px] font-medium hover:bg-[#f4f8fb] hover:text-[#0b6f7c] transition-colors"
                 >
-                  <CheckCircle className="w-2.5 h-2.5 text-blue-600" /> {tag}
+                  <CheckCircle className="w-2.5 h-2.5 text-[#0E8696]" /> {tag}
                 </span>
               ))}
             </div>
@@ -184,11 +184,11 @@ export default function CourseCard({ course }: CourseCardProps) {
 
           {/* Instructor & Faculty (Shown only when instructor is assigned) */}
           {course.instructor && (
-            <div className="flex items-center gap-2 pt-2 text-xs text-slate-500">
-              <div className="w-6 h-6 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-bold text-[10px] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+            <div className="flex items-center gap-2 pt-2 text-xs text-[#4d6477]">
+              <div className="w-6 h-6 rounded-full bg-[#f4f8fb] text-[#0b6f7c] border border-[#d5e0e8] font-bold text-[10px] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                 {course.instructor.charAt(0).toUpperCase()}
               </div>
-              <span className="truncate text-xs">Instructor: <strong className="font-semibold text-slate-800">{course.instructor}</strong></span>
+              <span className="truncate text-xs">Instructor: <strong className="font-semibold text-[#021F37]">{course.instructor}</strong></span>
             </div>
           )}
         </div>
@@ -196,15 +196,15 @@ export default function CourseCard({ course }: CourseCardProps) {
         {/* Footer & Price & CTA */}
         <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Tuition</span>
-            <span className={`text-base sm:text-lg font-black ${isFree ? 'text-blue-600' : 'text-slate-900'}`}>
+            <span className="text-[10px] uppercase font-bold text-[#5f7587] block tracking-wider">Tuition</span>
+            <span className={`text-base sm:text-lg font-black ${isFree ? 'text-[#0E8696]' : 'text-[#021F37]'}`}>
               {priceFormatted}
             </span>
           </div>
 
           <Link
             href={`/courses/${courseSlug}`}
-            className="group/btn inline-flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs hover:shadow-md transition-all cursor-pointer shrink-0"
+            className="group/btn inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#0b6f7c] hover:bg-[#021F37] active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs hover:shadow-md transition-all cursor-pointer shrink-0"
           >
             Explore Course
             <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" />

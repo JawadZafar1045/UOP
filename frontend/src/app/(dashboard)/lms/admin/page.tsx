@@ -486,7 +486,7 @@ export default function AdminDashboardPage() {
   if (loading) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center">
-        <Loader size="lg" text="Loading CSZone Admin Console..." />
+        <Loader size="lg" text="Loading School of Information Security Admin Console..." />
       </div>
     );
   }
@@ -499,19 +499,19 @@ export default function AdminDashboardPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in-down">
         <div>
-          <div className="flex items-center gap-2 text-blue-600 text-xs font-extrabold uppercase tracking-widest mb-1">
+          <div className="flex items-center gap-2 text-[#0E8696] text-xs font-extrabold uppercase tracking-widest mb-1">
             <Shield className="w-4 h-4 animate-pulse-glow" />
-            CSZone Administration
+            School of Information Security Administration
           </div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Admin Dashboard</h1>
-          <p className="text-sm text-slate-500 mt-0.5">
+          <h1 className="text-3xl font-black text-[#021F37] tracking-tight">Admin Dashboard</h1>
+          <p className="text-sm text-[#4d6477] mt-0.5">
             Manage course catalog, review paid registrations, and configure platform settings.
           </p>
         </div>
 
         <button
           onClick={() => handleOpenCourseModal()}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-extrabold rounded-xl shadow-xs hover:shadow-md text-xs sm:text-sm cursor-pointer transition-all self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0b6f7c] hover:bg-[#021F37] active:scale-95 text-white font-extrabold rounded-xl shadow-xs hover:shadow-md text-xs sm:text-sm cursor-pointer transition-all self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
           Create New Course
@@ -519,7 +519,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 overflow-x-auto pb-px animate-fade-in-up animation-delay-100">
+      <div className="flex items-center gap-2 border-b border-[#d5e0e8] overflow-x-auto pb-px animate-fade-in-up animation-delay-100">
         {[
           { id: "overview", label: "Overview", icon: BarChart3 },
           { id: "registrations", label: "Paid Registrations", icon: DollarSign, badge: pendingRegCount },
@@ -535,8 +535,8 @@ export default function AdminDashboardPage() {
               onClick={() => setActiveTab(tab.id as Tab)}
               className={`flex items-center gap-2 px-4 py-3 text-xs sm:text-sm font-bold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
                 isActive
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300"
+                  ? "border-[#0E8696] text-[#0E8696]"
+                  : "border-transparent text-[#4d6477] hover:text-[#021F37] hover:border-slate-300"
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -547,7 +547,7 @@ export default function AdminDashboardPage() {
                 </span>
               )}
               {tab.count !== undefined && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-100 text-slate-600">
+                <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-100 text-[#4d6477]">
                   {tab.count}
                 </span>
               )}
@@ -560,36 +560,36 @@ export default function AdminDashboardPage() {
       {activeTab === "overview" && (
         <div className="space-y-8 animate-fade-in-up animation-delay-200">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="p-6 bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all duration-300">
-              <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase mb-2">
+            <div className="p-6 bg-white rounded-2xl border border-[#d5e0e8]/80 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+              <div className="flex items-center justify-between text-[#4d6477] text-xs font-bold uppercase mb-2">
                 <span>Published Courses</span>
-                <BookOpen className="w-4 h-4 text-blue-600" />
+                <BookOpen className="w-4 h-4 text-[#0E8696]" />
               </div>
-              <span className="text-3xl font-black text-slate-900">{stats?.totalCourses || courses.length}</span>
+              <span className="text-3xl font-black text-[#021F37]">{stats?.totalCourses || courses.length}</span>
             </div>
 
-            <div className="p-6 bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all duration-300">
-              <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase mb-2">
+            <div className="p-6 bg-white rounded-2xl border border-[#d5e0e8]/80 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+              <div className="flex items-center justify-between text-[#4d6477] text-xs font-bold uppercase mb-2">
                 <span>Pending Approvals</span>
                 <Clock className="w-4 h-4 text-amber-600" />
               </div>
               <span className="text-3xl font-black text-amber-600">{stats?.pendingRegistrations || pendingRegCount}</span>
             </div>
 
-            <div className="p-6 bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all duration-300">
-              <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase mb-2">
+            <div className="p-6 bg-white rounded-2xl border border-[#d5e0e8]/80 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+              <div className="flex items-center justify-between text-[#4d6477] text-xs font-bold uppercase mb-2">
                 <span>Total Students</span>
-                <Users className="w-4 h-4 text-blue-700" />
+                <Users className="w-4 h-4 text-[#0b6f7c]" />
               </div>
-              <span className="text-3xl font-black text-slate-900">{stats?.totalStudents || users.length}</span>
+              <span className="text-3xl font-black text-[#021F37]">{stats?.totalStudents || users.length}</span>
             </div>
 
-            <div className="p-6 bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all duration-300">
-              <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase mb-2">
+            <div className="p-6 bg-white rounded-2xl border border-[#d5e0e8]/80 shadow-xs hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+              <div className="flex items-center justify-between text-[#4d6477] text-xs font-bold uppercase mb-2">
                 <span>Total Enrollments</span>
-                <TrendingUp className="w-4 h-4 text-blue-600" />
+                <TrendingUp className="w-4 h-4 text-[#0E8696]" />
               </div>
-              <span className="text-3xl font-black text-blue-600">{stats?.activeEnrollments || 0}</span>
+              <span className="text-3xl font-black text-[#0E8696]">{stats?.activeEnrollments || 0}</span>
             </div>
           </div>
 
@@ -616,11 +616,11 @@ export default function AdminDashboardPage() {
 
       {/* TAB: Registrations */}
       {activeTab === "registrations" && (
-        <div className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-xs space-y-6">
+        <div className="bg-white rounded-3xl border border-[#d5e0e8]/80 p-6 shadow-xs space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-black text-slate-900">Paid Course Registrations</h2>
-              <p className="text-xs text-slate-500">
+              <h2 className="text-xl font-black text-[#021F37]">Paid Course Registrations</h2>
+              <p className="text-xs text-[#4d6477]">
                 Manually verify fee payments and approve course enrollment for students.
               </p>
             </div>
@@ -632,8 +632,8 @@ export default function AdminDashboardPage() {
                   onClick={() => setRegStatusFilter(st)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all cursor-pointer ${
                     regStatusFilter === st
-                      ? "bg-white text-slate-900 shadow-xs"
-                      : "text-slate-500 hover:text-slate-900"
+                      ? "bg-white text-[#021F37] shadow-xs"
+                      : "text-[#4d6477] hover:text-[#021F37]"
                   }`}
                 >
                   {st}
@@ -646,7 +646,7 @@ export default function AdminDashboardPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase text-[10px]">
+                  <tr className="border-b border-[#d5e0e8] text-[#5f7587] font-bold uppercase text-[10px]">
                     <th className="pb-3 px-3">Student</th>
                     <th className="pb-3 px-3">Course</th>
                     <th className="pb-3 px-3">Tuition</th>
@@ -656,30 +656,30 @@ export default function AdminDashboardPage() {
                     <th className="pb-3 px-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                <tbody className="divide-y divide-slate-100 font-medium text-[#021F37]">
                   {filteredRegistrations.map((reg) => (
-                    <tr key={reg._id} className="hover:bg-slate-50/60 transition-colors">
+                    <tr key={reg._id} className="hover:bg-[#f4f8fb]/60 transition-colors">
                       <td className="py-3.5 px-3">
-                        <div className="font-bold text-slate-900">{reg.userId?.name || "Student"}</div>
-                        <div className="text-slate-400 text-[11px]">{reg.userId?.email}</div>
+                        <div className="font-bold text-[#021F37]">{reg.userId?.name || "Student"}</div>
+                        <div className="text-[#5f7587] text-[11px]">{reg.userId?.email}</div>
                       </td>
-                      <td className="py-3.5 px-3 font-semibold text-slate-800">
+                      <td className="py-3.5 px-3 font-semibold text-[#021F37]">
                         {reg.courseId?.title || "Course"}
                       </td>
-                      <td className="py-3.5 px-3 font-bold text-slate-900">
+                      <td className="py-3.5 px-3 font-bold text-[#021F37]">
                         PKR {(reg.price || reg.courseId?.price || 0).toLocaleString()}
                       </td>
-                      <td className="py-3.5 px-3 font-mono text-[11px] text-slate-600">
+                      <td className="py-3.5 px-3 font-mono text-[11px] text-[#4d6477]">
                         {reg.paymentReference || "—"}
                       </td>
-                      <td className="py-3.5 px-3 text-slate-500 text-[11px]">
+                      <td className="py-3.5 px-3 text-[#4d6477] text-[11px]">
                         {new Date(reg.createdAt).toLocaleDateString()}
                       </td>
                       <td className="py-3.5 px-3">
                         <span
                           className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide ${
                             reg.status === "approved"
-                              ? "bg-emerald-100 text-emerald-700"
+                              ? "bg-green-100 text-green-700"
                               : reg.status === "pending"
                               ? "bg-amber-100 text-amber-700"
                               : "bg-red-100 text-red-700"
@@ -693,7 +693,7 @@ export default function AdminDashboardPage() {
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => { setSelectedReg(reg); setApproveModalOpen(true); }}
-                              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-xs transition-colors cursor-pointer"
+                              className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white font-bold text-xs rounded-lg shadow-xs transition-colors cursor-pointer"
                             >
                               Approve
                             </button>
@@ -705,7 +705,7 @@ export default function AdminDashboardPage() {
                             </button>
                           </div>
                         ) : (
-                          <span className="text-slate-400 text-[11px]">Completed</span>
+                          <span className="text-[#5f7587] text-[11px]">Completed</span>
                         )}
                       </td>
                     </tr>
@@ -714,7 +714,7 @@ export default function AdminDashboardPage() {
               </table>
             </div>
           ) : (
-            <div className="text-center py-12 text-slate-400 text-xs">
+            <div className="text-center py-12 text-[#5f7587] text-xs">
               No registrations found matching the selected filter.
             </div>
           )}
@@ -723,22 +723,22 @@ export default function AdminDashboardPage() {
 
       {/* TAB: Courses & Builder */}
       {activeTab === "courses" && (
-        <div className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-xs space-y-6">
+        <div className="bg-white rounded-3xl border border-[#d5e0e8]/80 p-6 shadow-xs space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="relative max-w-md w-full">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-[#5f7587] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={courseSearch}
                 onChange={(e) => setCourseSearch(e.target.value)}
                 placeholder="Search courses..."
-                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="w-full pl-9 pr-4 py-2 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl text-xs text-[#021F37] focus:outline-none focus:border-[#0E8696] focus:ring-2 focus:ring-[#0E8696]/20"
               />
             </div>
 
             <button
               onClick={() => handleOpenCourseModal()}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer transition-all"
+              className="px-4 py-2 bg-[#0b6f7c] hover:bg-[#021F37] active:scale-95 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer transition-all"
             >
               <Plus className="w-4 h-4" />
               New Course
@@ -753,7 +753,7 @@ export default function AdminDashboardPage() {
               return (
                 <div
                   key={c._id}
-                  className="bg-white border border-slate-200/90 rounded-3xl overflow-hidden flex flex-col justify-between hover:shadow-xl hover:border-blue-300 transition-all group"
+                  className="bg-white border border-[#d5e0e8]/90 rounded-3xl overflow-hidden flex flex-col justify-between hover:shadow-xl hover:border-[#9fd4db] transition-all group"
                 >
                   {/* Thumbnail / Header Banner */}
                   <div className="relative aspect-video w-full bg-slate-100 overflow-hidden">
@@ -764,9 +764,9 @@ export default function AdminDashboardPage() {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-slate-100 via-blue-50 to-slate-200 flex flex-col items-center justify-center text-slate-600 p-4 relative select-none">
-                        <BookOpen className="w-8 h-8 text-blue-600 mb-1" />
-                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                      <div className="w-full h-full bg-gradient-to-br from-slate-100 via-[#f4f8fb] to-slate-200 flex flex-col items-center justify-center text-[#4d6477] p-4 relative select-none">
+                        <BookOpen className="w-8 h-8 text-[#0E8696] mb-1" />
+                        <span className="text-[10px] font-black uppercase tracking-wider text-[#4d6477]">
                           {c.category || "Course"}
                         </span>
                       </div>
@@ -775,7 +775,7 @@ export default function AdminDashboardPage() {
                     {/* Floating Badges */}
                     <div className="absolute top-2.5 left-2.5 z-10 flex flex-wrap items-center gap-1.5">
                       <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
-                        isFree ? "bg-blue-600 text-white" : "bg-slate-900 text-white"
+                        isFree ? "bg-[#0b6f7c] text-white" : "bg-slate-900 text-white"
                       }`}>
                         {isFree ? "FREE" : `${c.currency || "PKR"} ${(c.price || 0).toLocaleString()}`}
                       </span>
@@ -790,7 +790,7 @@ export default function AdminDashboardPage() {
                     <div className="absolute top-2.5 right-2.5 z-10">
                       <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold capitalize shadow-xs ${
                         c.status === "published" || c.status === "active"
-                          ? "bg-emerald-500 text-white"
+                          ? "bg-green-500 text-white"
                           : c.status === "draft"
                           ? "bg-amber-500 text-white"
                           : "bg-slate-700 text-white"
@@ -800,10 +800,10 @@ export default function AdminDashboardPage() {
                     </div>
 
                     <div className="absolute bottom-2.5 left-2.5 z-10 flex items-center gap-1">
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/90 backdrop-blur-md text-slate-800 border border-slate-200/80">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/90 backdrop-blur-md text-[#021F37] border border-[#d5e0e8]/80">
                         {c.category || "General"}
                       </span>
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/90 backdrop-blur-md text-slate-700 border border-slate-200/80">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/90 backdrop-blur-md text-[#021F37] border border-[#d5e0e8]/80">
                         {c.level || "Beginner"}
                       </span>
                     </div>
@@ -812,15 +812,15 @@ export default function AdminDashboardPage() {
                   {/* Course Details Content */}
                   <div className="p-5 space-y-4 flex-1">
                     <div className="space-y-1">
-                      <h3 className="font-extrabold text-slate-900 text-base line-clamp-1 group-hover:text-blue-600 transition-colors">
+                      <h3 className="font-extrabold text-[#021F37] text-base line-clamp-1 group-hover:text-[#0E8696] transition-colors">
                         {c.title}
                       </h3>
                       {c.slug && (
-                        <p className="text-[11px] font-mono text-slate-400 truncate">
+                        <p className="text-[11px] font-mono text-[#5f7587] truncate">
                           /courses/{c.slug}
                         </p>
                       )}
-                      <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed pt-1">
+                      <p className="text-xs text-[#4d6477] line-clamp-2 leading-relaxed pt-1">
                         {c.shortDescription || c.description || "No description provided."}
                       </p>
                     </div>
@@ -829,46 +829,46 @@ export default function AdminDashboardPage() {
                     <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
                       {instructorName ? (
                         <div className="flex items-center gap-2 min-w-0">
-                          <div className="w-6 h-6 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-black text-[10px] flex items-center justify-center shrink-0">
+                          <div className="w-6 h-6 rounded-full bg-[#f4f8fb] text-[#0b6f7c] border border-[#d5e0e8] font-black text-[10px] flex items-center justify-center shrink-0">
                             {instructorName.charAt(0).toUpperCase()}
                           </div>
                           <div className="truncate">
-                            <span className="text-[10px] text-slate-400 block uppercase font-bold tracking-wider leading-none">Instructor</span>
-                            <span className="font-bold text-slate-800 text-xs truncate block">{instructorName}</span>
+                            <span className="text-[10px] text-[#5f7587] block uppercase font-bold tracking-wider leading-none">Instructor</span>
+                            <span className="font-bold text-[#021F37] text-xs truncate block">{instructorName}</span>
                           </div>
                         </div>
                       ) : (
-                        <span className="text-[11px] text-slate-400 italic">No instructor assigned</span>
+                        <span className="text-[11px] text-[#5f7587] italic">No instructor assigned</span>
                       )}
 
                       {c.duration && (
-                        <span className="text-[11px] font-semibold text-slate-600 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200 shrink-0">
+                        <span className="text-[11px] font-semibold text-[#4d6477] bg-[#f4f8fb] px-2 py-0.5 rounded-md border border-[#d5e0e8] shrink-0">
                           {c.duration}
                         </span>
                       )}
                     </div>
 
                     {/* Schedule & Capacity Metrics */}
-                    <div className="grid grid-cols-2 gap-2 p-2.5 bg-slate-50 border border-slate-100 rounded-xl text-[11px] text-slate-600">
+                    <div className="grid grid-cols-2 gap-2 p-2.5 bg-[#f4f8fb] border border-slate-100 rounded-xl text-[11px] text-[#4d6477]">
                       <div>
-                        <span className="text-slate-400 block text-[10px] font-bold uppercase">Students</span>
-                        <span className="font-extrabold text-slate-800">
+                        <span className="text-[#5f7587] block text-[10px] font-bold uppercase">Students</span>
+                        <span className="font-extrabold text-[#021F37]">
                           {c.studentCount || 0}
                           {c.maxStudents ? ` / ${c.maxStudents}` : " (Unlimited)"}
                         </span>
                       </div>
 
                       <div>
-                        <span className="text-slate-400 block text-[10px] font-bold uppercase">Curriculum</span>
-                        <span className="font-extrabold text-slate-800">
+                        <span className="text-[#5f7587] block text-[10px] font-bold uppercase">Curriculum</span>
+                        <span className="font-extrabold text-[#021F37]">
                           {c.moduleCount || 0} Mods • {c.lectureCount || 0} Lecs
                         </span>
                       </div>
 
                       {(c.startDate || c.endDate) && (
-                        <div className="col-span-2 pt-1 border-t border-slate-200/60 flex items-center justify-between text-[10px]">
-                          <span className="text-slate-400 font-bold uppercase">Term:</span>
-                          <span className="text-slate-700 font-semibold">
+                        <div className="col-span-2 pt-1 border-t border-[#d5e0e8]/60 flex items-center justify-between text-[10px]">
+                          <span className="text-[#5f7587] font-bold uppercase">Term:</span>
+                          <span className="text-[#021F37] font-semibold">
                             {c.startDate ? new Date(c.startDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : "Anytime"}
                             {" → "}
                             {c.endDate ? new Date(c.endDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "Open"}
@@ -881,7 +881,7 @@ export default function AdminDashboardPage() {
                     {Array.isArray(c.tags) && c.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1">
                         {c.tags.slice(0, 3).map((tag: string, idx: number) => (
-                          <span key={idx} className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-bold rounded-md">
+                          <span key={idx} className="px-2 py-0.5 bg-[#f4f8fb] text-[#0b6f7c] text-[10px] font-bold rounded-md">
                             #{tag}
                           </span>
                         ))}
@@ -890,10 +890,10 @@ export default function AdminDashboardPage() {
                   </div>
 
                   {/* Actions Footer */}
-                  <div className="p-4 pt-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between gap-2">
+                  <div className="p-4 pt-3 border-t border-slate-100 bg-[#f4f8fb]/50 flex items-center justify-between gap-2">
                     <button
                       onClick={() => handleOpenBuilder(c)}
-                      className="flex-1 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                      className="flex-1 px-3.5 py-2 bg-[#0b6f7c] hover:bg-[#021F37] active:scale-95 text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
                     >
                       <Layers className="w-3.5 h-3.5" />
                       Curriculum
@@ -901,7 +901,7 @@ export default function AdminDashboardPage() {
 
                     <button
                       onClick={() => handleOpenCourseModal(c)}
-                      className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 bg-white border border-slate-200 rounded-xl cursor-pointer transition-colors shadow-xs"
+                      className="p-2 text-[#4d6477] hover:text-[#0E8696] hover:bg-[#f4f8fb] bg-white border border-[#d5e0e8] rounded-xl cursor-pointer transition-colors shadow-xs"
                       title="Edit Course Details"
                     >
                       <Edit className="w-4 h-4" />
@@ -909,7 +909,7 @@ export default function AdminDashboardPage() {
 
                     <button
                       onClick={() => setConfirmAction({ type: "deleteCourse", id: c._id, label: `Delete course "${c.title}"` })}
-                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 bg-white border border-slate-200 rounded-xl cursor-pointer transition-colors shadow-xs"
+                      className="p-2 text-[#5f7587] hover:text-red-600 hover:bg-red-50 bg-white border border-[#d5e0e8] rounded-xl cursor-pointer transition-colors shadow-xs"
                       title="Delete Course"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -924,40 +924,40 @@ export default function AdminDashboardPage() {
 
       {/* TAB: Users */}
       {activeTab === "users" && (
-        <div className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-xs space-y-6">
+        <div className="bg-white rounded-3xl border border-[#d5e0e8]/80 p-6 shadow-xs space-y-6">
           <div className="relative max-w-md">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#5f7587] absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={userSearch}
               onChange={(e) => setUserSearch(e.target.value)}
               placeholder="Search users by name or email..."
-              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="w-full pl-9 pr-4 py-2 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl text-xs text-[#021F37] focus:outline-none focus:border-[#0E8696] focus:ring-2 focus:ring-[#0E8696]/20"
             />
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase text-[10px]">
+                <tr className="border-b border-[#d5e0e8] text-[#5f7587] font-bold uppercase text-[10px]">
                   <th className="pb-3 px-3">User</th>
                   <th className="pb-3 px-3">Role</th>
                   <th className="pb-3 px-3">Status</th>
                   <th className="pb-3 px-3 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+              <tbody className="divide-y divide-slate-100 font-medium text-[#021F37]">
                 {filteredUsers.map((u) => (
-                  <tr key={u._id} className="hover:bg-slate-50/60 transition-colors">
+                  <tr key={u._id} className="hover:bg-[#f4f8fb]/60 transition-colors">
                     <td className="py-3 px-3">
-                      <div className="font-bold text-slate-900">{u.name}</div>
-                      <div className="text-slate-400 text-[11px]">{u.email}</div>
+                      <div className="font-bold text-[#021F37]">{u.name}</div>
+                      <div className="text-[#5f7587] text-[11px]">{u.email}</div>
                     </td>
                     <td className="py-3 px-3">
                       <select
                         value={u.role}
                         onChange={(e) => handleRoleChange(u._id, e.target.value)}
-                        className="px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold capitalize"
+                        className="px-2.5 py-1 bg-[#f4f8fb] border border-[#d5e0e8] rounded-lg text-xs font-bold capitalize"
                       >
                         <option value="student">Student</option>
                         <option value="teacher">Teacher</option>
@@ -966,7 +966,7 @@ export default function AdminDashboardPage() {
                     </td>
                     <td className="py-3 px-3">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                        u.isActive ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
+                        u.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
                       }`}>
                         {u.isActive ? "Active" : "Deactivated"}
                       </span>
@@ -982,7 +982,7 @@ export default function AdminDashboardPage() {
                       ) : (
                         <button
                           onClick={() => setConfirmAction({ type: "activate", id: u._id, label: `Activate ${u.name}` })}
-                          className="px-2.5 py-1 text-emerald-600 hover:bg-emerald-50 rounded-lg font-bold"
+                          className="px-2.5 py-1 text-green-600 hover:bg-green-50 rounded-lg font-bold"
                         >
                           Activate
                         </button>
@@ -998,12 +998,12 @@ export default function AdminDashboardPage() {
 
       {/* TAB: Certificates */}
       {activeTab === "certificates" && (
-        <div className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-xs space-y-6">
-          <h2 className="text-xl font-black text-slate-900">Issued Certificates</h2>
+        <div className="bg-white rounded-3xl border border-[#d5e0e8]/80 p-6 shadow-xs space-y-6">
+          <h2 className="text-xl font-black text-[#021F37]">Issued Certificates</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-slate-200 text-slate-400 font-bold uppercase text-[10px]">
+                <tr className="border-b border-[#d5e0e8] text-[#5f7587] font-bold uppercase text-[10px]">
                   <th className="pb-3 px-3">Student</th>
                   <th className="pb-3 px-3">Course</th>
                   <th className="pb-3 px-3">Certificate #</th>
@@ -1012,16 +1012,16 @@ export default function AdminDashboardPage() {
                   <th className="pb-3 px-3 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+              <tbody className="divide-y divide-slate-100 font-medium text-[#021F37]">
                 {certs.map((c) => (
                   <tr key={c._id}>
-                    <td className="py-3 px-3 font-bold text-slate-900">{c.studentId?.name || "Student"}</td>
+                    <td className="py-3 px-3 font-bold text-[#021F37]">{c.studentId?.name || "Student"}</td>
                     <td className="py-3 px-3">{c.courseId?.title || "Course"}</td>
                     <td className="py-3 px-3 font-mono">{c.certificateNumber}</td>
-                    <td className="py-3 px-3 text-slate-400">{new Date(c.issueDate).toLocaleDateString()}</td>
+                    <td className="py-3 px-3 text-[#5f7587]">{new Date(c.issueDate).toLocaleDateString()}</td>
                     <td className="py-3 px-3">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        c.isRevoked ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700"
+                        c.isRevoked ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
                       }`}>
                         {c.isRevoked ? "Revoked" : "Valid"}
                       </span>
@@ -1050,38 +1050,38 @@ export default function AdminDashboardPage() {
       {/* Approve Registration Modal */}
       {approveModalOpen && selectedReg && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-[#d5e0e8] animate-in zoom-in-95 duration-200">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
+              <div className="w-12 h-12 rounded-2xl bg-green-50 text-green-600 flex items-center justify-center shrink-0 border border-green-100">
                 <CheckCircle className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-lg font-black text-slate-900">Accept & Unlock Course</h3>
-                <p className="text-xs text-slate-500">Grant full student access and send confirmation email</p>
+                <h3 className="text-lg font-black text-[#021F37]">Accept & Unlock Course</h3>
+                <p className="text-xs text-[#4d6477]">Grant full student access and send confirmation email</p>
               </div>
             </div>
 
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Are you sure you want to approve enrollment for <strong className="text-slate-900 font-bold">{selectedReg.userId?.name}</strong>?
+            <p className="text-xs text-[#4d6477] leading-relaxed">
+              Are you sure you want to approve enrollment for <strong className="text-[#021F37] font-bold">{selectedReg.userId?.name}</strong>?
             </p>
 
-            <div className="bg-slate-50 border border-slate-200/80 p-4 rounded-2xl text-xs space-y-2 text-slate-600">
+            <div className="bg-[#f4f8fb] border border-[#d5e0e8]/80 p-4 rounded-2xl text-xs space-y-2 text-[#4d6477]">
               <div className="flex justify-between">
                 <span>Student:</span>
-                <strong className="text-slate-900 font-bold">{selectedReg.userId?.name} ({selectedReg.userId?.email})</strong>
+                <strong className="text-[#021F37] font-bold">{selectedReg.userId?.name} ({selectedReg.userId?.email})</strong>
               </div>
               <div className="flex justify-between">
                 <span>Course:</span>
-                <strong className="text-slate-900 font-bold">{selectedReg.courseId?.title}</strong>
+                <strong className="text-[#021F37] font-bold">{selectedReg.courseId?.title}</strong>
               </div>
               <div className="flex justify-between">
                 <span>Tuition:</span>
-                <strong className="text-slate-900 font-bold">PKR {(selectedReg.price || selectedReg.courseId?.price || 0).toLocaleString()}</strong>
+                <strong className="text-[#021F37] font-bold">PKR {(selectedReg.price || selectedReg.courseId?.price || 0).toLocaleString()}</strong>
               </div>
               {selectedReg.paymentReference && (
                 <div className="flex justify-between">
                   <span>Payment Ref:</span>
-                  <span className="font-mono text-slate-800 font-bold">{selectedReg.paymentReference}</span>
+                  <span className="font-mono text-[#021F37] font-bold">{selectedReg.paymentReference}</span>
                 </div>
               )}
             </div>
@@ -1090,7 +1090,7 @@ export default function AdminDashboardPage() {
               <button
                 type="button"
                 onClick={() => setApproveModalOpen(false)}
-                className="px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                className="px-4 py-2.5 text-xs font-bold text-[#4d6477] hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -1098,7 +1098,7 @@ export default function AdminDashboardPage() {
                 type="button"
                 onClick={handleApproveRegistration}
                 disabled={regSubmitting}
-                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                className="px-5 py-2.5 bg-green-600 hover:bg-green-700 active:scale-95 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-50"
               >
                 {regSubmitting ? "Approving & Sending Email..." : "Accept & Unlock Course"}
               </button>
@@ -1110,23 +1110,23 @@ export default function AdminDashboardPage() {
       {/* Reject Registration Modal */}
       {rejectModalOpen && selectedReg && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-[#d5e0e8] animate-in zoom-in-95 duration-200">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100">
+              <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center shrink-0 border border-red-100">
                 <XCircle className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-lg font-black text-slate-900">Decline Student Request</h3>
-                <p className="text-xs text-slate-500">Reject request and notify student with reason</p>
+                <h3 className="text-lg font-black text-[#021F37]">Decline Student Request</h3>
+                <p className="text-xs text-[#4d6477]">Reject request and notify student with reason</p>
               </div>
             </div>
 
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Decline enrollment request for <strong className="text-slate-900 font-bold">{selectedReg.userId?.name}</strong> in <strong className="text-slate-900 font-bold">{selectedReg.courseId?.title}</strong>.
+            <p className="text-xs text-[#4d6477] leading-relaxed">
+              Decline enrollment request for <strong className="text-[#021F37] font-bold">{selectedReg.userId?.name}</strong> in <strong className="text-[#021F37] font-bold">{selectedReg.courseId?.title}</strong>.
             </p>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 block">
+              <label className="text-xs font-bold text-[#021F37] block">
                 Decline Reason (Sent to Student via Email)
               </label>
               <textarea
@@ -1134,7 +1134,7 @@ export default function AdminDashboardPage() {
                 onChange={(e) => setRejectReason(e.target.value)}
                 placeholder="e.g. Invalid payment transaction ID or fee transfer not received..."
                 rows={3}
-                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 outline-none"
+                className="w-full p-3 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl text-xs focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none"
               />
             </div>
 
@@ -1142,7 +1142,7 @@ export default function AdminDashboardPage() {
               <button
                 type="button"
                 onClick={() => setRejectModalOpen(false)}
-                className="px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                className="px-4 py-2.5 text-xs font-bold text-[#4d6477] hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -1150,7 +1150,7 @@ export default function AdminDashboardPage() {
                 type="button"
                 onClick={handleRejectRegistration}
                 disabled={regSubmitting}
-                className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                className="px-5 py-2.5 bg-red-600 hover:bg-red-700 active:scale-95 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-50"
               >
                 {regSubmitting ? "Declining..." : "Decline Request"}
               </button>
@@ -1166,10 +1166,10 @@ export default function AdminDashboardPage() {
             
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 shrink-0">
               <div>
-                <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">Course Builder</span>
-                <h3 className="text-xl font-black text-slate-900">{builderCourse.title}</h3>
+                <span className="text-xs font-bold text-[#0E8696] uppercase tracking-widest">Course Builder</span>
+                <h3 className="text-xl font-black text-[#021F37]">{builderCourse.title}</h3>
               </div>
-              <button onClick={() => setBuilderModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-600 rounded-lg">
+              <button onClick={() => setBuilderModalOpen(false)} className="p-2 text-[#5f7587] hover:text-[#4d6477] rounded-lg">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1184,11 +1184,11 @@ export default function AdminDashboardPage() {
                   value={newModuleTitle}
                   onChange={(e) => setNewModuleTitle(e.target.value)}
                   placeholder="New Module Title (e.g. Module 1: Introduction to Web Penetration Testing)..."
-                  className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="flex-1 px-4 py-2.5 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl text-xs focus:outline-none focus:border-[#0E8696] focus:ring-2 focus:ring-[#0E8696]/20"
                 />
                 <button
                   onClick={handleAddModule}
-                  className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0 transition-all"
+                  className="px-4 py-2.5 bg-[#0b6f7c] hover:bg-[#021F37] active:scale-95 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0 transition-all"
                 >
                   <Plus className="w-4 h-4" /> Add Module
                 </button>
@@ -1197,25 +1197,25 @@ export default function AdminDashboardPage() {
               {/* Module Tree */}
               <div className="space-y-4">
                 {(builderCourse.modules || []).map((mod: any, mIdx: number) => (
-                  <div key={mod._id || mIdx} className="border border-slate-200 rounded-2xl overflow-hidden">
-                    <div className="p-4 bg-slate-50 flex items-center justify-between">
+                  <div key={mod._id || mIdx} className="border border-[#d5e0e8] rounded-2xl overflow-hidden">
+                    <div className="p-4 bg-[#f4f8fb] flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-md bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center">
+                        <span className="w-6 h-6 rounded-md bg-[#eaf3f7] text-[#0b6f7c] font-bold text-xs flex items-center justify-center">
                           {mIdx + 1}
                         </span>
-                        <h4 className="font-bold text-sm text-slate-900">{mod.title}</h4>
+                        <h4 className="font-bold text-sm text-[#021F37]">{mod.title}</h4>
                       </div>
 
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleOpenAddLecture(mod._id)}
-                          className="px-3 py-1 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                          className="px-3 py-1 bg-white hover:bg-slate-100 border border-[#d5e0e8] text-[#021F37] font-bold text-xs rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
                         >
                           <Plus className="w-3.5 h-3.5" /> Add Lecture
                         </button>
                         <button
                           onClick={() => handleDeleteModule(mod._id)}
-                          className="p-1 text-slate-400 hover:text-red-600 rounded-lg"
+                          className="p-1 text-[#5f7587] hover:text-red-600 rounded-lg"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -1225,19 +1225,19 @@ export default function AdminDashboardPage() {
                     {/* Lectures List */}
                     <div className="divide-y divide-slate-100 p-2">
                       {(mod.lectures || []).map((lec: any, lIdx: number) => (
-                        <div key={lec._id || lIdx} className="p-3 flex items-center justify-between hover:bg-slate-50 rounded-xl">
+                        <div key={lec._id || lIdx} className="p-3 flex items-center justify-between hover:bg-[#f4f8fb] rounded-xl">
                           <div className="flex items-center gap-3">
-                            <Play className="w-4 h-4 text-slate-400" />
+                            <Play className="w-4 h-4 text-[#5f7587]" />
                             <div>
-                              <div className="font-semibold text-xs text-slate-800 flex items-center gap-2">
+                              <div className="font-semibold text-xs text-[#021F37] flex items-center gap-2">
                                 <span>{mIdx + 1}.{lIdx + 1} {lec.title}</span>
                                 {lec.isPreview && (
-                                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">
+                                  <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold">
                                     FREE PREVIEW
                                   </span>
                                 )}
                               </div>
-                              <span className="text-[10px] text-slate-400">
+                              <span className="text-[10px] text-[#5f7587]">
                                 {lec.duration ? formatDuration(lec.duration) : "Duration unset"}
                               </span>
                             </div>
@@ -1245,7 +1245,7 @@ export default function AdminDashboardPage() {
 
                           <button
                             onClick={() => handleDeleteLecture(mod._id, lec._id)}
-                            className="p-1 text-slate-400 hover:text-red-600 rounded-lg cursor-pointer"
+                            className="p-1 text-[#5f7587] hover:text-red-600 rounded-lg cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -1266,41 +1266,41 @@ export default function AdminDashboardPage() {
       {lectureModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 animate-in zoom-in-95 duration-200">
-            <h3 className="text-lg font-black text-slate-900">Add Recorded Lecture</h3>
+            <h3 className="text-lg font-black text-[#021F37]">Add Recorded Lecture</h3>
             <form onSubmit={handleSaveLecture} className="space-y-4 text-xs">
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Lecture Title</label>
+                <label className="font-bold text-[#021F37] block mb-1">Lecture Title</label>
                 <input
                   type="text"
                   required
                   value={lectureForm.title}
                   onChange={(e) => setLectureForm({ ...lectureForm, title: e.target.value })}
                   placeholder="e.g. Setting up Kali Linux and Burp Suite..."
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="w-full p-2.5 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl focus:outline-none focus:border-[#0E8696] focus:ring-2 focus:ring-[#0E8696]/20"
                 />
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Lecture Description / Notes</label>
+                <label className="font-bold text-[#021F37] block mb-1">Lecture Description / Notes</label>
                 <textarea
                   value={lectureForm.description}
                   onChange={(e) => setLectureForm({ ...lectureForm, description: e.target.value })}
                   rows={2}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="w-full p-2.5 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl focus:outline-none focus:border-[#0E8696] focus:ring-2 focus:ring-[#0E8696]/20"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">
-                    Duration (Seconds) {lectureForm.duration > 0 && <span className="text-blue-600 font-semibold ml-1">({formatDuration(lectureForm.duration)})</span>}
+                  <label className="font-bold text-[#021F37] block mb-1">
+                    Duration (Seconds) {lectureForm.duration > 0 && <span className="text-[#0E8696] font-semibold ml-1">({formatDuration(lectureForm.duration)})</span>}
                   </label>
                   <input
                     type="number"
                     value={lectureForm.duration || ""}
                     placeholder="Auto-detected from video"
                     onChange={(e) => setLectureForm({ ...lectureForm, duration: Number(e.target.value) })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    className="w-full p-2.5 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl focus:outline-none focus:border-[#0E8696] focus:ring-2 focus:ring-[#0E8696]/20"
                   />
                 </div>
 
@@ -1310,16 +1310,16 @@ export default function AdminDashboardPage() {
                     id="isPreview"
                     checked={lectureForm.isPreview}
                     onChange={(e) => setLectureForm({ ...lectureForm, isPreview: e.target.checked })}
-                    className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4"
+                    className="rounded text-[#0E8696] focus:ring-[#0E8696] w-4 h-4"
                   />
-                  <label htmlFor="isPreview" className="font-bold text-slate-800 cursor-pointer">
+                  <label htmlFor="isPreview" className="font-bold text-[#021F37] cursor-pointer">
                     Enable Free Preview
                   </label>
                 </div>
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">
+                <label className="font-bold text-[#021F37] block mb-1">
                   Video URL (YouTube / Vimeo / MP4 Link)
                 </label>
                 <input
@@ -1327,18 +1327,18 @@ export default function AdminDashboardPage() {
                   value={lectureForm.videoUrl || ""}
                   onChange={(e) => setLectureForm({ ...lectureForm, videoUrl: e.target.value })}
                   placeholder="e.g. https://www.youtube.com/watch?v=... or direct MP4 stream URL"
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="w-full p-2.5 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl font-mono text-xs focus:outline-none focus:border-[#0E8696] focus:ring-2 focus:ring-[#0E8696]/20"
                 />
-                <p className="text-[10px] text-slate-400 mt-1">Paste a video link OR upload a video file below</p>
+                <p className="text-[10px] text-[#5f7587] mt-1">Paste a video link OR upload a video file below</p>
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Or Upload Video File (Cloudinary)</label>
+                <label className="font-bold text-[#021F37] block mb-1">Or Upload Video File (Cloudinary)</label>
                 <input
                   type="file"
                   accept="video/*"
                   onChange={handleVideoFileChange}
-                  className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                  className="w-full text-xs text-[#4d6477] file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#f4f8fb] file:text-[#0b6f7c] hover:file:bg-[#eaf3f7] cursor-pointer"
                 />
               </div>
 
@@ -1346,14 +1346,14 @@ export default function AdminDashboardPage() {
                 <button
                   type="button"
                   onClick={() => setLectureModalOpen(false)}
-                  className="px-4 py-2 text-slate-600 font-bold hover:bg-slate-50 rounded-xl transition-colors cursor-pointer"
+                  className="px-4 py-2 text-[#4d6477] font-bold hover:bg-[#f4f8fb] rounded-xl transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={videoUploading}
-                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer transition-all"
+                  className="px-5 py-2 bg-[#0E8696] hover:bg-[#0b6f7c] active:scale-95 text-white font-bold rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer transition-all"
                 >
                   {videoUploading ? <><Loader2 className="w-4 h-4 animate-spin" /> Uploading...</> : "Save Lecture"}
                 </button>
@@ -1368,12 +1368,12 @@ export default function AdminDashboardPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
           <div className="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-8 max-h-[90vh] overflow-y-auto space-y-5 animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-xl font-black text-slate-900">
+              <h3 className="text-xl font-black text-[#021F37]">
                 {editingCourse ? "Edit Course" : "Create New Course"}
               </h3>
               <button
                 onClick={() => setCourseModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-50 cursor-pointer"
+                className="p-1.5 text-[#5f7587] hover:text-[#4d6477] rounded-xl hover:bg-[#f4f8fb] cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1383,7 +1383,7 @@ export default function AdminDashboardPage() {
               {/* Title & Slug */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Course Title *</label>
+                  <label className="font-bold text-[#021F37] block mb-1">Course Title *</label>
                   <input
                     type="text"
                     required
@@ -1397,27 +1397,27 @@ export default function AdminDashboardPage() {
                       }));
                     }}
                     placeholder="e.g. Certified Ethical Hacker Track"
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium"
+                    className="w-full p-2.5 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl font-medium"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">
-                    Course URL Slug <span className="text-[10px] text-slate-400 font-normal">(e.g. /courses/slug)</span>
+                  <label className="font-bold text-[#021F37] block mb-1">
+                    Course URL Slug <span className="text-[10px] text-[#5f7587] font-normal">(e.g. /courses/slug)</span>
                   </label>
                   <input
                     type="text"
                     value={courseForm.slug}
                     onChange={(e) => setCourseForm({ ...courseForm, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') })}
                     placeholder="e.g. ethical-hacking-track"
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs"
+                    className="w-full p-2.5 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl font-mono text-xs"
                   />
                 </div>
               </div>
 
               {/* Lead Instructor Dropdown */}
               <div>
-                <label className="font-bold text-slate-700 block mb-1">
-                  Lead Instructor <span className="text-[10px] text-slate-400 font-normal">(Select registered faculty)</span>
+                <label className="font-bold text-[#021F37] block mb-1">
+                  Lead Instructor <span className="text-[10px] text-[#5f7587] font-normal">(Select registered faculty)</span>
                 </label>
                 <select
                   value={courseForm.instructor}
@@ -1430,7 +1430,7 @@ export default function AdminDashboardPage() {
                       instructorName: match ? match.name : "",
                     });
                   }}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium cursor-pointer"
+                  className="w-full p-2.5 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl font-medium cursor-pointer"
                 >
                   <option value="">-- No Instructor Assigned --</option>
                   {instructors.map((inst: any) => (
@@ -1442,7 +1442,7 @@ export default function AdminDashboardPage() {
               </div>
 
               {/* Course Thumbnail Management */}
-              <div className="p-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl">
+              <div className="p-4 bg-[#f4f8fb]/80 border border-[#d5e0e8]/80 rounded-2xl">
                 <CourseThumbnailUpload
                   value={courseForm.thumbnail}
                   onChange={(url) => setCourseForm((prev: any) => ({ ...prev, thumbnail: url }))}
@@ -1451,36 +1451,36 @@ export default function AdminDashboardPage() {
 
               {/* Short & Full Description */}
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Short Description / Tagline</label>
+                <label className="font-bold text-[#021F37] block mb-1">Short Description / Tagline</label>
                 <input
                   type="text"
                   value={courseForm.shortDescription}
                   onChange={(e) => setCourseForm({ ...courseForm, shortDescription: e.target.value })}
                   placeholder="1-2 sentences summarizing the program for catalog cards..."
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  className="w-full p-2.5 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl"
                 />
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Full Description *</label>
+                <label className="font-bold text-[#021F37] block mb-1">Full Description *</label>
                 <textarea
                   required
                   value={courseForm.description}
                   onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })}
                   rows={3}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl resize-none"
+                  className="w-full p-2.5 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl resize-none"
                   placeholder="Comprehensive syllabus overview, prerequisites, and learning objectives..."
                 />
               </div>
 
               {/* Pricing */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Course Type</label>
+                  <label className="font-bold text-[#021F37] block mb-1">Course Type</label>
                   <select
                     value={courseForm.type}
                     onChange={(e) => setCourseForm({ ...courseForm, type: e.target.value, price: e.target.value === 'free' ? 0 : courseForm.price })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold cursor-pointer"
+                    className="w-full p-2.5 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl font-bold cursor-pointer"
                   >
                     <option value="free">Free Course</option>
                     <option value="paid">Paid Track</option>
@@ -1488,36 +1488,36 @@ export default function AdminDashboardPage() {
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Price</label>
+                  <label className="font-bold text-[#021F37] block mb-1">Price</label>
                   <input
                     type="number"
                     min={0}
                     value={courseForm.price}
                     onChange={(e) => setCourseForm({ ...courseForm, price: Number(e.target.value) })}
                     disabled={courseForm.type === "free"}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl disabled:opacity-50"
+                    className="w-full p-2.5 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl disabled:opacity-50"
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Currency</label>
+                  <label className="font-bold text-[#021F37] block mb-1">Currency</label>
                   <input
                     type="text"
                     value={courseForm.currency}
                     onChange={(e) => setCourseForm({ ...courseForm, currency: e.target.value.toUpperCase() })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                    className="w-full p-2.5 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl"
                   />
                 </div>
               </div>
 
               {/* Category, Level & Status */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Category</label>
+                  <label className="font-bold text-[#021F37] block mb-1">Category</label>
                   <select
                     value={courseForm.category}
                     onChange={(e) => setCourseForm({ ...courseForm, category: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium cursor-pointer"
+                    className="w-full p-2.5 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl font-medium cursor-pointer"
                   >
                     {["Certification Bootcamp", "Specialized Courses", "Customized Training", "Law Enforcement Agencies"].map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
@@ -1525,11 +1525,11 @@ export default function AdminDashboardPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Level</label>
+                  <label className="font-bold text-[#021F37] block mb-1">Level</label>
                   <select
                     value={courseForm.level}
                     onChange={(e) => setCourseForm({ ...courseForm, level: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold cursor-pointer"
+                    className="w-full p-2.5 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl font-bold cursor-pointer"
                   >
                     <option value="Beginner">Beginner</option>
                     <option value="Intermediate">Intermediate</option>
@@ -1538,11 +1538,11 @@ export default function AdminDashboardPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Status</label>
+                  <label className="font-bold text-[#021F37] block mb-1">Status</label>
                   <select
                     value={courseForm.status}
                     onChange={(e) => setCourseForm({ ...courseForm, status: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold cursor-pointer"
+                    className="w-full p-2.5 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl font-bold cursor-pointer"
                   >
                     <option value="published">Published</option>
                     <option value="draft">Draft</option>
@@ -1555,53 +1555,53 @@ export default function AdminDashboardPage() {
               {/* Duration, Capacity & Dates */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Duration</label>
+                  <label className="font-bold text-[#021F37] block mb-1">Duration</label>
                   <input
                     type="text"
                     value={courseForm.duration}
                     onChange={(e) => setCourseForm({ ...courseForm, duration: e.target.value })}
                     placeholder="e.g. 4 Hours / 8 Weeks"
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                    className="w-full p-2.5 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl text-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Max Students</label>
+                  <label className="font-bold text-[#021F37] block mb-1">Max Students</label>
                   <input
                     type="number"
                     min={1}
                     value={courseForm.maxStudents}
                     onChange={(e) => setCourseForm({ ...courseForm, maxStudents: e.target.value })}
                     placeholder="Unlimited"
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                    className="w-full p-2.5 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl text-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Start Date</label>
+                  <label className="font-bold text-[#021F37] block mb-1">Start Date</label>
                   <input
                     type="date"
                     value={courseForm.startDate}
                     onChange={(e) => setCourseForm({ ...courseForm, startDate: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                    className="w-full p-2.5 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl text-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">End Date</label>
+                  <label className="font-bold text-[#021F37] block mb-1">End Date</label>
                   <input
                     type="date"
                     value={courseForm.endDate}
                     onChange={(e) => setCourseForm({ ...courseForm, endDate: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                    className="w-full p-2.5 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl text-xs"
                   />
                 </div>
               </div>
 
               {/* Completion Criteria */}
-              <div className="grid grid-cols-3 gap-3 p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl">
+              <div className="grid grid-cols-3 gap-3 p-3.5 bg-[#f4f8fb] border border-[#d5e0e8]/80 rounded-2xl">
                 <div>
-                  <label className="font-bold text-slate-700 block text-[11px] mb-1">Min Attendance (%)</label>
+                  <label className="font-bold text-[#021F37] block text-[11px] mb-1">Min Attendance (%)</label>
                   <input
                     type="number"
                     min={0}
@@ -1611,11 +1611,11 @@ export default function AdminDashboardPage() {
                       ...courseForm,
                       completionCriteria: { ...courseForm.completionCriteria, minAttendancePercent: Number(e.target.value) }
                     })}
-                    className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs"
+                    className="w-full p-2 bg-white border border-[#d5e0e8] rounded-lg text-xs"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-700 block text-[11px] mb-1">Min Assignment (%)</label>
+                  <label className="font-bold text-[#021F37] block text-[11px] mb-1">Min Assignment (%)</label>
                   <input
                     type="number"
                     min={0}
@@ -1625,11 +1625,11 @@ export default function AdminDashboardPage() {
                       ...courseForm,
                       completionCriteria: { ...courseForm.completionCriteria, minAssignmentScore: Number(e.target.value) }
                     })}
-                    className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs"
+                    className="w-full p-2 bg-white border border-[#d5e0e8] rounded-lg text-xs"
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-700 block text-[11px] mb-1">Min Quiz Pass (%)</label>
+                  <label className="font-bold text-[#021F37] block text-[11px] mb-1">Min Quiz Pass (%)</label>
                   <input
                     type="number"
                     min={0}
@@ -1639,31 +1639,31 @@ export default function AdminDashboardPage() {
                       ...courseForm,
                       completionCriteria: { ...courseForm.completionCriteria, minQuizScore: Number(e.target.value) }
                     })}
-                    className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs"
+                    className="w-full p-2 bg-white border border-[#d5e0e8] rounded-lg text-xs"
                   />
                 </div>
               </div>
 
               {/* Tags */}
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Topic Tags (comma-separated)</label>
+                <label className="font-bold text-[#021F37] block mb-1">Topic Tags (comma-separated)</label>
                 <input
                   type="text"
                   value={courseForm.tags}
                   onChange={(e) => setCourseForm({ ...courseForm, tags: e.target.value })}
                   placeholder="e.g. cybersecurity, linux, networking, python"
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  className="w-full p-2.5 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl"
                 />
               </div>
 
               {/* What You Will Learn */}
               <div>
-                <label className="font-bold text-slate-700 block mb-1">What You Will Learn (1 point per line)</label>
+                <label className="font-bold text-[#021F37] block mb-1">What You Will Learn (1 point per line)</label>
                 <textarea
                   value={courseForm.whatYouWillLearn}
                   onChange={(e) => setCourseForm({ ...courseForm, whatYouWillLearn: e.target.value })}
                   rows={3}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl"
+                  className="w-full p-2.5 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl"
                   placeholder="Key student learning outcomes..."
                 />
               </div>
@@ -1675,9 +1675,9 @@ export default function AdminDashboardPage() {
                   id="isFeatured"
                   checked={courseForm.isFeatured}
                   onChange={(e) => setCourseForm({ ...courseForm, isFeatured: e.target.checked })}
-                  className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
+                  className="rounded text-[#0E8696] focus:ring-[#0E8696] w-4 h-4 cursor-pointer"
                 />
-                <label htmlFor="isFeatured" className="font-bold text-slate-800 cursor-pointer text-xs">
+                <label htmlFor="isFeatured" className="font-bold text-[#021F37] cursor-pointer text-xs">
                   Feature this course on Platform Homepage
                 </label>
               </div>
@@ -1686,13 +1686,13 @@ export default function AdminDashboardPage() {
                 <button
                   type="button"
                   onClick={() => setCourseModalOpen(false)}
-                  className="px-4 py-2 text-slate-600 font-bold hover:bg-slate-50 rounded-xl transition-colors cursor-pointer"
+                  className="px-4 py-2 text-[#4d6477] font-bold hover:bg-[#f4f8fb] rounded-xl transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+                  className="px-5 py-2 bg-[#0E8696] hover:bg-[#0b6f7c] active:scale-95 text-white font-bold rounded-xl shadow-xs transition-all cursor-pointer"
                 >
                   Save Course
                 </button>
@@ -1706,12 +1706,12 @@ export default function AdminDashboardPage() {
       {confirmAction && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
           <div className="bg-white rounded-3xl max-w-sm w-full p-6 space-y-4 animate-in zoom-in-95 duration-200">
-            <h3 className="text-base font-black text-slate-900">Confirm Action</h3>
-            <p className="text-xs text-slate-600">{confirmAction.label}?</p>
+            <h3 className="text-base font-black text-[#021F37]">Confirm Action</h3>
+            <p className="text-xs text-[#4d6477]">{confirmAction.label}?</p>
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setConfirmAction(null)}
-                className="px-4 py-2 text-xs font-bold text-slate-600"
+                className="px-4 py-2 text-xs font-bold text-[#4d6477]"
               >
                 Cancel
               </button>

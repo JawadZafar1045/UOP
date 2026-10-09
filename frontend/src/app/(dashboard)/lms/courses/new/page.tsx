@@ -299,37 +299,37 @@ export default function NewCoursePage() {
 
   // ── shared classes ──────────────────────────────────────────────
   const inputCls =
-    'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-medium';
+    'w-full rounded-xl border border-[#d5e0e8] bg-white px-3.5 py-2.5 text-xs sm:text-sm text-[#021F37] placeholder:text-[#5f7587] outline-none focus:border-[#0E8696] focus:ring-2 focus:ring-[#0E8696]/20 transition-all font-medium';
 
-  const card = 'bg-white rounded-3xl border border-slate-200 overflow-hidden mb-4 shadow-xs';
-  const cardHead = 'flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50/50';
+  const card = 'bg-white rounded-3xl border border-[#d5e0e8] overflow-hidden mb-4 shadow-xs';
+  const cardHead = 'flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-[#f4f8fb]/50';
   const cardBody = 'p-6';
-  const lbl = 'block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5';
+  const lbl = 'block text-[11px] font-bold text-[#4d6477] uppercase tracking-wider mb-1.5';
 
   const iconBox = (bg: string, text: string) =>
     `w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${bg} ${text}`;
 
   // ── step bar ────────────────────────────────────────────────────
   const StepBar = () => (
-    <div className="flex items-center bg-white border border-slate-200 rounded-2xl p-1.5 mb-6 overflow-x-auto shadow-xs">
+    <div className="flex items-center bg-white border border-[#d5e0e8] rounded-2xl p-1.5 mb-6 overflow-x-auto shadow-xs">
       {STEPS.map((s, i) => (
         <div key={s.id} className="flex items-center flex-1 min-w-0">
           <button
             onClick={() => goTo(s.id)}
             className={`flex items-center justify-center gap-2 flex-1 rounded-xl px-3 py-2.5 text-xs font-bold transition-all min-w-0 cursor-pointer ${
               step === s.id
-                ? 'bg-blue-600 text-white shadow-xs'
+                ? 'bg-[#0b6f7c] text-white shadow-xs'
                 : step > s.id
-                ? 'bg-blue-50 text-blue-700 hover:bg-blue-100'
-                : 'text-slate-400 hover:text-slate-600'
+                ? 'bg-[#f4f8fb] text-[#0b6f7c] hover:bg-[#eaf3f7]'
+                : 'text-[#5f7587] hover:text-[#4d6477]'
             }`}
           >
             <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0 ${
               step === s.id
-                ? 'bg-white text-blue-600'
+                ? 'bg-white text-[#0E8696]'
                 : step > s.id
-                ? 'bg-blue-600 text-white'
-                : 'bg-slate-100 text-slate-400'
+                ? 'bg-[#0b6f7c] text-white'
+                : 'bg-slate-100 text-[#5f7587]'
             }`}>
               {step > s.id ? <Check className="w-3 h-3 stroke-[3]" /> : s.id}
             </span>
@@ -351,14 +351,14 @@ export default function NewCoursePage() {
           <Lightbulb className="w-4 h-4" />
         </div>
         <div>
-          <p className="text-sm font-bold text-slate-800">Pro Tips</p>
+          <p className="text-sm font-bold text-[#021F37]">Pro Tips</p>
         </div>
       </div>
       <div className={cardBody + ' space-y-3'}>
         {tips.map((t, i) => (
           <div key={i} className="flex items-start gap-2.5">
-            <CheckCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-            <span className="text-xs text-slate-600 leading-relaxed">{t}</span>
+            <CheckCircle className="w-4 h-4 text-[#0E8696] mt-0.5 flex-shrink-0" />
+            <span className="text-xs text-[#4d6477] leading-relaxed">{t}</span>
           </div>
         ))}
       </div>
@@ -373,19 +373,19 @@ export default function NewCoursePage() {
     icon: any; iconBg: string; iconText: string; barColor: string;
     label: string; valKey: string; val: number;
   }) => (
-    <div className="flex items-center gap-4 p-4 bg-slate-50 border border-slate-100 rounded-2xl mb-3 last:mb-0">
+    <div className="flex items-center gap-4 p-4 bg-[#f4f8fb] border border-slate-100 rounded-2xl mb-3 last:mb-0">
       <div className={iconBox(iconBg, iconText)}>
         <Icon className="w-4 h-4" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-xs font-bold text-slate-700">{label}</span>
-          <span className="text-xs font-black text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">{val}%</span>
+          <span className="text-xs font-bold text-[#021F37]">{label}</span>
+          <span className="text-xs font-black text-[#0b6f7c] bg-[#f4f8fb] px-2.5 py-0.5 rounded-full border border-[#d5e0e8]">{val}%</span>
         </div>
         <input
           type="range" min={0} max={100} step={1} value={val}
           onChange={e => setCriteria(valKey, Number(e.target.value))}
-          className="w-full accent-blue-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg"
+          className="w-full accent-[#0E8696] cursor-pointer h-1.5 bg-slate-200 rounded-lg"
         />
       </div>
     </div>
@@ -395,25 +395,25 @@ export default function NewCoursePage() {
   if (published) {
     return (
       <div className="max-w-2xl mx-auto py-12 px-4 animate-fade-in-up">
-        <div className="bg-white rounded-3xl border border-slate-200 p-10 text-center shadow-lg space-y-4">
-          <div className="w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto shadow-xs">
-            <CheckCircle className="w-8 h-8 text-emerald-600" />
+        <div className="bg-white rounded-3xl border border-[#d5e0e8] p-10 text-center shadow-lg space-y-4">
+          <div className="w-16 h-16 rounded-3xl bg-green-50 text-green-600 border border-green-200 flex items-center justify-center mx-auto shadow-xs">
+            <CheckCircle className="w-8 h-8 text-green-600" />
           </div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Course Created Successfully!</h2>
-          <p className="text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
-            Your course <strong className="text-slate-900 font-bold">{formData.title}</strong> has been saved and is now ready on the platform.
+          <h2 className="text-2xl font-black text-[#021F37] tracking-tight">Course Created Successfully!</h2>
+          <p className="text-sm text-[#4d6477] max-w-md mx-auto leading-relaxed">
+            Your course <strong className="text-[#021F37] font-bold">{formData.title}</strong> has been saved and is now ready on the platform.
           </p>
 
           <div className="pt-4 flex items-center justify-center gap-3">
             <Link
               href="/lms/admin"
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs transition-all"
+              className="px-6 py-3 bg-[#0b6f7c] hover:bg-[#021F37] active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs transition-all"
             >
               Open Admin Catalog
             </Link>
             <Link
               href="/lms"
-              className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors"
+              className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-[#021F37] text-xs font-bold rounded-xl transition-colors"
             >
               Back to Academy Hub
             </Link>
@@ -431,21 +431,21 @@ export default function NewCoursePage() {
         <div className="flex items-center gap-3">
           <Link
             href="/lms/admin"
-            className="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 hover:border-slate-300 transition-all shadow-xs shrink-0 cursor-pointer"
+            className="w-10 h-10 flex items-center justify-center bg-white border border-[#d5e0e8] rounded-2xl hover:bg-[#f4f8fb] hover:border-slate-300 transition-all shadow-xs shrink-0 cursor-pointer"
           >
-            <ArrowLeft className="w-4 h-4 text-slate-600" />
+            <ArrowLeft className="w-4 h-4 text-[#4d6477]" />
           </Link>
           <div>
-            <div className="flex items-center gap-2 text-blue-600 text-xs font-extrabold uppercase tracking-widest">
+            <div className="flex items-center gap-2 text-[#0E8696] text-xs font-extrabold uppercase tracking-widest">
               <Sparkles className="w-3.5 h-3.5 animate-pulse-glow" />
               Course Studio
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Create New Course</h1>
+            <h1 className="text-2xl sm:text-3xl font-black text-[#021F37] tracking-tight">Create New Course</h1>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-[#4d6477]">
             Step {step} of {STEPS.length}
           </span>
         </div>
@@ -475,10 +475,10 @@ export default function NewCoursePage() {
           {step === 1 && (
             <div className={card}>
               <div className={cardHead}>
-                <div className={iconBox('bg-blue-50', 'text-blue-600')}><BookOpen className="w-4 h-4" /></div>
+                <div className={iconBox('bg-[#f4f8fb]', 'text-[#0E8696]')}><BookOpen className="w-4 h-4" /></div>
                 <div>
-                  <p className="text-sm font-bold text-slate-900">Course Identity & Instructor</p>
-                  <p className="text-xs text-slate-400">Essential course title, media, and faculty assignment</p>
+                  <p className="text-sm font-bold text-[#021F37]">Course Identity & Instructor</p>
+                  <p className="text-xs text-[#5f7587]">Essential course title, media, and faculty assignment</p>
                 </div>
               </div>
 
@@ -506,15 +506,15 @@ export default function NewCoursePage() {
                 {/* Slug */}
                 <div>
                   <label className={lbl}>
-                    URL Slug <span className="text-[10px] text-slate-400 font-normal">(Auto-generated or custom URL path)</span>
+                    URL Slug <span className="text-[10px] text-[#5f7587] font-normal">(Auto-generated or custom URL path)</span>
                   </label>
-                  <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono text-slate-600">
-                    <span className="text-slate-400 shrink-0">/courses/</span>
+                  <div className="flex items-center bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl px-3 py-2 text-xs font-mono text-[#4d6477]">
+                    <span className="text-[#5f7587] shrink-0">/courses/</span>
                     <input
                       type="text"
                       value={formData.slug}
                       onChange={e => set('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                      className="bg-transparent border-0 outline-none w-full text-slate-800 font-bold ml-1"
+                      className="bg-transparent border-0 outline-none w-full text-[#021F37] font-bold ml-1"
                       placeholder="ethical-hacking-track"
                     />
                   </div>
@@ -523,7 +523,7 @@ export default function NewCoursePage() {
                 {/* Instructor Selection Dropdown */}
                 <div>
                   <label className={lbl}>
-                    Lead Instructor <span className="text-[10px] text-slate-400 font-normal">(Select registered faculty)</span>
+                    Lead Instructor <span className="text-[10px] text-[#5f7587] font-normal">(Select registered faculty)</span>
                   </label>
                   <select
                     value={formData.instructor}
@@ -540,7 +540,7 @@ export default function NewCoursePage() {
                 </div>
 
                 {/* Thumbnail Upload & Options */}
-                <div className="p-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl">
+                <div className="p-4 bg-[#f4f8fb]/80 border border-[#d5e0e8]/80 rounded-2xl">
                   <CourseThumbnailUpload
                     value={formData.thumbnail}
                     onChange={url => set('thumbnail', url)}
@@ -597,8 +597,8 @@ export default function NewCoursePage() {
                           onClick={() => set('level', label)}
                           className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                             formData.level === label
-                              ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                              : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                              ? 'bg-[#0b6f7c] text-white border-[#0b6f7c] shadow-xs'
+                              : 'bg-white border-[#d5e0e8] text-[#4d6477] hover:bg-[#f4f8fb]'
                           }`}
                         >
                           <Icon className="w-3.5 h-3.5" />
@@ -617,10 +617,10 @@ export default function NewCoursePage() {
           {step === 2 && (
             <div className={card}>
               <div className={cardHead}>
-                <div className={iconBox('bg-emerald-50', 'text-emerald-600')}><DollarSign className="w-4 h-4" /></div>
+                <div className={iconBox('bg-green-50', 'text-green-600')}><DollarSign className="w-4 h-4" /></div>
                 <div>
-                  <p className="text-sm font-bold text-slate-900">Pricing, Capacity & Schedule</p>
-                  <p className="text-xs text-slate-400">Configure tuition fees, enrollment caps, and term dates</p>
+                  <p className="text-sm font-bold text-[#021F37]">Pricing, Capacity & Schedule</p>
+                  <p className="text-xs text-[#5f7587]">Configure tuition fees, enrollment caps, and term dates</p>
                 </div>
               </div>
 
@@ -629,18 +629,18 @@ export default function NewCoursePage() {
                 {/* Course Type & Price */}
                 <div>
                   <label className={lbl}>Course Tuition Model</label>
-                  <div className="grid grid-cols-2 gap-3 mb-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                     <button
                       type="button"
                       onClick={() => { set('type', 'free'); set('price', 0); }}
                       className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                         formData.type === 'free'
-                          ? 'border-blue-600 bg-blue-50/70 text-blue-900 ring-2 ring-blue-500/20'
-                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                          ? 'border-[#0E8696] bg-[#f4f8fb]/70 text-[#021F37] ring-2 ring-[#0E8696]/20'
+                          : 'border-[#d5e0e8] bg-white text-[#021F37] hover:bg-[#f4f8fb]'
                       }`}
                     >
                       <div className="font-extrabold text-sm">Free Course</div>
-                      <div className="text-xs text-slate-500 mt-0.5">Open admission to all registered students</div>
+                      <div className="text-xs text-[#4d6477] mt-0.5">Open admission to all registered students</div>
                     </button>
 
                     <button
@@ -648,17 +648,17 @@ export default function NewCoursePage() {
                       onClick={() => set('type', 'paid')}
                       className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
                         formData.type === 'paid'
-                          ? 'border-blue-600 bg-blue-50/70 text-blue-900 ring-2 ring-blue-500/20'
-                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                          ? 'border-[#0E8696] bg-[#f4f8fb]/70 text-[#021F37] ring-2 ring-[#0E8696]/20'
+                          : 'border-[#d5e0e8] bg-white text-[#021F37] hover:bg-[#f4f8fb]'
                       }`}
                     >
                       <div className="font-extrabold text-sm">Paid Pro Track</div>
-                      <div className="text-xs text-slate-500 mt-0.5">Requires manual payment approval</div>
+                      <div className="text-xs text-[#4d6477] mt-0.5">Requires manual payment approval</div>
                     </button>
                   </div>
 
                   {formData.type === 'paid' && (
-                    <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 border border-slate-200 rounded-2xl animate-fade-in-down">
+                    <div className="grid grid-cols-2 gap-4 p-4 bg-[#f4f8fb] border border-[#d5e0e8] rounded-2xl animate-fade-in-down">
                       <div>
                         <label className={lbl}>Tuition Fee Amount</label>
                         <input
@@ -748,9 +748,9 @@ export default function NewCoursePage() {
                   {formData.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-2.5">
                       {formData.tags.map((t, i) => (
-                        <span key={i} className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-xl text-xs font-bold border border-blue-200">
+                        <span key={i} className="inline-flex items-center gap-1 px-3 py-1 bg-[#f4f8fb] text-[#0b6f7c] rounded-xl text-xs font-bold border border-[#d5e0e8]">
                           #{t}
-                          <button type="button" onClick={() => removeTag(i)} className="text-blue-500 hover:text-red-600">
+                          <button type="button" onClick={() => removeTag(i)} className="text-[#0E8696] hover:text-red-600">
                             <X className="w-3 h-3" />
                           </button>
                         </span>
@@ -767,10 +767,10 @@ export default function NewCoursePage() {
           {step === 3 && (
             <div className={card}>
               <div className={cardHead}>
-                <div className={iconBox('bg-purple-50', 'text-purple-600')}><ShieldCheck className="w-4 h-4" /></div>
+                <div className={iconBox('bg-[#f4f8fb]', 'text-[#0E8696]')}><ShieldCheck className="w-4 h-4" /></div>
                 <div>
-                  <p className="text-sm font-bold text-slate-900">Certificate Requirements & Outcomes</p>
-                  <p className="text-xs text-slate-400">Set passing standards and key takeaways</p>
+                  <p className="text-sm font-bold text-[#021F37]">Certificate Requirements & Outcomes</p>
+                  <p className="text-xs text-[#5f7587]">Set passing standards and key takeaways</p>
                 </div>
               </div>
 
@@ -780,11 +780,11 @@ export default function NewCoursePage() {
                 <div>
                   <label className={lbl}>Passing Thresholds to Earn Certificate</label>
                   <Slider
-                    icon={CalendarCheck} iconBg="bg-blue-50" iconText="text-blue-600" barColor="bg-blue-500"
+                    icon={CalendarCheck} iconBg="bg-[#f4f8fb]" iconText="text-[#0E8696]" barColor="bg-[#0E8696]"
                     label="Minimum Session Attendance" valKey="minAttendancePercent" val={formData.completionCriteria.minAttendancePercent}
                   />
                   <Slider
-                    icon={Pencil} iconBg="bg-emerald-50" iconText="text-emerald-600" barColor="bg-emerald-500"
+                    icon={Pencil} iconBg="bg-green-50" iconText="text-green-600" barColor="bg-green-500"
                     label="Minimum Assignment Score" valKey="minAssignmentScore" val={formData.completionCriteria.minAssignmentScore}
                   />
                   <Slider
@@ -813,7 +813,7 @@ export default function NewCoursePage() {
                           setLearnInput('');
                         }
                       }}
-                      className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1 cursor-pointer shrink-0"
+                      className="px-4 py-2.5 bg-[#0b6f7c] hover:bg-[#021F37] text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1 cursor-pointer shrink-0"
                     >
                       <Plus className="w-4 h-4" /> Add
                     </button>
@@ -822,33 +822,33 @@ export default function NewCoursePage() {
                   {formData.whatYouWillLearn.length > 0 ? (
                     <div className="space-y-2">
                       {formData.whatYouWillLearn.map((item, i) => (
-                        <div key={i} className="flex items-center justify-between gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl text-xs text-slate-800">
+                        <div key={i} className="flex items-center justify-between gap-3 p-3 bg-[#f4f8fb] border border-slate-100 rounded-xl text-xs text-[#021F37]">
                           <div className="flex items-center gap-2">
-                            <CheckCircle className="w-4 h-4 text-blue-600 shrink-0" />
+                            <CheckCircle className="w-4 h-4 text-[#0E8696] shrink-0" />
                             <span>{item}</span>
                           </div>
-                          <button type="button" onClick={() => removeLearnItem(i)} className="text-slate-400 hover:text-red-600">
+                          <button type="button" onClick={() => removeLearnItem(i)} className="text-[#5f7587] hover:text-red-600">
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-400 italic">No key learning points added yet.</p>
+                    <p className="text-xs text-[#5f7587] italic">No key learning points added yet.</p>
                   )}
                 </div>
 
                 {/* Featured on Homepage Toggle */}
-                <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+                <div className="flex items-center justify-between p-4 bg-[#f4f8fb] border border-[#d5e0e8] rounded-2xl">
                   <div>
-                    <span className="font-bold text-slate-900 text-xs block">Feature on Platform Homepage</span>
-                    <span className="text-[11px] text-slate-500">Showcase this course in top highlights and banners</span>
+                    <span className="font-bold text-[#021F37] text-xs block">Feature on Platform Homepage</span>
+                    <span className="text-[11px] text-[#4d6477]">Showcase this course in top highlights and banners</span>
                   </div>
                   <input
                     type="checkbox"
                     checked={formData.isFeatured}
                     onChange={e => set('isFeatured', e.target.checked)}
-                    className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    className="w-5 h-5 rounded text-[#0E8696] focus:ring-[#0E8696] cursor-pointer"
                   />
                 </div>
 
@@ -860,30 +860,30 @@ export default function NewCoursePage() {
           {step === 4 && (
             <div className={card}>
               <div className={cardHead}>
-                <div className={iconBox('bg-blue-50', 'text-blue-600')}><LayoutList className="w-4 h-4" /></div>
+                <div className={iconBox('bg-[#f4f8fb]', 'text-[#0E8696]')}><LayoutList className="w-4 h-4" /></div>
                 <div>
-                  <p className="text-sm font-bold text-slate-900">Curriculum Modules</p>
-                  <p className="text-xs text-slate-400">Outline the course structure into modules</p>
+                  <p className="text-sm font-bold text-[#021F37]">Curriculum Modules</p>
+                  <p className="text-xs text-[#5f7587]">Outline the course structure into modules</p>
                 </div>
               </div>
 
               <div className={cardBody + ' space-y-3'}>
                 {formData.modules.map((m, i) => (
-                  <div key={i} className="flex items-center gap-2 p-2.5 bg-slate-50 border border-slate-100 rounded-2xl">
-                    <div className="w-7 h-7 rounded-xl bg-blue-600 text-white text-xs font-black flex items-center justify-center shrink-0">
+                  <div key={i} className="flex items-center gap-2 p-2.5 bg-[#f4f8fb] border border-slate-100 rounded-2xl">
+                    <div className="w-7 h-7 rounded-xl bg-[#0b6f7c] text-white text-xs font-black flex items-center justify-center shrink-0">
                       {i + 1}
                     </div>
                     <input
                       type="text"
                       value={m}
                       onChange={e => updateModule(i, e.target.value)}
-                      className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 outline-none focus:border-blue-500 min-w-0"
+                      className="flex-1 bg-white border border-[#d5e0e8] rounded-xl px-3 py-2 text-xs text-[#021F37] outline-none focus:border-[#0E8696] min-w-0"
                       placeholder={`e.g. Module ${i + 1}: Core Concepts & Lab Setup...`}
                     />
                     <button
                       type="button"
                       onClick={() => deleteModule(i)}
-                      className="w-8 h-8 flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 hover:text-red-600 hover:border-red-200 transition-colors shrink-0"
+                      className="w-8 h-8 flex items-center justify-center rounded-xl border border-[#d5e0e8] bg-white text-[#5f7587] hover:text-red-600 hover:border-red-200 transition-colors shrink-0"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -893,9 +893,9 @@ export default function NewCoursePage() {
                 <button
                   type="button"
                   onClick={addModule}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-dashed border-slate-300 text-slate-600 hover:bg-slate-50 text-xs font-bold transition-all mt-2 cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-dashed border-slate-300 text-[#4d6477] hover:bg-[#f4f8fb] text-xs font-bold transition-all mt-2 cursor-pointer"
                 >
-                  <Plus className="w-4 h-4 text-blue-600" /> Add New Module
+                  <Plus className="w-4 h-4 text-[#0E8696]" /> Add New Module
                 </button>
               </div>
             </div>
@@ -905,10 +905,10 @@ export default function NewCoursePage() {
           {step === 5 && (
             <div className={card}>
               <div className={cardHead}>
-                <div className={iconBox('bg-emerald-50', 'text-emerald-600')}><CheckCircle className="w-4 h-4" /></div>
+                <div className={iconBox('bg-green-50', 'text-green-600')}><CheckCircle className="w-4 h-4" /></div>
                 <div>
-                  <p className="text-sm font-bold text-slate-900">Review & Confirm</p>
-                  <p className="text-xs text-slate-400">Review all details before publishing</p>
+                  <p className="text-sm font-bold text-[#021F37]">Review & Confirm</p>
+                  <p className="text-xs text-[#5f7587]">Review all details before publishing</p>
                 </div>
               </div>
 
@@ -916,7 +916,7 @@ export default function NewCoursePage() {
                 
                 {/* Course Details Overview */}
                 <div className="space-y-2.5">
-                  <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">General Information</p>
+                  <p className="text-[11px] font-black text-[#5f7587] uppercase tracking-widest">General Information</p>
                   {[
                     ['Title', formData.title || 'Untitled'],
                     ['Slug', formData.slug ? `/courses/${formData.slug}` : 'Auto-generated'],
@@ -930,8 +930,8 @@ export default function NewCoursePage() {
                     ['Max Students', formData.maxStudents ? `${formData.maxStudents} students` : 'Unlimited'],
                   ].map(([k, v]) => (
                     <div key={k as string} className="flex justify-between items-center py-2 border-b border-slate-100 last:border-0 text-xs">
-                      <span className="text-slate-500 font-medium">{k}</span>
-                      <span className="font-bold text-slate-900 max-w-[240px] truncate text-right">{v}</span>
+                      <span className="text-[#4d6477] font-medium">{k}</span>
+                      <span className="font-bold text-[#021F37] max-w-[240px] truncate text-right">{v}</span>
                     </div>
                   ))}
                 </div>
@@ -945,12 +945,12 @@ export default function NewCoursePage() {
                       onClick={() => set('status', 'published')}
                       className={`p-3 rounded-xl border text-xs font-bold text-left cursor-pointer transition-all ${
                         formData.status === 'published'
-                          ? 'border-blue-600 bg-blue-50 text-blue-900 ring-2 ring-blue-500/20'
-                          : 'border-slate-200 bg-white text-slate-700'
+                          ? 'border-[#0E8696] bg-[#f4f8fb] text-[#021F37] ring-2 ring-[#0E8696]/20'
+                          : 'border-[#d5e0e8] bg-white text-[#021F37]'
                       }`}
                     >
                       <div className="font-extrabold">🚀 Live & Published</div>
-                      <div className="text-[11px] text-slate-500 font-normal mt-0.5">Students can browse & enroll</div>
+                      <div className="text-[11px] text-[#4d6477] font-normal mt-0.5">Students can browse & enroll</div>
                     </button>
 
                     <button
@@ -958,12 +958,12 @@ export default function NewCoursePage() {
                       onClick={() => set('status', 'draft')}
                       className={`p-3 rounded-xl border text-xs font-bold text-left cursor-pointer transition-all ${
                         formData.status === 'draft'
-                          ? 'border-blue-600 bg-blue-50 text-blue-900 ring-2 ring-blue-500/20'
-                          : 'border-slate-200 bg-white text-slate-700'
+                          ? 'border-[#0E8696] bg-[#f4f8fb] text-[#021F37] ring-2 ring-[#0E8696]/20'
+                          : 'border-[#d5e0e8] bg-white text-[#021F37]'
                       }`}
                     >
                       <div className="font-extrabold">📝 Save as Draft</div>
-                      <div className="text-[11px] text-slate-500 font-normal mt-0.5">Hidden until you publish</div>
+                      <div className="text-[11px] text-[#4d6477] font-normal mt-0.5">Hidden until you publish</div>
                     </button>
                   </div>
                 </div>
@@ -977,7 +977,7 @@ export default function NewCoursePage() {
             {step === 1 ? (
               <Link
                 href="/lms/admin"
-                className="px-5 py-2.5 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-xs"
+                className="px-5 py-2.5 text-xs font-bold text-[#4d6477] bg-white border border-[#d5e0e8] rounded-xl hover:bg-[#f4f8fb] transition-colors shadow-xs"
               >
                 Cancel
               </Link>
@@ -985,7 +985,7 @@ export default function NewCoursePage() {
               <button
                 type="button"
                 onClick={() => goTo(step - 1)}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-xs cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold text-[#021F37] bg-white border border-[#d5e0e8] rounded-xl hover:bg-[#f4f8fb] transition-colors shadow-xs cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" /> Previous
               </button>
@@ -995,7 +995,7 @@ export default function NewCoursePage() {
               <button
                 type="button"
                 onClick={() => goTo(step + 1)}
-                className="inline-flex items-center gap-1.5 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-6 py-2.5 bg-[#0b6f7c] hover:bg-[#021F37] active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
               >
                 Continue <ChevronRight className="w-4 h-4" />
               </button>
@@ -1004,7 +1004,7 @@ export default function NewCoursePage() {
                 type="button"
                 onClick={handlePublish}
                 disabled={isSubmitting}
-                className="inline-flex items-center gap-2 px-7 py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs sm:text-sm font-extrabold rounded-2xl shadow-md transition-all cursor-pointer disabled:opacity-50"
+                className="inline-flex items-center gap-2 px-7 py-3 bg-[#0b6f7c] hover:bg-[#021F37] active:scale-95 text-white text-xs sm:text-sm font-extrabold rounded-2xl shadow-md transition-all cursor-pointer disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <><Loader size="sm" /> Publishing Course...</>
@@ -1022,17 +1022,17 @@ export default function NewCoursePage() {
           
           <div className={card}>
             <div className={cardHead}>
-              <div className={iconBox('bg-blue-50', 'text-blue-600')}><Eye className="w-4 h-4" /></div>
+              <div className={iconBox('bg-[#f4f8fb]', 'text-[#0E8696]')}><Eye className="w-4 h-4" /></div>
               <div>
-                <p className="text-sm font-bold text-slate-900">Live Preview Card</p>
-                <p className="text-xs text-slate-400">Updates live as you type</p>
+                <p className="text-sm font-bold text-[#021F37]">Live Preview Card</p>
+                <p className="text-xs text-[#5f7587]">Updates live as you type</p>
               </div>
             </div>
 
             <div className="p-4">
               
               {/* Preview Card Component */}
-              <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-sm space-y-3">
+              <div className="rounded-2xl border border-[#d5e0e8] overflow-hidden bg-white shadow-sm space-y-3">
                 
                 {/* Thumbnail Header */}
                 <div className="relative aspect-video w-full bg-slate-100 overflow-hidden">
@@ -1043,17 +1043,17 @@ export default function NewCoursePage() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-blue-50 via-slate-50 to-blue-100/60 flex flex-col items-center justify-center text-slate-700 p-4 relative select-none">
-                      <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-xs flex items-center justify-center text-blue-600 mb-1">
+                    <div className="w-full h-full bg-gradient-to-br from-[#f4f8fb] via-slate-50 to-[#eaf3f7]/60 flex flex-col items-center justify-center text-[#021F37] p-4 relative select-none">
+                      <div className="w-10 h-10 rounded-xl bg-white border border-[#d5e0e8] shadow-xs flex items-center justify-center text-[#0E8696] mb-1">
                         <BookOpen className="w-5 h-5" />
                       </div>
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600">Course Preview</span>
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#4d6477]">Course Preview</span>
                     </div>
                   )}
 
                   <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1">
                     <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
-                      formData.type === 'free' ? 'bg-blue-600 text-white' : 'bg-slate-900 text-white'
+                      formData.type === 'free' ? 'bg-[#0b6f7c] text-white' : 'bg-slate-900 text-white'
                     }`}>
                       {formData.type === 'free' ? 'FREE' : `${formData.currency} ${formData.price.toLocaleString()}`}
                     </span>
@@ -1065,7 +1065,7 @@ export default function NewCoursePage() {
                   </div>
 
                   <div className="absolute bottom-2.5 left-2.5 z-10">
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/90 backdrop-blur-md text-slate-800 border border-slate-200">
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/90 backdrop-blur-md text-[#021F37] border border-[#d5e0e8]">
                       {formData.category}
                     </span>
                   </div>
@@ -1074,21 +1074,21 @@ export default function NewCoursePage() {
                 {/* Card Body */}
                 <div className="p-4 pt-1 space-y-3">
                   <div className="space-y-1">
-                    <h3 className="font-bold text-slate-900 text-sm line-clamp-2">
+                    <h3 className="font-bold text-[#021F37] text-sm line-clamp-2">
                       {formData.title || 'Your Course Title Here'}
                     </h3>
-                    <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-[#4d6477] line-clamp-2 leading-relaxed">
                       {formData.shortDescription || formData.description || 'Add a clear description for prospective students.'}
                     </p>
                   </div>
 
                   {/* Instructor (Shown ONLY if selected/assigned) */}
                   {formData.instructorName ? (
-                    <div className="flex items-center gap-2 pt-2 border-t border-slate-100 text-xs text-slate-600">
-                      <div className="w-5 h-5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-bold text-[10px] flex items-center justify-center shrink-0">
+                    <div className="flex items-center gap-2 pt-2 border-t border-slate-100 text-xs text-[#4d6477]">
+                      <div className="w-5 h-5 rounded-full bg-[#f4f8fb] text-[#0b6f7c] border border-[#d5e0e8] font-bold text-[10px] flex items-center justify-center shrink-0">
                         {formData.instructorName.charAt(0).toUpperCase()}
                       </div>
-                      <span className="truncate">Instructor: <strong className="font-bold text-slate-800">{formData.instructorName}</strong></span>
+                      <span className="truncate">Instructor: <strong className="font-bold text-[#021F37]">{formData.instructorName}</strong></span>
                     </div>
                   ) : null}
                 </div>

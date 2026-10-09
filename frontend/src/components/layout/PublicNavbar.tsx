@@ -10,29 +10,29 @@ export default function PublicNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
+    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-[#d5e0e8] shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           
           {/* Logo & Brand */}
           <Link href="/" className="flex items-center group">
             <img
-              src="/cszone-logo.png"
-              alt="CSZone"
-              className="h-10 sm:h-12 w-auto object-contain group-hover:scale-105 transition-transform"
+              src="/SIS-logo.png"
+              alt="School of Information Security"
+              className="h-10 md:h-11 w-auto object-contain group-hover:scale-105 transition-transform"
             />
           </Link>
 
           {/* Desktop Navigation (Only shown when not logged in) */}
           {!user && (
             <nav className="hidden md:flex items-center gap-8">
-              <Link href="/courses" className="text-xs sm:text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">
+              <Link href="/courses" className="text-xs sm:text-sm font-bold text-[#4d6477] hover:text-[#0E8696] transition-colors">
                 Explore Courses
               </Link>
-              <Link href="/courses?type=free" className="text-xs sm:text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">
+              <Link href="/courses?type=free" className="text-xs sm:text-sm font-bold text-[#4d6477] hover:text-[#0E8696] transition-colors">
                 Free Courses
               </Link>
-              <Link href="/courses?type=paid" className="text-xs sm:text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors">
+              <Link href="/courses?type=paid" className="text-xs sm:text-sm font-bold text-[#4d6477] hover:text-[#0E8696] transition-colors">
                 Professional Tracks
               </Link>
             </nav>
@@ -44,26 +44,26 @@ export default function PublicNavbar() {
               <div className="flex items-center gap-3">
                 <Link
                   href="/lms"
-                  className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all"
+                  className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-[#021F37] bg-slate-100 hover:bg-slate-200 rounded-xl transition-all"
                 >
-                  <BookOpen className="w-4 h-4 text-blue-600" />
+                  <BookOpen className="w-4 h-4 text-[#0E8696]" />
                   My Courses
                 </Link>
                 {user.role === 'admin' && (
                   <Link
                     href="/lms/admin"
-                    className="px-3.5 py-2 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 rounded-xl transition-all"
+                    className="px-3.5 py-2 text-xs font-bold text-[#0b6f7c] bg-[#f4f8fb] border border-[#d5e0e8] hover:bg-[#eaf3f7] rounded-xl transition-all"
                   >
                     🛡️ Admin Panel
                   </Link>
                 )}
-                <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
-                  <span className="text-xs font-bold text-slate-800 max-w-[120px] truncate">
+                <div className="flex items-center gap-2 pl-2 border-l border-[#d5e0e8]">
+                  <span className="text-xs font-bold text-[#021F37] max-w-[120px] truncate">
                     {user.name}
                   </span>
                   <button
                     onClick={() => logout()}
-                    className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                    className="p-1.5 text-[#5f7587] hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                     title="Log out"
                   >
                     <LogOut className="w-4 h-4" />
@@ -74,13 +74,13 @@ export default function PublicNavbar() {
               <div className="flex items-center gap-3">
                 <Link
                   href="/login"
-                  className="px-4 py-2 text-xs font-bold text-slate-700 hover:text-blue-600 transition-colors"
+                  className="px-4 py-2 text-xs font-bold text-[#021F37] hover:text-[#0E8696] transition-colors"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/signup"
-                  className="flex items-center gap-1.5 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-5 py-2.5 bg-[#0b6f7c] hover:bg-[#021F37] text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
                 >
                   Get Started
                   <ArrowRight className="w-4 h-4" />
@@ -92,7 +92,7 @@ export default function PublicNavbar() {
           {/* Mobile menu button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors"
+            className="md:hidden p-2.5 text-[#4d6477] hover:text-[#021F37] rounded-lg hover:bg-slate-100 transition-colors"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -102,27 +102,27 @@ export default function PublicNavbar() {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 bg-white px-4 py-6 space-y-4 shadow-lg animate-in slide-in-from-top-2 duration-200">
+        <div className="md:hidden border-t border-[#d5e0e8] bg-white px-4 py-6 space-y-4 shadow-lg animate-in slide-in-from-top-2 duration-200">
           {!user && (
             <nav className="flex flex-col space-y-3">
               <Link
                 href="/courses"
                 onClick={() => setMobileMenuOpen(false)}
-                className="text-base font-semibold text-slate-700 hover:text-blue-600 px-2 py-1.5 rounded-lg"
+                className="text-base font-semibold text-[#021F37] hover:text-[#0E8696] px-2 py-1.5 rounded-lg"
               >
                 Explore Courses
               </Link>
               <Link
                 href="/courses?type=free"
                 onClick={() => setMobileMenuOpen(false)}
-                className="text-base font-semibold text-slate-700 hover:text-blue-600 px-2 py-1.5 rounded-lg"
+                className="text-base font-semibold text-[#021F37] hover:text-[#0E8696] px-2 py-1.5 rounded-lg"
               >
                 Free Courses
               </Link>
               <Link
                 href="/courses?type=paid"
                 onClick={() => setMobileMenuOpen(false)}
-                className="text-base font-semibold text-slate-700 hover:text-blue-600 px-2 py-1.5 rounded-lg"
+                className="text-base font-semibold text-[#021F37] hover:text-[#0E8696] px-2 py-1.5 rounded-lg"
               >
                 Professional Tracks
               </Link>
@@ -132,13 +132,13 @@ export default function PublicNavbar() {
           <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
             {user ? (
               <>
-                <div className="text-sm font-semibold text-slate-800 px-2">
-                  Signed in as <span className="text-blue-600">{user.name}</span>
+                <div className="text-sm font-semibold text-[#021F37] px-2">
+                  Signed in as <span className="text-[#0E8696]">{user.name}</span>
                 </div>
                 <Link
                   href="/lms"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full text-center py-2.5 bg-blue-600 text-white font-bold rounded-xl shadow-xs hover:bg-blue-700 transition-all"
+                  className="w-full text-center py-2.5 bg-[#0E8696] text-white font-bold rounded-xl shadow-xs hover:bg-[#0b6f7c] transition-all"
                 >
                   Go to My Dashboard
                 </Link>
@@ -146,7 +146,7 @@ export default function PublicNavbar() {
                   <Link
                     href="/lms/admin"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="w-full text-center py-2 bg-blue-50 text-blue-700 font-bold rounded-xl border border-blue-200 text-sm"
+                    className="w-full text-center py-2 bg-[#f4f8fb] text-[#0b6f7c] font-bold rounded-xl border border-[#d5e0e8] text-sm"
                   >
                     Admin Panel
                   </Link>
@@ -163,14 +163,14 @@ export default function PublicNavbar() {
                 <Link
                   href="/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full text-center py-2.5 text-slate-700 font-bold border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
+                  className="w-full text-center py-2.5 text-[#021F37] font-bold border border-[#d5e0e8] rounded-xl hover:bg-[#f4f8fb] transition-colors"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/signup"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full text-center py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-sm transition-all"
+                  className="w-full text-center py-2.5 bg-[#0E8696] hover:bg-[#0b6f7c] text-white font-bold rounded-xl shadow-sm transition-all"
                 >
                   Get Started for Free
                 </Link>

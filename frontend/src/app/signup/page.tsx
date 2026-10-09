@@ -49,23 +49,23 @@ function SignupForm() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex overflow-hidden font-sans">
+    <div className="min-h-screen bg-[#f4f8fb] flex overflow-hidden font-sans">
       {/* Left Side - Bright Executive Marketing Banner */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-50/90 via-white to-slate-100 relative overflow-hidden items-center justify-center p-12 text-slate-900 border-r border-slate-200">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-60" />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-200/40 blur-[120px] rounded-full pointer-events-none animate-blob" />
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#021F37] via-[#0b4a66] to-[#0E8696] relative overflow-hidden items-center justify-center p-12 text-white border-r border-white/15">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-10" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#2fc3d4]/20 blur-[120px] rounded-full pointer-events-none animate-blob" />
 
         <div className="relative z-10 max-w-lg space-y-6 animate-fade-in-up">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider border border-blue-200 shadow-xs animate-fade-in-down">
-            <GraduationCap className="w-4 h-4 text-blue-600" />
-            CSZone Learning Platform
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 text-white text-xs font-bold uppercase tracking-wider border border-white/15 shadow-xs animate-fade-in-down">
+            <GraduationCap className="w-4 h-4 text-[#2fc3d4]" />
+            School of Information Security Learning Platform
           </div>
 
-          <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 leading-tight">
+          <h2 className="text-4xl font-extrabold tracking-tight text-white leading-tight">
             Start Learning for Free Today
           </h2>
 
-          <p className="text-slate-600 text-base leading-relaxed">
+          <p className="text-white/80 text-base leading-relaxed">
             Create your account to unlock interactive cybersecurity modules, web engineering tracks, and hands-on projects.
           </p>
 
@@ -76,8 +76,8 @@ function SignupForm() {
               "Admin-reviewed admission into specialized tracks",
               "Verified certificates of completion",
             ].map((item, i) => (
-              <div key={i} className="flex items-center gap-3 text-sm text-slate-700 font-medium">
-                <div className="w-5 h-5 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 shrink-0">
+              <div key={i} className="flex items-center gap-3 text-sm text-white/90 font-medium">
+                <div className="w-5 h-5 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-[#2fc3d4] shrink-0">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                 </div>
                 <span>{item}</span>
@@ -94,13 +94,13 @@ function SignupForm() {
           <div className="text-center space-y-2">
             <Link href="/" className="inline-block mb-2 group">
               <img
-                src="/cszone-logo.png"
-                alt="CSZone"
-                className="h-12 w-auto mx-auto object-contain group-hover:scale-105 transition-transform duration-300"
+                src="/SIS-logo.png"
+                alt="School of Information Security"
+                className="h-20 sm:h-24 w-auto mx-auto object-contain group-hover:scale-105 transition-transform duration-300"
               />
             </Link>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight">Create Free Account</h1>
-            <p className="text-slate-500 text-sm">Join the CSZone student community</p>
+            <h1 className="text-3xl font-black text-[#021F37] tracking-tight">Create Free Account</h1>
+            <p className="text-[#4d6477] text-sm">Join the School of Information Security student community</p>
           </div>
 
           {error && (
@@ -111,45 +111,45 @@ function SignupForm() {
 
           <form onSubmit={handleRegister} className="space-y-4">
             <div>
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1.5">
+              <label className="text-xs font-bold text-[#021F37] uppercase tracking-wider block mb-1.5">
                 Full Name
               </label>
               <div className="relative">
-                <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <User className="w-4 h-4 text-[#5f7587] absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Ali Khan"
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
+                  className="w-full pl-10 pr-4 py-3 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl text-sm text-[#021F37] focus:outline-none focus:ring-2 focus:ring-[#0E8696]/20 focus:border-[#0E8696]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1.5">
+              <label className="text-xs font-bold text-[#021F37] uppercase tracking-wider block mb-1.5">
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Mail className="w-4 h-4 text-[#5f7587] absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="learner@example.com"
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
+                  className="w-full pl-10 pr-4 py-3 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl text-sm text-[#021F37] focus:outline-none focus:ring-2 focus:ring-[#0E8696]/20 focus:border-[#0E8696]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1.5">
+              <label className="text-xs font-bold text-[#021F37] uppercase tracking-wider block mb-1.5">
                 Password
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Lock className="w-4 h-4 text-[#5f7587] absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="password"
                   required
@@ -157,7 +157,7 @@ function SignupForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Minimum 6 characters"
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
+                  className="w-full pl-10 pr-4 py-3 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl text-sm text-[#021F37] focus:outline-none focus:ring-2 focus:ring-[#0E8696]/20 focus:border-[#0E8696]"
                 />
               </div>
             </div>
@@ -165,7 +165,7 @@ function SignupForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 px-4 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-xl font-extrabold text-sm transition-all shadow-xs hover:shadow-md cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full py-3.5 px-4 bg-[#0E8696] hover:bg-[#0b6f7c] active:scale-95 text-white rounded-xl font-semibold text-base transition-all shadow-lg shadow-[#0E8696]/20 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <Loader size="sm" text="Creating account..." />
@@ -178,11 +178,11 @@ function SignupForm() {
             </button>
           </form>
 
-          <div className="text-center text-xs text-slate-500">
+          <div className="text-center text-xs text-[#4d6477]">
             Already have an account?{" "}
             <Link
               href={`/login${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ""}`}
-              className="text-blue-600 font-bold hover:underline"
+              className="text-[#0E8696] font-bold hover:underline"
             >
               Sign in
             </Link>
