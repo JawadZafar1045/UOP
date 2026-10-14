@@ -524,6 +524,39 @@ export const toggleVideoLectureProgress = async (courseId: string, lectureId: st
   return res.data?.data ?? res.data;
 };
 
+// ── Course Enrollment Applications & Catalog ─────────────────────────────────
+export const applyCourseEnrollment = async (courseId: string, message?: string) => {
+  const res = await api.post(`/lms/courses/${courseId}/apply`, { message });
+  return res.data;
+};
+
+export const getMyEnrollmentRequests = async () => {
+  const res = await api.get('/lms/enrollment-requests/mine');
+  return res.data?.data ?? res.data;
+};
+
+export const getCoursesCatalog = async () => {
+  const res = await api.get('/lms/courses/catalog');
+  return res.data?.data ?? res.data;
+};
+
+export const getAdminEnrollmentRequests = async (status?: string) => {
+  const params = status ? { status } : {};
+  const res = await api.get('/lms/admin/enrollment-requests', { params });
+  return res.data?.data ?? res.data;
+};
+
+export const approveEnrollmentRequest = async (requestId: string) => {
+  const res = await api.patch(`/lms/admin/enrollment-requests/${requestId}/approve`);
+  return res.data;
+};
+
+export const rejectEnrollmentRequest = async (requestId: string, reason?: string) => {
+  const res = await api.patch(`/lms/admin/enrollment-requests/${requestId}/reject`, { reason });
+  return res.data;
+};
+
+
 
 
 

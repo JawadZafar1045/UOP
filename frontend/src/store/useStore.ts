@@ -12,6 +12,7 @@ interface User {
   location?: string;
   bio?: string;
   programId?: string;
+  enrolledPrograms?: string[] | any[];
   requestedProgramId?: string;
   majorId?: string;
   isApproved?: boolean;

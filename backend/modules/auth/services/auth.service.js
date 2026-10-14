@@ -4,13 +4,17 @@ const crypto = require('crypto');
 const User = require('../models/user.model');
 const nodemailer = require('nodemailer');
 
+const smtpPort = parseInt(process.env.SMTP_PORT || '465', 10);
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || '://gmail.com',
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: false, 
+  host: process.env.SMTP_HOST || 'mail.zarat.pk',
+  port: smtpPort,
+  secure: smtpPort === 465, 
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: process.env.EMAIL_USER || process.env.SMTP_USER,
+    pass: process.env.EMAIL_PASS || process.env.SMTP_PASS,
+  },
+  tls: {
+    rejectUnauthorized: false,
   },
 });
 /**
@@ -381,7 +385,7 @@ const initiateForgotPassword = async (email) => {
   await user.save();
 
   const mailOptions = {
-    from: process.env.SMTP_FROM || '"Agri School LMS" <noreply@lms.zarat.pk>',
+    from: process.env.SMTP_FROM || process.env.EMAIL_FROM || '"Agri School LMS" <developmentteam@zarat.pk>',
     to: user.email,
     subject: 'Password Reset OTP - Agri School LMS',
     html: `
@@ -393,12 +397,28 @@ const initiateForgotPassword = async (email) => {
           <span style="font-size: 24px; font-weight: bold; letter-spacing: 5px; background-color: #f5f5f5; padding: 10px 20px; border-radius: 4px; border: 1px dashed #ccc;">${otp}</span>
         </div>
         <p>If you did not request this, please ignore this email.</p>
+        <p style="font-size: 11px; color: #888;">Note: If you do not see this in your Inbox, please check your Spam or Junk folder.</p>
       </div>
     `,
   };
 
-  await transporter.sendMail(mailOptions);
-  return { success: true, message: 'OTP sent successfully to email.' };
+  console.log(`🔑 [Password Reset OTP] Code for ${user.email}: [${otp}]`);
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`📧 [Password Reset] Delivered to SMTP relay for ${user.email}: messageId=${info.messageId}, response=${info.response}`);
+  } catch (mailErr) {
+    console.error('⚠️ [Password Reset] Failed to deliver email via SMTP:', mailErr.message);
+    if (process.env.NODE_ENV === 'production') {
+      throw Object.assign(new Error(`Failed to send password reset email: ${mailErr.message}`), { statusCode: 500 });
+    }
+  }
+
+  return {
+    success: true,
+    message: 'OTP sent to your email. Please check your Inbox and Spam/Junk folder.',
+    debugOtp: process.env.NODE_ENV !== 'production' ? otp : undefined
+  };
 };
 
 /**

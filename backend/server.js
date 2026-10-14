@@ -4,7 +4,7 @@ const http = require('http');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
-const seedMockData = require('./mockseeder'); // Import helper
+
 
 
 const connectDB = require('./config/database');
@@ -27,7 +27,7 @@ initializeSocket(server);
 const { ensureIndexes } = require('./modules/lms/utils/ensureIndexes');
 connectDB().then(async () => {
   await ensureIndexes();
-  await seedMockData(); // YAHAAN: Database connect hote hi data inject ho jayega
+
 });
 // ── Core Middleware ────────────────────────────────────────────────────────────
 app.use(helmet());

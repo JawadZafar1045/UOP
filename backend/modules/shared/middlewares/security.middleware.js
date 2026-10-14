@@ -7,19 +7,28 @@ let redisClient = null;
 let redisConnected = false;
 
 /**
- * Initialize Redis Client with fallback to memory store
+ * Initialize Redis Client with fallback to memory store.
+ * Skipped entirely when REDIS_ENABLED !== 'true' (local dev without Redis).
  */
 async function initializeRedis() {
+  // Skip Redis when not explicitly enabled (avoids connection spam in local dev)
+  if (process.env.REDIS_ENABLED !== 'true') {
+    console.log('[Rate Limiter] Redis disabled — using in-memory store (local dev mode)');
+    return;
+  }
+
   try {
     redisClient = createClient({
-      url: process.env.REDIS_URL || 'redis://localhost:6379',
+      url: process.env.REDIS_URL || `redis://${process.env.REDIS_HOST || 'localhost'}:${process.env.REDIS_PORT || 6379}`,
       socket: {
-        reconnectStrategy: (retries) => Math.min(retries * 50, 500),
+        reconnectStrategy: (retries) => Math.min(retries * 100, 3000),
       },
     });
 
     redisClient.on('error', (err) => {
-      console.warn('[Redis] Connection error:', err.message);
+      if (redisConnected) {
+        console.warn('[Redis] Connection lost:', err.message);
+      }
       redisConnected = false;
     });
 

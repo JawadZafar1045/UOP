@@ -731,6 +731,48 @@ const toggleVideoLectureProgress = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
+const applyCourseEnrollment = async (req, res, next) => {
+  try {
+    const data = await lmsService.applyCourseEnrollment(req.tenantId, req.params.id, req.user._id, req.body.message);
+    res.status(201).json(data);
+  } catch (e) { next(e); }
+};
+
+const getMyEnrollmentRequests = async (req, res, next) => {
+  try {
+    const data = await lmsService.getMyEnrollmentRequests(req.tenantId, req.user._id);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const getCoursesCatalog = async (req, res, next) => {
+  try {
+    const data = await lmsService.getCoursesCatalog(req.tenantId, req.user._id);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const getAdminEnrollmentRequests = async (req, res, next) => {
+  try {
+    const data = await lmsService.getAdminEnrollmentRequests(req.tenantId, req.query);
+    res.json({ success: true, data });
+  } catch (e) { next(e); }
+};
+
+const approveEnrollmentRequest = async (req, res, next) => {
+  try {
+    const data = await lmsService.approveEnrollmentRequest(req.tenantId, req.params.id, req.user._id);
+    res.json(data);
+  } catch (e) { next(e); }
+};
+
+const rejectEnrollmentRequest = async (req, res, next) => {
+  try {
+    const data = await lmsService.rejectEnrollmentRequest(req.tenantId, req.params.id, req.user._id, req.body?.reason);
+    res.json(data);
+  } catch (e) { next(e); }
+};
+
 module.exports = {
 
   getCourses, getCourse, createCourse, updateCourse, saveDraft, deleteCourse, enrollStudent, unenrollStudent, getTenantStudents,
@@ -752,5 +794,7 @@ module.exports = {
   getStudentDegreePerformance, getProgramPerformanceOverview,
   // Video lectures
   getCourseVideoLectures, createVideoLecture, updateVideoLecture, deleteVideoLecture, toggleVideoLectureProgress,
+  // Course Enrollment Requests
+  applyCourseEnrollment, getMyEnrollmentRequests, getCoursesCatalog, getAdminEnrollmentRequests, approveEnrollmentRequest, rejectEnrollmentRequest,
 };
 

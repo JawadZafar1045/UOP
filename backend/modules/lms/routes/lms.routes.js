@@ -34,6 +34,15 @@ router.use(protect, tenantIsolation);
 router.get('/certificates/mine',                                   authorize('student'),                      ctrl.getMyCertificates);
 router.get('/certificates/:id/access',                             val.getCertificateAccessVal, validateResult, authorize('admin', 'teacher', 'student'),  ctrl.getCertificateAccess);
 
+// ── Enrollment & Applications ──────────────────────────────────────────────────
+router.get('/students',                                          authorize('admin', 'teacher'), ctrl.getTenantStudents);
+router.get('/courses/catalog',                                   authorize('admin', 'teacher', 'student'), ctrl.getCoursesCatalog);
+router.post('/courses/:id/enroll',                               val.enrollStudentVal, validateResult, authorize('admin', 'teacher'), ctrl.enrollStudent);
+router.delete('/courses/:id/enroll/:studentId',                  val.unenrollStudentVal, validateResult, authorize('admin', 'teacher'), ctrl.unenrollStudent);
+router.post('/courses/:id/apply',                                val.academicIdParamVal, validateResult, authorize('student'), ctrl.applyCourseEnrollment);
+router.post('/programs/:id/apply',                               val.academicIdParamVal, validateResult, authorize('student'), ctrl.applyCourseEnrollment);
+router.get('/enrollment-requests/mine',                          authorize('student'), ctrl.getMyEnrollmentRequests);
+
 // ── Courses ────────────────────────────────────────────────────────────────────
 router.get('/courses',        authorize('admin', 'teacher', 'student'), ctrl.getCourses);
 router.get('/courses/:id',    val.getCourseVal, validateResult, authorize('admin', 'teacher', 'student'), ctrl.getCourse);
@@ -41,11 +50,6 @@ router.post('/courses',       val.createCourseVal, validateResult, authorize('ad
 router.patch('/courses/:id',    val.updateCourseVal, validateResult, authorize('admin', 'teacher'),                  ctrl.updateCourse);
 router.patch('/courses/:id/draft', authorize('admin', 'teacher'), ctrl.saveDraft);
 router.delete('/courses/:id', val.deleteCourseVal, validateResult, authorize('admin'),                             ctrl.deleteCourse);
-
-// ── Enrollment & Students ──────────────────────────────────────────────────────
-router.get('/students', authorize('admin', 'teacher'), ctrl.getTenantStudents);
-router.post('/courses/:id/enroll', val.enrollStudentVal, validateResult, authorize('admin', 'teacher'), ctrl.enrollStudent);
-router.delete('/courses/:id/enroll/:studentId', val.unenrollStudentVal, validateResult, authorize('admin', 'teacher'), ctrl.unenrollStudent);
 
 // ── Legacy Attendance ──────────────────────────────────────────────────────────
 router.post('/attendance',              val.markAttendanceVal, validateResult, authorize('admin', 'teacher'),                  ctrl.markAttendance);
@@ -88,9 +92,6 @@ router.get('/documents/:id/access',           val.getCourseDocumentAccessVal, va
 router.patch('/submissions/:assignmentId/grade/:studentId', val.gradeSubmissionVal, validateResult, authorize('admin', 'teacher'),                    ctrl.gradeSubmission);
 router.get('/assignments/:id/submissions',                  val.getAssignmentSubmissionsVal, validateResult, authorize('admin', 'teacher'),                    ctrl.getAssignmentSubmissions);
 router.get('/assignments/:id/submissions/mine',             val.getMySubmissionVal, validateResult, authorize('student'),                             ctrl.getMySubmission);
-
-// ── Delete User ─────────────────────────────────────────────────────────
-router.delete('/admin/users/:id', authorize('admin'), ctrl.deleteUser);
 
 // ── Quizzes ────────────────────────────────────────────────────────────────────
 router.get('/quizzes/template',                               authorize('admin', 'teacher'),                                                     ctrl.downloadQuizTemplate);
@@ -138,6 +139,9 @@ router.get('/admin/courses',                        authorize('admin'), ctrl.get
 router.delete('/admin/courses/:id',                 val.deleteCourseVal, validateResult, authorize('admin'), ctrl.deleteAdminCourse);
 router.get('/admin/certificates',                   authorize('admin'), ctrl.getAdminCertificates);
 router.patch('/admin/certificates/:id/revoke',      val.deleteCourseVal, validateResult, authorize('admin'), ctrl.revokeCertificate);
+router.get('/admin/enrollment-requests',                         authorize('admin'), ctrl.getAdminEnrollmentRequests);
+router.patch('/admin/enrollment-requests/:id/approve',           val.academicIdParamVal, validateResult, authorize('admin'), ctrl.approveEnrollmentRequest);
+router.patch('/admin/enrollment-requests/:id/reject',            val.academicIdParamVal, validateResult, authorize('admin'), ctrl.rejectEnrollmentRequest);
 
 // ── Academic Programs (Degrees) ───────────────────────────────────────────────
 router.get('/programs',                                    authorize('admin', 'teacher', 'student'),  ctrl.getPrograms);

@@ -35,8 +35,19 @@ const getCourses = async (tenantId, userId, role) => {
   const filter = { tenantId };
 
   if (role === 'student') {
-    filter.enrolledStudents = userId;    // only enrolled
-    filter.status = 'active';    // only active courses
+    const User = require('../../auth/models/user.model');
+    const studentUser = await User.findOne({ _id: userId, tenantId }).select('programId enrolledPrograms').lean();
+    const progIds = [];
+    if (studentUser?.programId) progIds.push(studentUser.programId);
+    if (Array.isArray(studentUser?.enrolledPrograms)) {
+      progIds.push(...studentUser.enrolledPrograms);
+    }
+
+    filter.status = 'active';
+    filter.$or = [
+      { enrolledStudents: userId },
+      { programId: { $in: progIds } }
+    ];
   } else if (role === 'teacher') {
     filter.instructor = userId;     // only own courses
   }
@@ -1520,6 +1531,7 @@ const deleteUser = async (tenantId, targetUserId, requesterId) => {
 
   const CleanAllData = [
     { modelName: 'Enrollment', query: { userId: targetUserId } },
+    { modelName: 'EnrollmentRequest', query: { studentId: targetUserId } },
     { modelName: 'Submission', query: { userId: targetUserId } },
     { modelName: 'QuizAttempt', query: { studentId: targetUserId } },
     { modelName: 'Certificate', query: { studentId: targetUserId } },
@@ -1644,11 +1656,14 @@ const revokeCertificate = async (tenantId, certId) => {
 const getPrograms = async (tenantId, userId = null, role = null) => {
   if (role === 'student' && userId) {
     const User = require('../../auth/models/user.model');
-    const studentUser = await User.findOne({ _id: userId, tenantId }).select('programId requestedProgramId').lean();
+    const studentUser = await User.findOne({ _id: userId, tenantId }).select('programId requestedProgramId enrolledPrograms').lean();
     const enrolledCourses = await Course.find({ tenantId, enrolledStudents: userId, status: 'active' }).select('programId').lean();
     const progIds = enrolledCourses.map(c => c.programId).filter(Boolean);
     if (studentUser?.programId) progIds.push(studentUser.programId);
     if (studentUser?.requestedProgramId) progIds.push(studentUser.requestedProgramId);
+    if (Array.isArray(studentUser?.enrolledPrograms)) {
+      progIds.push(...studentUser.enrolledPrograms);
+    }
     return Program.find({ tenantId, _id: { $in: progIds } }).sort({ name: 1 }).lean();
   }
   return Program.find({ tenantId }).sort({ name: 1 }).lean();
@@ -2145,6 +2160,277 @@ const toggleVideoLectureProgress = async (tenantId, courseId, lectureId, student
   };
 };
 
+// ══════════════════════════════════════════════════════════════════════════════
+// COURSE ENROLLMENT REQUESTS (APPLY & APPROVE)
+// ══════════════════════════════════════════════════════════════════════════════
+const applyCourseEnrollment = async (tenantId, id, studentId, message = '') => {
+  const EnrollmentRequest = require('../models/enrollmentRequest.model');
+  const User = require('../../auth/models/user.model');
+
+  // Check if target is a Program (e.g. "Special Grand Test Series — Water Management Officer (BS-17)")
+  const program = await Program.findOne({ _id: id, tenantId });
+  if (program) {
+    const user = await User.findOne({ _id: studentId, tenantId }).select('programId enrolledPrograms').lean();
+    const enrolledProgIds = [];
+    if (user?.programId) enrolledProgIds.push(String(user.programId));
+    if (Array.isArray(user?.enrolledPrograms)) {
+      user.enrolledPrograms.forEach(p => enrolledProgIds.push(String(p?._id || p)));
+    }
+
+    if (enrolledProgIds.includes(String(id))) {
+      throw err('You are already enrolled in this course/program.', 400);
+    }
+
+    const existingPending = await EnrollmentRequest.findOne({
+      tenantId,
+      programId: id,
+      studentId,
+      status: 'pending'
+    });
+    if (existingPending) {
+      throw err('You already have a pending enrollment application for this course.', 400);
+    }
+
+    const newRequest = await EnrollmentRequest.create({
+      tenantId,
+      programId: id,
+      studentId,
+      status: 'pending',
+      message: String(message || '').trim()
+    });
+
+    return {
+      success: true,
+      message: 'Enrollment application submitted successfully. Waiting for admin approval.',
+      data: newRequest
+    };
+  }
+
+  // Check if target is a Course
+  const course = await Course.findOne({ _id: id, tenantId });
+  if (course) {
+    if (course.status !== 'active') throw err('This course is not currently accepting enrollments.', 400);
+
+    if ((course.enrolledStudents || []).map(String).includes(String(studentId))) {
+      throw err('You are already enrolled in this course.', 400);
+    }
+
+    const existingPending = await EnrollmentRequest.findOne({
+      tenantId,
+      courseId: id,
+      studentId,
+      status: 'pending'
+    });
+    if (existingPending) {
+      throw err('You already have a pending enrollment application for this course.', 400);
+    }
+
+    const newRequest = await EnrollmentRequest.create({
+      tenantId,
+      courseId: id,
+      studentId,
+      status: 'pending',
+      message: String(message || '').trim()
+    });
+
+    return {
+      success: true,
+      message: 'Enrollment application submitted successfully. Waiting for admin approval.',
+      data: newRequest
+    };
+  }
+
+  throw err('Course not found.', 404);
+};
+
+const getMyEnrollmentRequests = async (tenantId, studentId) => {
+  const EnrollmentRequest = require('../models/enrollmentRequest.model');
+  return EnrollmentRequest.find({ tenantId, studentId })
+    .populate('courseId', 'title courseCode category thumbnail instructor programId majorId')
+    .populate('programId', 'name code school faculty degreeLevel description thumbnail')
+    .sort({ createdAt: -1 })
+    .lean();
+};
+
+const getCoursesCatalog = async (tenantId, studentId) => {
+  const EnrollmentRequest = require('../models/enrollmentRequest.model');
+  const User = require('../../auth/models/user.model');
+
+  const [programs, courses, myRequests, studentUser] = await Promise.all([
+    Program.find({ tenantId, status: { $ne: 'archived' } }).sort({ name: 1 }).lean(),
+    Course.find({ tenantId, status: 'active' }).select('programId enrolledStudents title courseCode category').lean(),
+    EnrollmentRequest.find({ tenantId, studentId }).sort({ createdAt: -1 }).lean(),
+    User.findOne({ _id: studentId, tenantId }).select('programId enrolledPrograms').lean()
+  ]);
+
+  const enrolledProgIds = [];
+  if (studentUser?.programId) enrolledProgIds.push(String(studentUser.programId));
+  if (Array.isArray(studentUser?.enrolledPrograms)) {
+    studentUser.enrolledPrograms.forEach(p => enrolledProgIds.push(String(p?._id || p)));
+  }
+
+  const requestMap = new Map();
+  myRequests.forEach(r => {
+    const key = r.programId ? `p_${String(r.programId)}` : `c_${String(r.courseId)}`;
+    if (!requestMap.has(key)) {
+      requestMap.set(key, r);
+    }
+  });
+
+  const progSubjectCount = new Map();
+  courses.forEach(c => {
+    if (c.programId) {
+      const pid = String(c.programId);
+      progSubjectCount.set(pid, (progSubjectCount.get(pid) || 0) + 1);
+    }
+  });
+
+  // Programs represent the primary courses (e.g. Special Grand Test Series — Water Management Officer (BS-17))
+  const catalogList = programs.map(p => {
+    const pIdStr = String(p._id);
+    const isEnrolled = enrolledProgIds.includes(pIdStr);
+    const req = requestMap.get(`p_${pIdStr}`);
+
+    return {
+      _id: p._id,
+      title: p.name,
+      name: p.name,
+      courseCode: p.code || 'DEGREE',
+      degreeLevel: p.degreeLevel,
+      school: p.school,
+      faculty: p.faculty,
+      category: p.degreeLevel ? p.degreeLevel.toUpperCase() : 'PROGRAM',
+      description: p.description || 'Comprehensive test series, mock exams, study materials and lectures.',
+      thumbnail: p.thumbnail,
+      isEnrolled,
+      requestStatus: isEnrolled ? 'approved' : (req?.status || 'none'),
+      requestId: req?._id || null,
+      enrolledCount: courses.filter(c => String(c.programId) === pIdStr && c.enrolledStudents?.some(s => String(s) === String(studentId))).length || (isEnrolled ? 1 : 0),
+      totalSubjects: progSubjectCount.get(pIdStr) || 0,
+      type: 'program'
+    };
+  });
+
+  return catalogList;
+};
+
+const getAdminEnrollmentRequests = async (tenantId, query = {}) => {
+  const EnrollmentRequest = require('../models/enrollmentRequest.model');
+  const filter = { tenantId };
+  if (query.status && ['pending', 'approved', 'rejected'].includes(query.status)) {
+    filter.status = query.status;
+  }
+  return EnrollmentRequest.find(filter)
+    .populate('studentId', 'name email rollNumber phone whatsappNumber district programId')
+    .populate('courseId', 'title courseCode category instructor thumbnail programId')
+    .populate('programId', 'name code school faculty degreeLevel description thumbnail')
+    .populate('reviewedBy', 'name email')
+    .sort({ createdAt: -1 })
+    .lean();
+};
+
+const approveEnrollmentRequest = async (tenantId, requestId, adminId) => {
+  const EnrollmentRequest = require('../models/enrollmentRequest.model');
+  const request = await EnrollmentRequest.findOne({ _id: requestId, tenantId });
+  if (!request) throw err('Enrollment request not found.', 404);
+
+  const User = require('../../auth/models/user.model');
+
+  if (request.programId) {
+    const student = await User.findOne({ _id: request.studentId, tenantId });
+    if (student) {
+      const update = { $addToSet: { enrolledPrograms: request.programId } };
+      if (!student.programId) update.$set = { programId: request.programId };
+      await User.updateOne({ _id: request.studentId, tenantId }, update);
+    }
+
+    // Automatically enroll student into all subjects/courses of this program
+    await Course.updateMany(
+      { tenantId, programId: request.programId },
+      { $addToSet: { enrolledStudents: request.studentId } }
+    );
+
+    request.status = 'approved';
+    request.reviewedBy = adminId;
+    request.reviewedAt = new Date();
+    await request.save();
+
+    await logActivity({
+      userId: adminId,
+      tenantId,
+      action: 'APPROVE_PROGRAM_ENROLLMENT',
+      entityType: 'Program',
+      entityId: request.programId,
+      meta: { studentId: request.studentId, requestId: request._id }
+    });
+
+    return {
+      success: true,
+      message: 'Course/Program enrollment approved successfully. Student can now access all course materials.',
+      data: request
+    };
+  }
+
+  if (request.courseId) {
+    const course = await Course.findOne({ _id: request.courseId, tenantId });
+    if (!course) throw err('Requested course not found.', 404);
+
+    await Course.updateOne(
+      { _id: request.courseId, tenantId },
+      { $addToSet: { enrolledStudents: request.studentId } }
+    );
+
+    request.status = 'approved';
+    request.reviewedBy = adminId;
+    request.reviewedAt = new Date();
+    await request.save();
+
+    await logActivity({
+      userId: adminId,
+      tenantId,
+      action: 'APPROVE_COURSE_ENROLLMENT',
+      entityType: 'Course',
+      entityId: request.courseId,
+      meta: { studentId: request.studentId, requestId: request._id }
+    });
+
+    return {
+      success: true,
+      message: 'Course enrollment approved successfully. Student can now access all course materials.',
+      data: request
+    };
+  }
+
+  throw err('Invalid enrollment request.', 400);
+};
+
+const rejectEnrollmentRequest = async (tenantId, requestId, adminId, reason = '') => {
+  const EnrollmentRequest = require('../models/enrollmentRequest.model');
+  const request = await EnrollmentRequest.findOne({ _id: requestId, tenantId });
+  if (!request) throw err('Enrollment request not found.', 404);
+
+  request.status = 'rejected';
+  request.reviewedBy = adminId;
+  request.reviewedAt = new Date();
+  request.rejectionReason = String(reason || '').trim();
+  await request.save();
+
+  await logActivity({
+    userId: adminId,
+    tenantId,
+    action: 'REJECT_COURSE_ENROLLMENT',
+    entityType: 'Course',
+    entityId: request.courseId,
+    meta: { studentId: request.studentId, requestId: request._id, reason }
+  });
+
+  return {
+    success: true,
+    message: 'Course enrollment request rejected.',
+    data: request
+  };
+};
+
 module.exports = {
   getCourses, getCourseById, createCourse, updateCourse, saveDraft, deleteCourse, enrollStudent, unenrollStudent, getTenantStudents,
   markAttendance, getCourseAttendance,
@@ -2164,4 +2450,6 @@ module.exports = {
   getStudentDegreePerformance, getProgramPerformanceOverview,
   // Video lectures
   getCourseVideoLectures, createVideoLecture, updateVideoLecture, deleteVideoLecture, toggleVideoLectureProgress,
+  // Course Enrollment Requests
+  applyCourseEnrollment, getMyEnrollmentRequests, getCoursesCatalog, getAdminEnrollmentRequests, approveEnrollmentRequest, rejectEnrollmentRequest,
 };

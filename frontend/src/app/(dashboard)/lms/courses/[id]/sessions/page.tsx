@@ -191,8 +191,8 @@ export default function SessionsPage({ params }: { params: Promise<{ id: string 
         </div>
 
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Course Sessions</h1>
-          <p className="text-slate-500 mt-1.5 text-[15px]">Manage and track attendance for your course lectures.</p>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Course Study Material & Sessions</h1>
+          <p className="text-slate-500 mt-1.5 text-[15px]">Access course study materials, lecture files, and track attendance.</p>
         </div>
       </div>
 

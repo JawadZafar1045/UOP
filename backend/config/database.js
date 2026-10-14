@@ -6,7 +6,7 @@ const connectDB = async () => {
       maxPoolSize: 20,          // max concurrent connections in pool
       minPoolSize: 5,           // keep 5 connections warm at all times
       socketTimeoutMS: 45000,   // close idle sockets after 45s
-      serverSelectionTimeoutMS: 5000, // fail fast if no server found in 5s
+      serverSelectionTimeoutMS: 15000, // allow up to 15s for Atlas cluster selection
       heartbeatFrequencyMS: 10000,    // check server health every 10s
       retryWrites: true,
     });

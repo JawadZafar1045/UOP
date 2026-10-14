@@ -8,12 +8,12 @@ import {
   Shield, BookOpen, Users, GraduationCap, Award, Calendar,
   CheckCircle, XCircle, Trash2, Eye, MoreVertical, Search,
   BarChart3, TrendingUp, UserCheck, UserX, Phone, MapPin,
-  Briefcase, Mail, X
+  Briefcase, Mail, X, ClipboardList, Clock, Check
 } from "lucide-react";
 import Loader from "@/components/ui/Loader";
 import * as lmsService from "@/services/lms.service";
 
-type Tab = "overview" | "users" | "courses" | "certificates";
+type Tab = "overview" | "users" | "courses" | "enrollmentRequests" | "certificates";
 
 type FilterOption = {
   id: "all" | "pending" | "active" | "inactive";
@@ -38,13 +38,17 @@ export default function AdminDashboardPage() {
   const [courses, setCourses] = useState<any[]>([]);
   const [certs, setCerts] = useState<any[]>([]);
   const [programs, setPrograms] = useState<any[]>([]);
+  const [enrollmentRequests, setEnrollmentRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   // Search & Filter
   const [userSearch, setUserSearch] = useState("");
   const [courseSearch, setCourseSearch] = useState("");
+  const [requestSearch, setRequestSearch] = useState("");
   const [userStatusFilter, setUserStatusFilter] = useState<"all" | "pending" | "active" | "inactive">("all");
+  const [userRoleFilter, setUserRoleFilter] = useState<"all" | "student" | "teacher" | "admin">("all");
+  const [requestFilter, setRequestFilter] = useState<"all" | "pending" | "approved" | "rejected">("pending");
 
   // Applicant details modal
   const [selectedApplicant, setSelectedApplicant] = useState<any>(null);
@@ -53,7 +57,7 @@ export default function AdminDashboardPage() {
   // Confirm dialogs
   const [confirmAction, setConfirmAction] = useState<null | {
     type: "deactivate" | "activate" | "deleteCourse" | "revokeCert" | "approveUser" | "deleteUser";
-    id: string; label: string; programId?: string;
+    id: string; label: string; role?: string; programId?: string;
   }>(null);
   const [isConfirming, setIsConfirming] = useState(false);
 
@@ -62,18 +66,20 @@ export default function AdminDashboardPage() {
     const fetchAll = async () => {
       setLoading(true);
       try {
-        const [s, u, c, ce, pr] = await Promise.all([
+        const [s, u, c, ce, pr, er] = await Promise.all([
           lmsService.getAdminStats(),
           lmsService.getAdminUsers(),
           lmsService.getAdminCourses(),
           lmsService.getAdminCertificates(),
           lmsService.getPrograms(),
+          lmsService.getAdminEnrollmentRequests(),
         ]);
         setStats(s);
         setUsers(u || []);
         setCourses(c || []);
         setCerts(ce || []);
         setPrograms(pr || []);
+        setEnrollmentRequests(er || []);
       } catch (e: any) {
         setError(e?.message || "Failed to load admin data.");
       } finally {
@@ -84,23 +90,68 @@ export default function AdminDashboardPage() {
   }, [user]);
 
   const pendingUsersCount = useMemo(() => users.filter(u => u.isApproved === false).length, [users]);
+  const studentsCount = useMemo(() => users.filter(u => u.role === "student").length, [users]);
+  const teachersCount = useMemo(() => users.filter(u => u.role === "teacher").length, [users]);
 
   const filteredUsers = useMemo(() =>
     users.filter(u => {
       const matchesSearch =
         u.name?.toLowerCase().includes(userSearch.toLowerCase()) ||
-        u.email?.toLowerCase().includes(userSearch.toLowerCase());
+        u.email?.toLowerCase().includes(userSearch.toLowerCase()) ||
+        u.rollNumber?.toLowerCase().includes(userSearch.toLowerCase());
       if (!matchesSearch) return false;
+      if (userRoleFilter !== "all" && u.role !== userRoleFilter) return false;
       if (userStatusFilter === "pending") return u.isApproved === false;
       if (userStatusFilter === "active") return u.isActive && u.isApproved !== false;
       if (userStatusFilter === "inactive") return !u.isActive;
       return true;
-    }), [users, userSearch, userStatusFilter]);
+    }), [users, userSearch, userStatusFilter, userRoleFilter]);
 
   const filteredCourses = useMemo(() =>
     courses.filter(c =>
       c.title?.toLowerCase().includes(courseSearch.toLowerCase())
     ), [courses, courseSearch]);
+
+  const pendingRequestsCount = useMemo(() =>
+    enrollmentRequests.filter(r => r.status === "pending").length,
+    [enrollmentRequests]
+  );
+
+  const filteredRequests = useMemo(() =>
+    enrollmentRequests.filter(r => {
+      const matchesSearch =
+        r.studentId?.name?.toLowerCase().includes(requestSearch.toLowerCase()) ||
+        r.studentId?.email?.toLowerCase().includes(requestSearch.toLowerCase()) ||
+        r.courseId?.title?.toLowerCase().includes(requestSearch.toLowerCase()) ||
+        r.courseId?.courseCode?.toLowerCase().includes(requestSearch.toLowerCase()) ||
+        r.programId?.name?.toLowerCase().includes(requestSearch.toLowerCase()) ||
+        r.programId?.code?.toLowerCase().includes(requestSearch.toLowerCase());
+      if (!matchesSearch) return false;
+      if (requestFilter !== "all" && r.status !== requestFilter) return false;
+      return true;
+    }),
+    [enrollmentRequests, requestSearch, requestFilter]
+  );
+
+  const handleApproveEnrollment = async (requestId: string) => {
+    try {
+      await lmsService.approveEnrollmentRequest(requestId);
+      setEnrollmentRequests(prev => prev.map(r => r._id === requestId ? { ...r, status: "approved" } : r));
+      const updatedCourses = await lmsService.getAdminCourses();
+      setCourses(updatedCourses || []);
+    } catch (e: any) {
+      alert(e?.message || "Failed to approve enrollment.");
+    }
+  };
+
+  const handleRejectEnrollment = async (requestId: string) => {
+    try {
+      await lmsService.rejectEnrollmentRequest(requestId);
+      setEnrollmentRequests(prev => prev.map(r => r._id === requestId ? { ...r, status: "rejected" } : r));
+    } catch (e: any) {
+      alert(e?.message || "Failed to reject enrollment.");
+    }
+  };
 
   const handleRoleChange = async (id: string, role: string) => {
     try {
@@ -154,6 +205,11 @@ export default function AdminDashboardPage() {
     { id: "overview", label: "Overview", icon: <BarChart3 className="w-4 h-4" /> },
     { id: "users", label: "Users", icon: <Users className="w-4 h-4" /> },
     { id: "courses", label: "Courses", icon: <BookOpen className="w-4 h-4" /> },
+    {
+      id: "enrollmentRequests",
+      label: `Course Requests${pendingRequestsCount > 0 ? ` (${pendingRequestsCount})` : ''}`,
+      icon: <ClipboardList className="w-4 h-4" />
+    },
     { id: "certificates", label: "Certificates", icon: <Award className="w-4 h-4" /> },
   ];
 
@@ -255,21 +311,46 @@ export default function AdminDashboardPage() {
           )}
 
           <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-            <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div className="relative w-full sm:max-w-sm">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input value={userSearch} onChange={e => setUserSearch(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400"
-                  placeholder="Search by name or email..." />
+            <div className="p-5 border-b border-slate-100 flex flex-col gap-3">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="relative w-full sm:max-w-sm">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input value={userSearch} onChange={e => setUserSearch(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400"
+                    placeholder="Search by name, email, or roll #..." />
+                </div>
+
+                {/* Role Switcher Tabs */}
+                <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl w-full sm:w-auto overflow-x-auto">
+                  {[
+                    { id: "all", label: `All Users (${users.length})` },
+                    { id: "student", label: `Students (${studentsCount})` },
+                    { id: "teacher", label: `Teachers (${teachersCount})` },
+                    { id: "admin", label: "Admins" }
+                  ].map(r => (
+                    <button
+                      key={r.id}
+                      onClick={() => setUserRoleFilter(r.id as any)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                        userRoleFilter === r.id
+                          ? "bg-white text-green-800 shadow-sm font-extrabold"
+                          : "text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Status Filter Buttons */}
-              <div className="flex items-center gap-1.5 flex-wrap">
+              <div className="flex items-center gap-1.5 flex-wrap pt-2 border-t border-slate-100">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Status:</span>
                 {filterOptions.map((f) => (
                   <button
                     key={f.id}
                     onClick={() => setUserStatusFilter(f.id)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${userStatusFilter === f.id
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${userStatusFilter === f.id
                         ? "bg-green-700 text-white shadow-sm"
                         : f.highlight
                           ? "bg-amber-100 text-amber-800 border border-amber-200 hover:bg-amber-200"
@@ -294,7 +375,7 @@ export default function AdminDashboardPage() {
                 <table className="w-full text-sm">
                   <thead className="bg-slate-50 border-b border-slate-100">
                     <tr>
-                      {["Applicant / Name", "Email & WhatsApp", "Academic Track", "Status", "Applied", "Actions"].map(h => (
+                      {["Applicant / User", "Role", "Email & Phone", "Academic Track", "Status", "Registered", "Actions"].map(h => (
                         <th key={h} className="text-left px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{h}</th>
                       ))}
                     </tr>
@@ -304,16 +385,34 @@ export default function AdminDashboardPage() {
                       <tr key={u._id} className={`hover:bg-slate-50/50 transition-colors ${u.isApproved === false ? 'bg-amber-50/30' : ''}`}>
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-green-50 border border-green-200 flex items-center justify-center text-green-800 font-bold text-xs">
+                            <div className="w-8 h-8 rounded-full bg-green-50 border border-green-200 flex items-center justify-center text-green-800 font-bold text-xs shrink-0">
                               {u.name?.[0]?.toUpperCase() || "U"}
                             </div>
                             <div>
                               <span className="font-semibold text-slate-900 block">{u.name}</span>
-                              {u.district && (
-                                <span className="text-[11px] text-slate-400 font-medium">📍 {u.district}</span>
-                              )}
+                              <div className="flex items-center gap-2 mt-0.5">
+                                {u.rollNumber && (
+                                  <span className="text-[11px] font-mono font-bold text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded">
+                                    {u.rollNumber}
+                                  </span>
+                                )}
+                                {u.district && (
+                                  <span className="text-[11px] text-slate-400 font-medium">📍 {u.district}</span>
+                                )}
+                              </div>
                             </div>
                           </div>
+                        </td>
+                        <td className="px-5 py-4">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
+                            u.role === 'student'
+                              ? 'bg-blue-50 text-blue-700 border-blue-200'
+                              : u.role === 'teacher'
+                              ? 'bg-purple-50 text-purple-700 border-purple-200'
+                              : 'bg-amber-50 text-amber-700 border-amber-200'
+                          }`}>
+                            {u.role || 'student'}
+                          </span>
                         </td>
                         <td className="px-5 py-4">
                           <div className="text-slate-600 text-xs font-medium">{u.email}</div>
@@ -368,26 +467,29 @@ export default function AdminDashboardPage() {
                             </button>
 
                             {(u.role === 'teacher' || u.role === 'student') && u.isApproved === false && (
-                              <button onClick={() => setConfirmAction({ type: "approveUser", id: u._id, label: u.name })}
+                              <button onClick={() => setConfirmAction({ type: "approveUser", id: u._id, label: u.name, role: u.role })}
                                 className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-green-700 hover:bg-green-800 shadow-sm rounded-lg transition-colors active:scale-95">
                                 <UserCheck className="w-3.5 h-3.5" />Approve
                               </button>
                             )}
                             {u.isActive && u.isApproved !== false && (
-                              <button onClick={() => setConfirmAction({ type: "deactivate", id: u._id, label: u.name })}
+                              <button onClick={() => setConfirmAction({ type: "deactivate", id: u._id, label: u.name, role: u.role })}
                                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 rounded-lg transition-colors">
                                 <UserX className="w-3.5 h-3.5" />Deactivate
                               </button>
                             )}
                             {!u.isActive && u.isApproved !== false && (
-                              <button onClick={() => setConfirmAction({ type: "activate", id: u._id, label: u.name })}
-                                className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-green-800 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg transition-colors">
+                              <button onClick={() => setConfirmAction({ type: "activate", id: u._id, label: u.name, role: u.role })}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-green-800 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg transition-colors">
                                 <UserCheck className="w-3.5 h-3.5" />Activate
                               </button>
                             )}
-                            <button onClick={() => setConfirmAction({ type: "deleteUser", id: u._id, label: u.name })}
-                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 rounded-lg transition-colors">
-                              <Trash2 className="w-3.5 h-3.5" />{u.isApproved === false ? "Reject" : "Delete"}
+                            <button onClick={() => setConfirmAction({ type: "deleteUser", id: u._id, label: u.name, role: u.role })}
+                              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors shadow-sm"
+                              title={u.role === 'student' ? 'Permanently delete student & wipe all enrollments/submissions' : 'Permanently remove user'}
+                            >
+                              <Trash2 className="w-3.5 h-3.5 text-red-600" />
+                              {u.isApproved === false ? "Reject" : u.role === "student" ? "Delete Student" : "Delete"}
                             </button>
                           </div>
                         </td>
@@ -462,6 +564,152 @@ export default function AdminDashboardPage() {
               </table>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── TAB: ENROLLMENT REQUESTS ── */}
+      {activeTab === "enrollmentRequests" && (
+        <div className="space-y-4">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="relative w-full sm:max-w-sm">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  value={requestSearch}
+                  onChange={e => setRequestSearch(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-400"
+                  placeholder="Search by student or course..."
+                />
+              </div>
+
+              {/* Status Filter Buttons */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {[
+                  { id: "pending", label: `Pending (${pendingRequestsCount})`, highlight: pendingRequestsCount > 0 },
+                  { id: "approved", label: "Approved" },
+                  { id: "rejected", label: "Rejected" },
+                  { id: "all", label: `All (${enrollmentRequests.length})` },
+                ].map((f) => (
+                  <button
+                    key={f.id}
+                    onClick={() => setRequestFilter(f.id as any)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      requestFilter === f.id
+                        ? "bg-green-700 text-white shadow-sm"
+                        : f.highlight
+                        ? "bg-amber-100 text-amber-800 border border-amber-200 hover:bg-amber-200"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {loading ? (
+              <div className="p-8 flex justify-center"><Loader size="md" text="Loading requests..." /></div>
+            ) : filteredRequests.length === 0 ? (
+              <div className="p-12 text-center text-slate-400">
+                <ClipboardList className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                <p className="text-sm font-medium">No course enrollment requests found.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-50 border-b border-slate-100">
+                    <tr>
+                      {["Student", "Requested Course", "Applied Date", "Status", "Student Message", "Actions"].map(h => (
+                        <th key={h} className="text-left px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {filteredRequests.map(r => (
+                      <tr key={r._id} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700 font-bold text-xs shrink-0">
+                              {r.studentId?.name?.[0]?.toUpperCase() || "S"}
+                            </div>
+                            <div>
+                              <span className="font-semibold text-slate-900 block">{r.studentId?.name || "Student"}</span>
+                              <span className="text-xs text-slate-400 block">{r.studentId?.email}</span>
+                              {r.studentId?.rollNumber && (
+                                <span className="text-[11px] font-mono text-slate-500">Roll: {r.studentId.rollNumber}</span>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4">
+                          <div>
+                            <span className="font-semibold text-slate-900 block">
+                              {r.programId?.name || r.courseId?.title || "Course"}
+                            </span>
+                            {(r.programId?.code || r.courseId?.courseCode) && (
+                              <span className="text-xs font-mono font-bold text-green-700 bg-green-50 px-1.5 py-0.5 rounded border border-green-200 inline-block mt-0.5">
+                                {r.programId?.code || r.courseId?.courseCode}
+                              </span>
+                            )}
+                            {r.programId?.degreeLevel && (
+                              <span className="text-[10px] text-slate-400 block mt-0.5">
+                                {r.programId.degreeLevel.toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 text-slate-400 text-xs">
+                          {new Date(r.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-5 py-4">
+                          {r.status === "pending" && (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full border border-amber-200">
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />Pending Approval
+                            </span>
+                          )}
+                          {r.status === "approved" && (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-50 text-green-800 text-xs font-bold rounded-full border border-green-200">
+                              <CheckCircle className="w-3.5 h-3.5 text-green-600" />Enrolled & Approved
+                            </span>
+                          )}
+                          {r.status === "rejected" && (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 text-red-600 text-xs font-bold rounded-full border border-red-200">
+                              <XCircle className="w-3.5 h-3.5 text-red-500" />Rejected
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-5 py-4 text-xs text-slate-500 max-w-[200px] truncate">
+                          {r.message || "—"}
+                        </td>
+                        <td className="px-5 py-4">
+                          {r.status === "pending" ? (
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleApproveEnrollment(r._id)}
+                                className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-green-700 hover:bg-green-800 rounded-lg transition-colors shadow-sm"
+                              >
+                                <UserCheck className="w-3.5 h-3.5" />Approve & Enroll
+                              </button>
+                              <button
+                                onClick={() => handleRejectEnrollment(r._id)}
+                                className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors"
+                              >
+                                <UserX className="w-3.5 h-3.5" />Reject
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-slate-400">
+                              {r.status === "approved" ? "Enrolled" : "Reviewed"}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -676,15 +924,42 @@ export default function AdminDashboardPage() {
             <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mb-4 mx-auto">
               <XCircle className="w-6 h-6 text-red-600" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 text-center mb-2">Confirm Action</h3>
-            <p className="text-sm text-slate-500 text-center mb-6">
-              {confirmAction.type === "deactivate" && `Deactivate ${confirmAction.label}? They will lose access.`}
-              {confirmAction.type === "activate" && `Activate ${confirmAction.label}? They will regain access.`}
-              {confirmAction.type === "deleteUser" && `Delete ${confirmAction.label}? This will permanently remove them from the system.`}
-              {confirmAction.type === "approveUser" && `Approve ${confirmAction.label}? They will be notified via email and granted access.`}
-              {confirmAction.type === "deleteCourse" && `Delete "${confirmAction.label}"? This will permanently delete all sessions, assignments, quizzes, attendance records and certificates for this course.`}
-              {confirmAction.type === "revokeCert" && `Revoke ${confirmAction.label}? This cannot be undone. The verification page will show it as revoked.`}
-            </p>
+            <div className="mb-6">
+              {confirmAction.type === "deactivate" && (
+                <p className="text-sm text-slate-500 text-center">Deactivate <strong>{confirmAction.label}</strong>? They will temporarily lose access to the platform.</p>
+              )}
+              {confirmAction.type === "activate" && (
+                <p className="text-sm text-slate-500 text-center">Activate <strong>{confirmAction.label}</strong>? They will regain access to their account.</p>
+              )}
+              {confirmAction.type === "deleteUser" && (
+                <div className="text-left bg-red-50 border border-red-200 rounded-xl p-3.5 space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-red-800 font-bold text-xs uppercase tracking-wider">
+                    <span>⚠️</span> Permanent {confirmAction.role === 'student' ? 'Student Deletion' : 'User Deletion'}
+                  </div>
+                  <p className="text-xs text-red-700 leading-relaxed">
+                    Are you sure you want to completely delete <strong>{confirmAction.label}</strong>?
+                  </p>
+                  {confirmAction.role === 'student' ? (
+                    <p className="text-[11px] text-red-600 bg-white/70 p-2 rounded-lg border border-red-100 leading-relaxed">
+                      This will permanently purge this student from the database and wipe all their enrolled courses, assignment submissions, quiz attempts, attendance records, and certificates.
+                    </p>
+                  ) : (
+                    <p className="text-[11px] text-red-600">
+                      This will permanently purge this account and all associated access.
+                    </p>
+                  )}
+                </div>
+              )}
+              {confirmAction.type === "approveUser" && (
+                <p className="text-sm text-slate-500 text-center">Approve <strong>{confirmAction.label}</strong>? They will be notified via email and granted access.</p>
+              )}
+              {confirmAction.type === "deleteCourse" && (
+                <p className="text-sm text-slate-500 text-center">Delete &ldquo;{confirmAction.label}&rdquo;? This will permanently delete all sessions, assignments, quizzes, attendance records and certificates for this course.</p>
+              )}
+              {confirmAction.type === "revokeCert" && (
+                <p className="text-sm text-slate-500 text-center">Revoke certificate for <strong>{confirmAction.label}</strong>? This cannot be undone.</p>
+              )}
+            </div>
             <div className="flex gap-3">
               <button onClick={() => setConfirmAction(null)}
                 className="flex-1 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">

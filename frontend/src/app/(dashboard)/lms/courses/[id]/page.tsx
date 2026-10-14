@@ -38,6 +38,7 @@ import {
   FileText,
   CheckCircle,
   BookOpen,
+  BarChart3,
   Clock,
   UserPlus,
   XCircle,
@@ -188,7 +189,7 @@ export default function CourseOverviewPage({
       doughnutChartInstanceRef.current = new ChartJS(ctx, {
         type: "doughnut",
         data: {
-          labels: ["Sessions", "Assignments", "Quizzes"],
+          labels: ["Study Material", "Assignments", "Quizzes"],
           datasets: [
             {
               data: [
@@ -259,8 +260,8 @@ export default function CourseOverviewPage({
       color: "from-green-600 to-green-700",
     },
     {
-      name: "Sessions",
-      icon: Calendar,
+      name: "Study Material",
+      icon: BookOpen,
       href: `/lms/courses/${courseId}/sessions`,
       color: "from-green-600 to-green-700",
     },
@@ -278,7 +279,7 @@ export default function CourseOverviewPage({
     },
     {
       name: "Performance",
-      icon: BookOpen,
+      icon: BarChart3,
       href: `/lms/courses/${courseId}/performance`,
       color: "from-green-600 to-green-700",
     },
@@ -501,7 +502,7 @@ export default function CourseOverviewPage({
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-green-600"></div>
                   <span className="text-xs text-slate-600 font-medium">
-                    Sessions
+                    Study Material
                   </span>
                 </div>
                 <span className="text-sm font-bold text-green-600">
@@ -588,7 +589,7 @@ export default function CourseOverviewPage({
           <div className="space-y-4 border-t border-slate-100 pt-6">
             {[
               {
-                label: "Sessions",
+                label: "Study Material",
                 value: currentCourse.stats?.sessions || 0,
                 color: "bg-green-600",
               },

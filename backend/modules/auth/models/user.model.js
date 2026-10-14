@@ -34,6 +34,7 @@ const userSchema = new mongoose.Schema(
 
     // ── Academic Profile (for students) ──────────────────────────────────────────
     programId:          { type: require('mongoose').Schema.Types.ObjectId, ref: 'Program', default: null }, // Degree/Program enrolled in
+    enrolledPrograms:   [{ type: require('mongoose').Schema.Types.ObjectId, ref: 'Program' }], // Multi-program enrollments
     requestedProgramId: { type: require('mongoose').Schema.Types.ObjectId, ref: 'Program', default: null }, // Program requested upon registration
     majorId:            { type: require('mongoose').Schema.Types.ObjectId, ref: 'Major',   default: null }, // Major/Specialization
     rollNumber:         { type: String, trim: true },  // Student roll number / reg. number
