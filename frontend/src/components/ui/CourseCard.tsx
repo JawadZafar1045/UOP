@@ -32,8 +32,10 @@ export default function CourseCard({ course }: CourseCardProps) {
   const isTBC = course.type === 'paid' && (!course.price || course.price === 0);
   const isFree = !isTBC && (course.type === 'free' || !course.price || course.price === 0);
   const priceFormatted = isTBC ? 'To be confirmed' : isFree ? 'FREE' : `${course.currency || 'PKR'} ${(course.price || 0).toLocaleString()}`;
-  const hasValidDiscount = !isFree && !isTBC && (course.hasDiscount || (typeof course.discountPrice === 'number' && course.discountPrice > 0)) && typeof course.discountPrice === 'number' && course.discountPrice > 0 && course.discountPrice < (course.price || 0);
-  const discountPercent = course.discountPercent || (hasValidDiscount && course.price ? Math.round(((course.price - course.discountPrice!) / course.price) * 100) : 0);
+  const numPrice = Number(course.price) || 0;
+  const numDiscountPrice = Number(course.discountPrice) || 0;
+  const hasValidDiscount = !isFree && !isTBC && (!!course.hasDiscount || (numDiscountPrice > 0 && numDiscountPrice < numPrice)) && numDiscountPrice > 0 && numDiscountPrice < numPrice;
+  const discountPercent = Number(course.discountPercent) || (hasValidDiscount && numPrice > 0 ? Math.round(((numPrice - numDiscountPrice) / numPrice) * 100) : 0);
   const category = course.category || 'Cyber Security';
   const level = course.level || 'Beginner to Advanced';
 
@@ -209,10 +211,10 @@ export default function CourseCard({ course }: CourseCardProps) {
             {hasValidDiscount ? (
               <div className="flex items-baseline gap-1.5 flex-wrap">
                 <span className="text-base sm:text-lg font-black text-emerald-700">
-                  {course.currency || 'PKR'} {course.discountPrice!.toLocaleString()}
+                  {course.currency || 'PKR'} {numDiscountPrice.toLocaleString()}
                 </span>
                 <span className="text-xs text-[#5f7587] line-through font-semibold">
-                  {course.currency || 'PKR'} {(course.price || 0).toLocaleString()}
+                  {course.currency || 'PKR'} {numPrice.toLocaleString()}
                 </span>
               </div>
             ) : (

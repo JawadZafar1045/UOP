@@ -288,7 +288,7 @@ const getPublicCourses = async (tenantId, query = {}) => {
   const [courses, total] = await Promise.all([
     Course.find(filter)
       .populate('instructor', 'name email avatar')
-      .select('title slug description shortDescription thumbnail duration category level type price currency instructor instructorName modules isFeatured tags createdAt updatedAt')
+      .select('title slug description shortDescription thumbnail duration category level type price currency instructor instructorName modules isFeatured tags createdAt updatedAt hasDiscount discountPrice discountPercent')
       .sort(query.sort === 'price-asc' ? { price: 1 } : query.sort === 'price-desc' ? { price: -1 } : { isFeatured: -1, createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -321,6 +321,9 @@ const getPublicCourses = async (tenantId, query = {}) => {
       type: (c.type === 'paid' || (c.price && c.price > 0)) ? 'paid' : 'free',
       price: (c.type === 'paid' || (c.price && c.price > 0)) ? (c.price || 0) : 0,
       currency: c.currency || 'PKR',
+      hasDiscount: !!c.hasDiscount,
+      discountPrice: typeof c.discountPrice === 'number' ? c.discountPrice : 0,
+      discountPercent: typeof c.discountPercent === 'number' ? c.discountPercent : 0,
       instructor: c.instructor?.name || c.instructorName || '',
       instructorAvatar: c.instructor?.avatar || '',
       isFeatured: !!c.isFeatured,
@@ -408,6 +411,9 @@ const getPublicCourseBySlug = async (tenantId, slugOrId) => {
     type: (course.type === 'paid' || (course.price && course.price > 0)) ? 'paid' : 'free',
     price: (course.type === 'paid' || (course.price && course.price > 0)) ? (course.price || 0) : 0,
     currency: course.currency || 'PKR',
+    hasDiscount: !!course.hasDiscount,
+    discountPrice: typeof course.discountPrice === 'number' ? course.discountPrice : 0,
+    discountPercent: typeof course.discountPercent === 'number' ? course.discountPercent : 0,
     duration: course.duration || (totalDurationSeconds > 0 ? `${Math.round(totalDurationSeconds / 60)} mins` : 'Self-paced'),
     totalDurationSeconds,
     moduleCount: modules.length,
