@@ -1,620 +1,451 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useLmsStore } from "@/store/lmsStore";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useStore } from "@/store/useStore";
+import * as lmsService from "@/services/lms.service";
 import {
   Plus,
   PlayCircle,
   BookOpen,
   Users,
   ArrowRight,
-  AlertCircle,
   Sparkles,
   GraduationCap,
   TrendingUp,
   CheckCircle2,
-  ChevronLeft,
+  Clock,
+  Play,
+  Compass,
+  AlertCircle,
+  Lock,
+  Shield,
+  Layers,
+  Sparkle
 } from "lucide-react";
 import Link from "next/link";
 import Loader from "@/components/ui/Loader";
 
-export default function LMSPage() {
-  const { courses, isLoading, error, fetchCourses } = useLmsStore();
+function LMSContent() {
   const { user } = useStore();
-  const [publishingId, setPublishingId] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const tabParam = searchParams.get("tab");
+
+  const [courses, setCourses] = useState<any[]>([]);
+  const [continueLearning, setContinueLearning] = useState<any>(null);
+  const [filterTab, setFilterTab] = useState<"all" | "unlocked" | "locked">(
+    tabParam === "unlocked" || tabParam === "my"
+      ? "unlocked"
+      : tabParam === "locked"
+      ? "locked"
+      : "all"
+  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const isTeacherOrAdmin = user?.role === "teacher" || user?.role === "admin";
 
   useEffect(() => {
-    fetchCourses();
-  }, [fetchCourses]);
-
-  const visibleCourses = useMemo(() => {
-    if (!courses) return [];
-    if (user?.role !== 'student') return courses;
-
-    // Defense in depth — filter even if backend
-    // already filtered correctly
-    return courses.filter(course => {
-      const studentsList = course.students || course.enrolledStudents;
-      if (!studentsList || !Array.isArray(studentsList)) return false;
-      return studentsList.some(
-        s => s === user._id ||
-             s?._id === user._id ||
-             s?.toString() === user._id
-      );
-    });
-  }, [courses, user]);
-
-  const handlePublishCourse = async (e: React.MouseEvent, courseId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!confirm("Publish this course? It will become visible to students.")) return;
-    setPublishingId(courseId);
-    try {
-      const { updateCourse } = useLmsStore.getState();
-      await updateCourse(courseId, { status: "active" });
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setPublishingId(null);
+    if (tabParam === "unlocked" || tabParam === "my") {
+      setFilterTab("unlocked");
+    } else if (tabParam === "locked") {
+      setFilterTab("locked");
+    } else {
+      setFilterTab("all");
     }
+  }, [tabParam]);
+
+  const handleTabChange = (tab: "all" | "unlocked" | "locked") => {
+    setFilterTab(tab);
+    router.replace(`/lms?tab=${tab}`, { scroll: false });
   };
 
-  if (user?.role === 'student' && visibleCourses.length === 0 && !isLoading && !error) {
+  useEffect(() => {
+    const loadDashboard = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        if (user?.role === "student") {
+          const [allCourses, lastCourse] = await Promise.all([
+            lmsService.getStudentEnrolledCourses(),
+            lmsService.getStudentContinueLearning(),
+          ]);
+          setCourses(Array.isArray(allCourses) ? allCourses : []);
+          setContinueLearning(lastCourse);
+        } else {
+          // Admin / Teacher: fetch all courses
+          const allCourses = await lmsService.getCourses();
+          setCourses(Array.isArray(allCourses) ? allCourses : []);
+        }
+      } catch (err: any) {
+        setError(err?.message || "Failed to load dashboard.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDashboard();
+  }, [user]);
+
+  const unlockedCourses = courses.filter((c) => !c.isLocked);
+  const lockedCourses = courses.filter((c) => !!c.isLocked);
+
+  const displayedCourses =
+    filterTab === "unlocked"
+      ? unlockedCourses
+      : filterTab === "locked"
+      ? lockedCourses
+      : courses;
+
+  if (loading) {
     return (
-      <div className="text-center py-20">
-        <div className="text-4xl mb-4">📚</div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">
-          No Courses Yet
-        </h3>
-        <p className="text-gray-500 text-sm">
-          You are not enrolled in any courses.
-          Contact your teacher or admin to get enrolled.
-        </p>
+      <div className="min-h-[70vh] flex items-center justify-center">
+        <Loader size="lg" text="Loading your learning dashboard..." />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
-      <div className="space-y-8 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <div className="space-y-8 max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 font-sans">
+      
+      {/* Header Banner - Bright Executive Theme */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#f4f8fb]/80 via-white to-slate-50 border border-[#d5e0e8] rounded-3xl p-8 sm:p-10 text-[#021F37] shadow-xs">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#d5e0e8_1px,transparent_1px),linear-gradient(to_bottom,#d5e0e8_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-50" />
+        <div className="absolute top-0 right-1/4 w-[500px] h-[250px] bg-[#eaf3f7]/50 blur-[90px] pointer-events-none rounded-full animate-blob" />
 
-        {/* Elevated Hero Header */}
-        <div className="relative overflow-hidden bg-white rounded-3xl border border-slate-200/60 shadow-xl shadow-slate-900/5">
-          {/* Abstract Background */}
-          <div className="absolute inset-0 overflow-hidden">
-            <svg
-              className="absolute w-full h-full"
-              viewBox="0 0 1200 300"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <defs>
-                <clipPath id="hero-clip">
-                  <rect width="1200" height="300" />
-                </clipPath>
-              </defs>
-
-              <g clipPath="url(#hero-clip)">
-                {/* Dot grid */}
-                {Array.from({ length: 12 }).map((_, row) =>
-                  Array.from({ length: 28 }).map((_, col) => (
-                    <circle
-                      key={`${row}-${col}`}
-                      cx={col * 46 + 23}
-                      cy={row * 28 + 14}
-                      r="1.5"
-                      fill="#93c5fd"
-                      opacity="0.25"
-                    />
-                  )),
-                )}
-
-                {/* Radial rings top-right */}
-                <circle
-                  cx="1080"
-                  cy="60"
-                  r="90"
-                  fill="none"
-                  stroke="#818cf8"
-                  strokeWidth="0.8"
-                  opacity="0.25"
-                />
-                <circle
-                  cx="1080"
-                  cy="60"
-                  r="130"
-                  fill="none"
-                  stroke="#818cf8"
-                  strokeWidth="0.6"
-                  opacity="0.15"
-                />
-                <circle
-                  cx="1080"
-                  cy="60"
-                  r="170"
-                  fill="none"
-                  stroke="#818cf8"
-                  strokeWidth="0.5"
-                  opacity="0.10"
-                />
-
-                {/* Soft radial bloom bottom-left */}
-                <circle
-                  cx="120"
-                  cy="240"
-                  r="70"
-                  fill="#dbeafe"
-                  opacity="0.20"
-                />
-                <circle
-                  cx="120"
-                  cy="240"
-                  r="110"
-                  fill="none"
-                  stroke="#93c5fd"
-                  strokeWidth="0.6"
-                  opacity="0.15"
-                />
-
-                {/* Node graph — top-right cluster */}
-                <line
-                  x1="920"
-                  y1="40"
-                  x2="1010"
-                  y2="80"
-                  stroke="#6366f1"
-                  strokeWidth="0.8"
-                  opacity="0.35"
-                />
-                <line
-                  x1="1010"
-                  y1="80"
-                  x2="1090"
-                  y2="55"
-                  stroke="#6366f1"
-                  strokeWidth="0.8"
-                  opacity="0.35"
-                />
-                <line
-                  x1="1010"
-                  y1="80"
-                  x2="1020"
-                  y2="150"
-                  stroke="#6366f1"
-                  strokeWidth="0.8"
-                  opacity="0.25"
-                />
-                <line
-                  x1="1090"
-                  y1="55"
-                  x2="1140"
-                  y2="110"
-                  stroke="#6366f1"
-                  strokeWidth="0.7"
-                  opacity="0.25"
-                />
-                <line
-                  x1="1020"
-                  y1="150"
-                  x2="1100"
-                  y2="170"
-                  stroke="#6366f1"
-                  strokeWidth="0.7"
-                  opacity="0.20"
-                />
-                <line
-                  x1="920"
-                  y1="40"
-                  x2="860"
-                  y2="100"
-                  stroke="#6366f1"
-                  strokeWidth="0.7"
-                  opacity="0.20"
-                />
-
-                <circle cx="920" cy="40" r="5" fill="#3b82f6" opacity="0.55" />
-                <circle cx="1010" cy="80" r="7" fill="#6366f1" opacity="0.60" />
-                <circle cx="1090" cy="55" r="5" fill="#3b82f6" opacity="0.50" />
-                <circle
-                  cx="1140"
-                  cy="110"
-                  r="4"
-                  fill="#818cf8"
-                  opacity="0.45"
-                />
-                <circle
-                  cx="1020"
-                  cy="150"
-                  r="5"
-                  fill="#6366f1"
-                  opacity="0.45"
-                />
-                <circle
-                  cx="1100"
-                  cy="170"
-                  r="3.5"
-                  fill="#818cf8"
-                  opacity="0.35"
-                />
-                <circle
-                  cx="860"
-                  cy="100"
-                  r="3.5"
-                  fill="#93c5fd"
-                  opacity="0.40"
-                />
-
-                {/* Pulse rings on anchor node */}
-                <circle
-                  cx="1010"
-                  cy="80"
-                  r="16"
-                  fill="none"
-                  stroke="#6366f1"
-                  strokeWidth="0.6"
-                  opacity="0.25"
-                />
-                <circle
-                  cx="1010"
-                  cy="80"
-                  r="26"
-                  fill="none"
-                  stroke="#6366f1"
-                  strokeWidth="0.5"
-                  opacity="0.15"
-                />
-
-                {/* Node graph — bottom-left scatter */}
-                <line
-                  x1="80"
-                  y1="180"
-                  x2="180"
-                  y2="210"
-                  stroke="#6366f1"
-                  strokeWidth="0.7"
-                  opacity="0.25"
-                />
-                <line
-                  x1="180"
-                  y1="210"
-                  x2="260"
-                  y2="190"
-                  stroke="#6366f1"
-                  strokeWidth="0.7"
-                  opacity="0.25"
-                />
-                <line
-                  x1="80"
-                  y1="180"
-                  x2="100"
-                  y2="260"
-                  stroke="#6366f1"
-                  strokeWidth="0.6"
-                  opacity="0.20"
-                />
-                <line
-                  x1="260"
-                  y1="190"
-                  x2="320"
-                  y2="240"
-                  stroke="#6366f1"
-                  strokeWidth="0.6"
-                  opacity="0.18"
-                />
-
-                <circle
-                  cx="80"
-                  cy="180"
-                  r="4.5"
-                  fill="#3b82f6"
-                  opacity="0.45"
-                />
-                <circle cx="180" cy="210" r="6" fill="#6366f1" opacity="0.50" />
-                <circle cx="260" cy="190" r="4" fill="#3b82f6" opacity="0.40" />
-                <circle
-                  cx="100"
-                  cy="260"
-                  r="3.5"
-                  fill="#818cf8"
-                  opacity="0.35"
-                />
-                <circle cx="320" cy="240" r="3" fill="#93c5fd" opacity="0.35" />
-
-                {/* Decorative rotated rect accent */}
-                <rect
-                  x="430"
-                  y="20"
-                  width="22"
-                  height="22"
-                  rx="4"
-                  fill="#dbeafe"
-                  opacity="0.45"
-                  transform="rotate(20 441 31)"
-                />
-                <rect
-                  x="700"
-                  y="240"
-                  width="16"
-                  height="16"
-                  rx="3"
-                  fill="#e0e7ff"
-                  opacity="0.40"
-                  transform="rotate(-15 708 248)"
-                />
-              </g>
-            </svg>
-          </div>
-
-          {/* Content */}
-          <div className="relative z-10 px-8 py-10 lg:px-12 lg:py-12">
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-              <div className="flex-1">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-100 rounded-full mb-4">
-                  <GraduationCap className="w-4 h-4 text-blue-600" />
-                  <span className="text-xs font-bold text-blue-700 tracking-wide uppercase">
-                    Learning Hub
-                  </span>
-                </div>
-                <h1 className="text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight mb-3">
-                  {isTeacherOrAdmin
-                    ? "Course Management"
-                    : "My Learning Journey"}
-                </h1>
-                <p className="text-lg text-slate-600 max-w-2xl leading-relaxed">
-                  {isTeacherOrAdmin
-                    ? "Create, manage, and track educational content. Empower learners with engaging course experiences."
-                    : "Continue your educational journey. Access your enrolled courses and track your progress."}
-                </p>
-
-                {/* Quick Stats for Teacher/Admin */}
-                {isTeacherOrAdmin && (
-                  <div className="flex items-center gap-6 mt-6">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                      <span className="text-sm font-semibold text-slate-700">
-                        {courses.length} Course{courses.length !== 1 ? "s" : ""}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                      <span className="text-sm font-semibold text-slate-700">
-                        {
-                          courses.filter(
-                            (c) =>
-                              c.status === "active",
-                          ).length
-                        }{" "}
-                        Published
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-                      <span className="text-sm font-semibold text-slate-700">
-                        {courses.reduce(
-                          (sum, c) => sum + (c.enrolledStudents?.length || 0),
-                          0,
-                        )}{" "}
-                        Students
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {isTeacherOrAdmin && (
-                <Link href="/lms/courses/new">
-                  <button className="inline-flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 hover:from-blue-700 hover:to-blue-800 transition-all duration-200 active:scale-[0.98] border border-blue-500/20">
-                    <Plus className="w-5 h-5" />
-                    Create New Course
-                    <Sparkles className="w-4 h-4 ml-1" />
-                  </button>
-                </Link>
-              )}
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#d5e0e8] text-[#021F37] text-xs font-semibold uppercase tracking-wider shadow-xs animate-fade-in-down">
+              <Sparkles className="w-3.5 h-3.5 text-[#0E8696] animate-pulse-glow" />
+              Student Learning Hub
             </div>
-          </div>
-        </div>
-
-        {isLoading ? (
-          <div className="min-h-[400px] flex items-center justify-center">
-            <Loader size="lg" text="Loading courses..." />
-          </div>
-        ) : error ? (
-          <div className="bg-gradient-to-br from-red-50 to-rose-50 border border-red-100 p-12 rounded-3xl flex flex-col items-center justify-center text-center shadow-lg">
-            <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mb-6 shadow-inner">
-              <AlertCircle className="w-8 h-8 text-red-600" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">
-              Something went wrong
-            </h3>
-            <p className="text-red-600 font-medium mb-6">{error}</p>
-            <button
-              onClick={() => fetchCourses()}
-              className="px-6 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 shadow-md hover:shadow-lg transition-all"
-            >
-              Try Again
-            </button>
-          </div>
-        ) : visibleCourses.length === 0 ? (
-          <div className="bg-white border border-slate-200/60 rounded-3xl p-16 flex flex-col items-center justify-center text-center shadow-lg">
-            <div className="relative mb-8">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-3xl blur-2xl opacity-20"></div>
-              <div className="relative w-24 h-24 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl flex items-center justify-center shadow-xl shadow-blue-500/10 border border-blue-100">
-                <BookOpen className="w-12 h-12 text-blue-400" />
-              </div>
-            </div>
-            <h3 className="text-3xl font-bold text-slate-900 mb-3">
-              No courses yet
-            </h3>
-            <p className="text-slate-500 text-lg max-w-md leading-relaxed mb-8">
-              {isTeacherOrAdmin
-                ? "Start your teaching journey. Create engaging courses and share your expertise with learners worldwide."
-                : "Your learning adventure awaits. Enroll in courses to unlock new skills and knowledge."}
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#021F37] animate-fade-in-up">
+              Welcome back, {user?.name || "Learner"}!
+            </h1>
+            <p className="text-[#4d6477] text-sm sm:text-base max-w-xl animate-fade-in-up animation-delay-100">
+              Access your enrolled training tracks, track video progress, and explore specialized cybersecurity certifications.
             </p>
+          </div>
+
+          <div className="flex items-center gap-3 animate-fade-in-up animation-delay-200">
+            {user?.role === "student" && (
+              <button
+                onClick={() => handleTabChange(filterTab === "all" ? "unlocked" : "all")}
+                className="px-5 py-3 bg-[#0b6f7c] hover:bg-[#021F37] active:scale-95 text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs hover:shadow-md transition-all flex items-center gap-2 cursor-pointer"
+              >
+                {filterTab === "all" ? (
+                  <>
+                    <BookOpen className="w-4 h-4" />
+                    View My Enrolled ({unlockedCourses.length})
+                  </>
+                ) : (
+                  <>
+                    <Compass className="w-4 h-4" />
+                    View All Courses ({courses.length})
+                  </>
+                )}
+              </button>
+            )}
             {isTeacherOrAdmin && (
-              <Link href="/lms/courses/new">
-                <button className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-base font-bold rounded-xl hover:from-blue-700 hover:to-blue-800 shadow-xl shadow-blue-500/30 transition-all active:scale-[0.98]">
-                  <Plus className="w-5 h-5" />
-                  Create Your First Course
-                  <ArrowRight className="w-5 h-5 ml-1" />
-                </button>
+              <Link
+                href="/lms/admin"
+                className="px-5 py-3 bg-white hover:bg-[#f4f8fb] text-[#021F37] hover:text-[#021F37] text-xs sm:text-sm font-bold rounded-xl border border-[#d5e0e8] shadow-xs hover:border-slate-300 transition-all cursor-pointer"
+              >
+                Admin Panel
               </Link>
             )}
           </div>
-        ) : (
-          <>
-            {/* Section Header */}
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
-                  {user?.role === 'teacher' ? 'My Courses' :
-                   user?.role === 'admin'   ? 'All Courses' :
-                                              'My Enrolled Courses'}
-                </h2>
-                <p className="text-slate-500 mt-1">
-                  {visibleCourses.length} course{visibleCourses.length !== 1 ? "s" : ""}{" "}
-                  available
+        </div>
+      </div>
+
+      {/* Continue Learning Hero Card (if active learning item exists) */}
+      {continueLearning && (
+        <div className="bg-white rounded-3xl border border-[#d5e0e8] p-6 sm:p-8 shadow-xs relative overflow-hidden animate-fade-in-up animation-delay-200">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="space-y-2 flex-1">
+              <div className="flex items-center gap-2 text-[#0E8696] text-xs font-extrabold uppercase tracking-widest">
+                <PlayCircle className="w-4 h-4 animate-pulse-glow" />
+                Jump Back In
+              </div>
+              <h2 className="text-2xl font-black text-[#021F37]">
+                {continueLearning.title}
+              </h2>
+              {continueLearning.lastLecture && (
+                <p className="text-sm text-[#4d6477]">
+                  Last lecture: <strong className="text-[#021F37] font-semibold">{continueLearning.lastLecture.title}</strong>
                 </p>
+              )}
+
+              {/* Progress bar */}
+              <div className="pt-2 max-w-md space-y-1.5">
+                <div className="flex items-center justify-between text-xs font-bold">
+                  <span className="text-[#4d6477]">Overall Progress</span>
+                  <span className="text-[#0E8696]">{continueLearning.progressPercent || 0}%</span>
+                </div>
+                <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-[#0E8696] rounded-full transition-all duration-500"
+                    style={{ width: `${continueLearning.progressPercent || 0}%` }}
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Course Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {visibleCourses.map((course) => (
-                <Link
-                  href={`/lms/courses/${course._id}`}
-                  key={course._id}
-                  className="group"
+            <Link
+              href={`/learn/${continueLearning.slug || continueLearning._id}`}
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#0b6f7c] hover:bg-[#021F37] active:scale-95 text-white font-extrabold rounded-2xl shadow-xs hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer text-sm"
+            >
+              <Play className="w-4 h-4 fill-current" />
+              Resume Learning
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Courses Section with Tabs */}
+      <div className="space-y-6 animate-fade-in-up animation-delay-300">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-extrabold text-[#021F37] tracking-tight">
+              {user?.role === "student"
+                ? filterTab === "unlocked"
+                  ? "My Enrolled Courses"
+                  : filterTab === "locked"
+                  ? "Locked Pro Tracks"
+                  : "All Courses"
+                : "All Managed Courses"}
+            </h2>
+            <p className="text-xs sm:text-sm text-[#4d6477]">
+              {user?.role === "student"
+                ? filterTab === "unlocked"
+                  ? "Courses you have unlocked and are currently learning."
+                  : filterTab === "locked"
+                  ? "Specialized professional tracks available for admission."
+                  : "Explore all available certification tracks, interactive lectures, and training modules."
+                : "Active courses on the School of Information Security platform."}
+            </p>
+          </div>
+
+          {/* Student Filter Tabs */}
+          {user?.role === "student" && (
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl self-start sm:self-auto">
+              <button
+                onClick={() => handleTabChange("all")}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  filterTab === "all"
+                    ? "bg-white text-[#021F37] shadow-xs"
+                    : "text-[#4d6477] hover:text-[#021F37]"
+                }`}
+              >
+                All Courses ({courses.length})
+              </button>
+              <button
+                onClick={() => handleTabChange("unlocked")}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  filterTab === "unlocked"
+                    ? "bg-[#0b6f7c] text-white shadow-xs"
+                    : "text-[#4d6477] hover:text-[#021F37]"
+                }`}
+              >
+                My Enrolled ({unlockedCourses.length})
+              </button>
+              {lockedCourses.length > 0 && (
+                <button
+                  onClick={() => handleTabChange("locked")}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                    filterTab === "locked"
+                      ? "bg-slate-900 text-white shadow-xs"
+                      : "text-[#4d6477] hover:text-[#021F37]"
+                  }`}
                 >
-                  <div className="bg-white rounded-2xl border border-slate-200/60 hover:border-blue-200 shadow-sm hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden flex flex-col h-full">
-                    {/* Enhanced Thumbnail */}
-                    <div className="relative h-52 bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden">
-                      {course.thumbnail ? (
-                        <>
-                          <img
-                            src={course.thumbnail}
-                            alt={course.title}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        </>
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center relative overflow-hidden">
-                          {/* Abstract Pattern */}
-                          <svg
-                            className="absolute inset-0 w-full h-full opacity-40"
-                            viewBox="0 0 400 300"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <circle
-                              cx="80"
-                              cy="60"
-                              r="60"
-                              fill="#3b82f6"
-                              opacity="0.1"
-                            />
-                            <circle
-                              cx="320"
-                              cy="240"
-                              r="70"
-                              fill="#8b5cf6"
-                              opacity="0.08"
-                            />
-                            <rect
-                              x="280"
-                              y="40"
-                              width="40"
-                              height="40"
-                              rx="6"
-                              fill="#06b6d4"
-                              opacity="0.12"
-                            />
-                          </svg>
-                          <PlayCircle className="w-16 h-16 text-blue-300 relative z-10 group-hover:text-blue-400 group-hover:scale-110 transition-all duration-300" />
-                        </div>
-                      )}
+                  <Lock className="w-3 h-3" />
+                  Locked Tracks ({lockedCourses.length})
+                </button>
+              )}
+            </div>
+          )}
+        </div>
 
-                      {/* Elevated Status Badge */}
-                      <div className="absolute top-4 right-4 z-20">
-                        <span
-                          className={`text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-full shadow-lg backdrop-blur-xl border-2 ${
-                            course.status === "active"
-                              ? "bg-emerald-500/95 text-white border-emerald-300/50"
-                              : "bg-slate-700/95 text-white border-slate-500/50"
-                          }`}
-                        >
-                          {course.status === "active"
-                            ? "PUBLISHED"
-                            : course.status?.toUpperCase() || "DRAFT"}
+        {displayedCourses.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {displayedCourses.map((course) => {
+              const isLocked = !!course.isLocked;
+              const progress = course.progressPercent || 0;
+              const completedCount = course.completedLectures || 0;
+              const totalLectures = course.totalLectures || course.lectureCount || 0;
+              const isPending = course.registrationStatus === "pending";
+
+              const safeSlug = (course.slug && !course.slug.startsWith("http") && !course.slug.includes("/"))
+                ? course.slug
+                : course._id;
+
+              return (
+                <div
+                  key={course._id}
+                  className={`group bg-white rounded-2xl border transition-all duration-300 overflow-hidden flex flex-col justify-between ${
+                    isLocked
+                      ? "border-[#d5e0e8] shadow-xs hover:border-slate-300 hover:shadow-md"
+                      : "border-[#d5e0e8] shadow-xs hover:shadow-xl hover:border-[#0b4a66] hover:-translate-y-1.5"
+                  }`}
+                >
+                  {/* Thumbnail Stage */}
+                  <div className="relative aspect-video w-full bg-slate-100 border-b border-[#d5e0e8] overflow-hidden">
+                    {course.thumbnail ? (
+                      <img
+                        src={course.thumbnail}
+                        alt={course.title}
+                        className={`w-full h-full object-cover transition-transform duration-500 ${
+                          isLocked ? "filter brightness-90 group-hover:scale-105" : "group-hover:scale-105"
+                        }`}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-[#f4f8fb] via-slate-50 to-[#eaf3f7]/60 flex flex-col items-center justify-center text-[#021F37] p-4 relative select-none">
+                        <div className="absolute inset-0 bg-[linear-gradient(to_right,#d5e0e8_1px,transparent_1px),linear-gradient(to_bottom,#d5e0e8_1px,transparent_1px)] bg-[size:1.25rem_1.25rem] opacity-35" />
+                        <div className="w-11 h-11 rounded-2xl bg-white border border-[#d5e0e8] shadow-xs flex items-center justify-center text-[#0E8696] mb-1 group-hover:scale-110 group-hover:rotate-2 transition-all duration-300 relative z-10">
+                          <BookOpen className="w-6 h-6" />
+                        </div>
+                        <span className="text-xs font-bold text-[#021F37] uppercase tracking-wider relative z-10">School of Information Security</span>
+                      </div>
+                    )}
+
+                    {/* Top Floating Badges */}
+                    <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5">
+                      {isLocked ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-extrabold bg-slate-900/90 text-white shadow-xs backdrop-blur-sm border border-slate-700">
+                          <Lock className="w-3 h-3 text-amber-400" />
+                          LOCKED • PRO TRACK
                         </span>
-                      </div>
-
-                      {/* Hover Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
-                        <div className="flex items-center gap-2 text-white font-semibold text-sm">
-                          <span>View Course</span>
-                          <ArrowRight className="w-4 h-4 transform translate-x-0 group-hover:translate-x-1 transition-transform" />
-                        </div>
-                      </div>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-extrabold bg-[#0b6f7c] text-white shadow-xs">
+                          <CheckCircle2 className="w-3 h-3 text-white/80" />
+                          UNLOCKED
+                        </span>
+                      )}
                     </div>
 
-                    {/* Enhanced Content Section */}
-                    <div className="p-6 flex-1 flex flex-col">
-                      <div className="flex-1">
-                        <h3 className="font-bold text-slate-900 text-xl leading-snug mb-3 group-hover:text-blue-600 transition-colors duration-200 line-clamp-2">
-                          {course.title}
-                        </h3>
-                        <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">
-                          {course.description ||
-                            "Comprehensive course designed to help you master new skills and achieve your learning goals."}
-                        </p>
-                      </div>
-
-                      {/* Enhanced Footer */}
-                      <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 flex items-center justify-center">
-                            <Users className="w-4 h-4 text-blue-600" />
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-xs text-slate-500 font-medium">
-                              Enrolled
-                            </span>
-                            <span className="text-sm font-bold text-slate-900">
-                              {course.enrolledStudents?.length || 0}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          {isTeacherOrAdmin && course.status === "draft" && (
-                            <button
-                              onClick={(e) => handlePublishCourse(e, course._id)}
-                              disabled={publishingId === course._id}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-lg border border-emerald-100 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all active:scale-[0.95] disabled:opacity-50"
-                            >
-                              {publishingId === course._id
-                                ? <><Loader size="sm" /> Publishing...</>
-                                : <><CheckCircle2 className="w-3.5 h-3.5" /> Publish</>}
-                            </button>
-                          )}
-                          <div className="flex items-center gap-1.5 text-blue-600 font-bold text-sm group/btn">
-                            <span className="hidden sm:inline">
-                              {isTeacherOrAdmin ? "Manage" : "Continue"}
-                            </span>
-                            <ArrowRight className="w-5 h-5 transform group-hover/btn:translate-x-1 transition-transform" />
-                          </div>
-                        </div>
-                      </div>
+                    <div className="absolute bottom-3 left-3 z-10">
+                      <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-white/90 backdrop-blur-md text-[#021F37] border border-[#d5e0e8] shadow-xs">
+                        {course.category || "General"}
+                      </span>
                     </div>
                   </div>
-                </Link>
-              ))}
+
+                  {/* Body */}
+                  <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                    <div className="space-y-2">
+                      <h3 className="font-bold text-[#021F37] text-base line-clamp-2 hover:text-[#0E8696] transition-colors">
+                        <Link href={isLocked ? `/courses/${safeSlug}` : `/learn/${safeSlug}`}>
+                          {course.title}
+                        </Link>
+                      </h3>
+                      <p className="text-xs text-[#4d6477] line-clamp-2 leading-relaxed">
+                        {course.shortDescription || course.description}
+                      </p>
+                    </div>
+
+                    {/* Action & Progress Footer */}
+                    <div className="space-y-3 pt-3 border-t border-slate-100">
+                      {isLocked ? (
+                        /* Locked Course Details & Unlock CTA */
+                        <div className="space-y-2.5">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-bold text-[#5f7587] uppercase text-[10px] tracking-wider">Tuition</span>
+                            <span className="font-black text-[#021F37] text-sm">
+                              {course.currency || "PKR"} {(course.price || 0).toLocaleString()}
+                            </span>
+                          </div>
+
+                          {isPending ? (
+                            <Link
+                              href={`/courses/${safeSlug}`}
+                              className="w-full py-2.5 bg-amber-50 border border-amber-200 hover:bg-amber-100 text-amber-900 font-bold text-xs rounded-xl text-center flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                            >
+                              <Clock className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+                              Waiting for approval from admin
+                            </Link>
+                          ) : (
+                            <Link
+                              href={`/courses/${safeSlug}`}
+                              className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl text-center block shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                            >
+                              <Lock className="w-3.5 h-3.5 text-amber-400" />
+                              Unlock Course / Register
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </Link>
+                          )}
+                        </div>
+                      ) : (
+                        /* Unlocked / Enrolled Course Progress & Classroom Link */
+                        <div className="space-y-3">
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between text-[11px] font-bold">
+                              <span className="text-[#4d6477]">
+                                {completedCount}/{totalLectures} lectures completed
+                              </span>
+                              <span className="text-[#0E8696] font-extrabold">{progress}%</span>
+                            </div>
+                            <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-[#0E8696] rounded-full transition-all"
+                                style={{ width: `${progress}%` }}
+                              />
+                            </div>
+                          </div>
+
+                          <Link
+                            href={`/learn/${safeSlug}`}
+                            className="w-full py-2.5 bg-[#0b6f7c] hover:bg-[#021F37] text-white font-bold text-xs rounded-xl text-center block shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                          >
+                            <Play className="w-3.5 h-3.5 fill-current" />
+                            Go to Classroom
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-16 bg-white rounded-3xl border border-[#d5e0e8] p-8 max-w-lg mx-auto space-y-4 shadow-xs">
+            <div className="w-16 h-16 rounded-2xl bg-[#f4f8fb] text-[#0E8696] border border-[#eaf3f7] flex items-center justify-center mx-auto">
+              <BookOpen className="w-8 h-8" />
             </div>
-          </>
+            <h3 className="text-xl font-bold text-[#021F37]">No Courses Found</h3>
+            <p className="text-sm text-[#4d6477] leading-relaxed">
+              {filterTab === "unlocked"
+                ? "You have not enrolled in any courses yet."
+                : "No courses currently match the selected filter."}
+            </p>
+            <div className="pt-2">
+              <button
+                onClick={() => handleTabChange("all")}
+                className="px-6 py-2.5 bg-[#0b6f7c] hover:bg-[#021F37] text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
+              >
+                View All Courses
+              </button>
+            </div>
+          </div>
         )}
       </div>
+
     </div>
+  );
+}
+
+export default function LMSPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-[70vh] flex items-center justify-center">
+          <Loader size="lg" text="Loading courses..." />
+        </div>
+      }
+    >
+      <LMSContent />
+    </Suspense>
   );
 }

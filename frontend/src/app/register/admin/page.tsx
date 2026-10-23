@@ -4,22 +4,25 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import api from "@/services/api";
-import { Shield, User, Mail, Lock, Building2, Key, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Shield, User, Mail, Lock, Key, ArrowRight, CheckCircle2, GraduationCap } from "lucide-react";
 import Loader from "@/components/ui/Loader";
 
 export default function AdminRegisterPage() {
   const router = useRouter();
 
   const [form, setForm] = useState({
-    name: "", email: "", password: "", confirmPassword: "",
-    tenantId: "", secretKey: "",
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    secretKey: "uop_admin_2026",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
   const set = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm(prev => ({ ...prev, [field]: field === "tenantId" ? e.target.value.toLowerCase() : e.target.value }));
+    setForm(prev => ({ ...prev, [field]: e.target.value }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,8 +32,8 @@ export default function AdminRegisterPage() {
       setError("Passwords do not match.");
       return;
     }
-    if (form.password.length < 8) {
-      setError("Password must be at least 8 characters.");
+    if (form.password.length < 6) {
+      setError("Password must be at least 6 characters.");
       return;
     }
 
@@ -40,48 +43,54 @@ export default function AdminRegisterPage() {
         name: form.name,
         email: form.email,
         password: form.password,
-        tenantId: form.tenantId,
         secretKey: form.secretKey,
       });
       setSuccess(true);
-      setTimeout(() => router.push("/login"), 2000);
+      setTimeout(() => router.push("/login"), 1500);
     } catch (err: any) {
-      setError(err?.message || "Registration failed. Please check your details.");
+      setError(
+        err?.response?.data?.message ||
+        err?.message ||
+        "Registration failed. Please check your details."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex overflow-hidden font-sans">
-      {/* Left Side */}
-      <div className="hidden lg:flex lg:w-1/2 bg-blue-600 relative overflow-hidden items-center justify-center p-12">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-700 via-blue-600 to-blue-800" />
-        <div className="absolute top-0 left-0 w-full h-full opacity-10">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-400 rounded-full blur-3xl" />
-        </div>
-        <div className="relative z-10 max-w-lg text-white text-center">
-          <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 flex items-center justify-center text-white mb-8 mx-auto shadow-xl">
-            <Shield className="w-10 h-10" />
+    <div className="min-h-screen bg-[#f4f8fb] flex overflow-hidden font-sans">
+      {/* Left Side Banner - Bright Executive Theme */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#021F37] via-[#0b4a66] to-[#0E8696] relative overflow-hidden items-center justify-center p-12 text-white border-r border-white/15">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-10" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#2fc3d4]/20 blur-[120px] rounded-full pointer-events-none animate-blob" />
+
+        <div className="relative z-10 max-w-lg space-y-6 animate-fade-in-up">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 text-white text-xs font-bold uppercase tracking-wider border border-white/15 shadow-xs animate-fade-in-down">
+            <Shield className="w-4 h-4 text-[#2fc3d4]" />
+            School of Information Security Control Center
           </div>
-          <h2 className="text-4xl font-bold mb-6 tracking-tight">Institution Registration</h2>
-          <p className="text-xl text-blue-100/90 leading-relaxed mb-12">
-            Create your college admin account to set up and manage your institution on CS ZONE LMS Space.
+
+          <h2 className="text-4xl font-extrabold tracking-tight text-white leading-tight">
+            Administrator Setup
+          </h2>
+
+          <p className="text-white/80 text-base leading-relaxed">
+            Create an administrator account to manage curriculum, review paid student enrollments, upload lectures, and monitor platform performance.
           </p>
-          <div className="grid grid-cols-2 gap-6 text-left">
+
+          <div className="space-y-3 pt-4">
             {[
-              { title: "Manage Users", desc: "Teachers & Students" },
-              { title: "Courses", desc: "Oversee curriculum" },
-              { title: "Analytics", desc: "Track performance" },
-              { title: "Certificates", desc: "Issue credentials" }
+              "Course & module curriculum builder",
+              "Paid course registration review & approvals",
+              "Video lecture uploads and streaming settings",
+              "Student enrollments & user management",
             ].map((item, i) => (
-              <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-4 backdrop-blur-sm">
-                <div className="flex items-center gap-2 mb-1">
-                  <CheckCircle2 className="w-4 h-4 text-blue-300" />
-                  <span className="font-bold text-white text-sm">{item.title}</span>
+              <div key={i} className="flex items-center gap-3 text-sm text-white/90 font-medium">
+                <div className="w-5 h-5 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-[#2fc3d4] shrink-0">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
                 </div>
-                <p className="text-xs text-blue-200/70">{item.desc}</p>
+                <span>{item}</span>
               </div>
             ))}
           </div>
@@ -89,133 +98,149 @@ export default function AdminRegisterPage() {
       </div>
 
       {/* Right Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 bg-white overflow-y-auto">
-        <div className="w-full max-w-md py-12">
-          <div className="flex flex-col items-center mb-10">
-            <Link href="/" className="mb-6">
-              <div className="flex justify-center">
-                <img src="/Logo-WithOut-BG.png" alt="CS ZONE LMS Logo" className="h-24 w-auto object-contain drop-shadow-md" />
-              </div>
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-white overflow-y-auto">
+        <div className="w-full max-w-md space-y-8 animate-fade-in-up animation-delay-100">
+          <div className="text-center space-y-2">
+            <Link href="/" className="inline-block mb-2 group">
+              <img
+                src="/SIS-logo.png"
+                alt="School of Information Security"
+                className="h-20 sm:h-24 w-auto mx-auto object-contain group-hover:scale-105 transition-transform duration-300"
+              />
             </Link>
-            <h1 className="text-3xl font-bold text-slate-900">Institution Registration</h1>
-            <p className="text-slate-500 mt-2">Create your college admin account</p>
+            <h1 className="text-3xl font-black text-[#021F37] tracking-tight">Admin Registration</h1>
+            <p className="text-[#4d6477] text-sm">Create an administrator account for the School of Information Security</p>
           </div>
 
           {success ? (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 text-center">
-              <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
-              <p className="text-emerald-700 font-bold text-lg">Admin account created!</p>
-              <p className="text-emerald-600/80 text-sm mt-1">Redirecting to login in 2 seconds...</p>
+            <div className="bg-green-50 border border-green-200 rounded-2xl p-6 text-center space-y-3">
+              <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto" />
+              <p className="text-green-900 font-extrabold text-lg">Admin Account Created!</p>
+              <p className="text-green-700 text-sm">Redirecting to login...</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="bg-red-50 border border-red-200 p-4 rounded-xl text-sm text-red-700 flex gap-3 items-start">
-                  <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5 font-bold text-red-500">!</div>
-                  <span>{error}</span>
+                <div className="bg-red-50 border border-red-200 p-4 rounded-xl text-xs text-red-600 font-semibold leading-relaxed">
+                  {error}
                 </div>
               )}
 
               {/* Full Name */}
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-700 ml-1">Full Name</label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                    <User className="w-5 h-5" />
-                  </div>
-                  <input type="text" required value={form.name} onChange={set("name")}
-                    className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
-                    placeholder="Dr. Jane Smith" />
+              <div>
+                <label className="text-xs font-bold text-[#021F37] uppercase tracking-wider block mb-1.5">
+                  Full Name
+                </label>
+                <div className="relative">
+                  <User className="w-4 h-4 text-[#5f7587] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    required
+                    value={form.name}
+                    onChange={set("name")}
+                    placeholder="Admin Name"
+                    className="w-full pl-10 pr-4 py-3 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl text-sm text-[#021F37] focus:outline-none focus:ring-2 focus:ring-[#0E8696]/20 focus:border-[#0E8696]"
+                  />
                 </div>
               </div>
 
               {/* Email */}
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-700 ml-1">Email Address</label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                    <Mail className="w-5 h-5" />
-                  </div>
-                  <input type="email" required value={form.email} onChange={set("email")}
-                    className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
-                    placeholder="admin@college.edu" />
+              <div>
+                <label className="text-xs font-bold text-[#021F37] uppercase tracking-wider block mb-1.5">
+                  Admin Email
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-[#5f7587] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="email"
+                    required
+                    value={form.email}
+                    onChange={set("email")}
+                    placeholder="admin@cszone.pk"
+                    className="w-full pl-10 pr-4 py-3 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl text-sm text-[#021F37] focus:outline-none focus:ring-2 focus:ring-[#0E8696]/20 focus:border-[#0E8696]"
+                  />
                 </div>
               </div>
 
-              {/* College Code */}
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-700 ml-1">College Code</label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                    <Building2 className="w-5 h-5" />
-                  </div>
-                  <input type="text" required value={form.tenantId} onChange={set("tenantId")}
-                    className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
-                    placeholder="e.g. ncbae" />
-                </div>
-                <p className="text-xs text-slate-400 ml-1">This code will be used by all your teachers and students to register</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                {/* Password */}
-                <div className="space-y-1.5">
-                  <label className="text-sm font-semibold text-slate-700 ml-1">Password</label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                      <Lock className="w-5 h-5" />
-                    </div>
-                    <input type="password" required minLength={8} value={form.password} onChange={set("password")}
-                      className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
-                      placeholder="Min 8 chars" />
+              {/* Password & Confirm */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-[#021F37] uppercase tracking-wider block mb-1.5">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-[#5f7587] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="password"
+                      required
+                      minLength={6}
+                      value={form.password}
+                      onChange={set("password")}
+                      placeholder="••••••••"
+                      className="w-full pl-10 pr-4 py-3 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl text-sm text-[#021F37] focus:outline-none focus:ring-2 focus:ring-[#0E8696]/20 focus:border-[#0E8696]"
+                    />
                   </div>
                 </div>
 
-                {/* Confirm Password */}
-                <div className="space-y-1.5">
-                  <label className="text-sm font-semibold text-slate-700 ml-1">Confirm Password</label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                      <Lock className="w-5 h-5" />
-                    </div>
-                    <input type="password" required value={form.confirmPassword} onChange={set("confirmPassword")}
-                      className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
-                      placeholder="Repeat" />
+                <div>
+                  <label className="text-xs font-bold text-[#021F37] uppercase tracking-wider block mb-1.5">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-[#5f7587] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="password"
+                      required
+                      minLength={6}
+                      value={form.confirmPassword}
+                      onChange={set("confirmPassword")}
+                      placeholder="••••••••"
+                      className="w-full pl-10 pr-4 py-3 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl text-sm text-[#021F37] focus:outline-none focus:ring-2 focus:ring-[#0E8696]/20 focus:border-[#0E8696]"
+                    />
                   </div>
                 </div>
               </div>
 
               {/* Secret Key */}
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-700 ml-1">Admin Secret Key</label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                    <Key className="w-5 h-5" />
-                  </div>
-                  <input type="password" required value={form.secretKey} onChange={set("secretKey")}
-                    className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none"
-                    placeholder="••••••••••••" />
+              <div>
+                <label className="text-xs font-bold text-[#021F37] uppercase tracking-wider block mb-1.5">
+                  Admin Setup Secret
+                </label>
+                <div className="relative">
+                  <Key className="w-4 h-4 text-[#5f7587] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="password"
+                    value={form.secretKey}
+                    onChange={set("secretKey")}
+                    placeholder="uop_admin_2026"
+                    className="w-full pl-10 pr-4 py-3 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl text-sm text-[#021F37] focus:outline-none focus:ring-2 focus:ring-[#0E8696]/20 focus:border-[#0E8696]"
+                  />
                 </div>
-                <p className="text-xs text-slate-400 ml-1">Provided by the platform administrator</p>
+                <p className="text-[11px] text-[#5f7587] mt-1 font-medium">Default secret key: <code className="text-[#0E8696] font-mono">uop_admin_2026</code></p>
               </div>
 
-              <div className="pt-2">
-                <button type="submit" disabled={loading}
-                  className="w-full flex justify-center items-center gap-2 py-4 px-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 disabled:opacity-50 disabled:shadow-none group">
-                  {loading ? <><Loader size="sm" /> Registering...</> : (
-                    <><span>Register Institution</span><ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>
-                  )}
-                </button>
-              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3.5 px-4 bg-[#0E8696] hover:bg-[#0b6f7c] active:scale-95 text-white rounded-xl font-semibold text-base transition-all shadow-lg shadow-[#0E8696]/20 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <Loader size="sm" text="Creating Admin Account..." />
+                ) : (
+                  <>
+                    Create Admin Account
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
             </form>
           )}
 
-          <div className="mt-8 text-center space-y-3">
-            <p className="text-sm text-slate-500 font-medium">
-              Already registered?{" "}
-              <Link href="/login" className="text-blue-600 font-bold hover:text-blue-700 transition-colors hover:underline underline-offset-4">
-                Sign in
-              </Link>
-            </p>
+          <div className="text-center text-xs text-[#4d6477]">
+            Already have an account?{" "}
+            <Link href="/login" className="text-[#0E8696] font-bold hover:underline">
+              Sign In
+            </Link>
           </div>
         </div>
       </div>

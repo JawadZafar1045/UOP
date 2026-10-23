@@ -1,16 +1,16 @@
-
-
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
-
 export const metadata: Metadata = {
-  title: 'CS ZONE LMS',
-  description: 'Learning Management System.',
+  title: 'School of Information Security — Public Learning Platform',
+  description: 'Practical cybersecurity, programming, and technology courses.',
   icons: {
-    icon: '/Logo-WithOut-BG.png',
+    icon: [
+      { url: '/SIS-logo.png', type: 'image/png' },
+      { url: '/favicon.svg', type: 'image/svg+xml' }
+    ],
+    shortcut: '/SIS-logo.png',
+    apple: '/SIS-logo.png',
   },
 };
 
@@ -21,7 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-slate-50 text-slate-900`}>
+      <body className="font-sans antialiased bg-[#f4f8fb] text-[#021F37] selection:bg-[#0E8696] selection:text-white">
         {children}
       </body>
     </html>

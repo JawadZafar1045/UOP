@@ -72,7 +72,7 @@ export default function CourseOverviewPage({
     title: "",
     description: "",
     duration: "",
-    status: "draft" as "draft" | "active" | "completed",
+    status: "draft" as "draft" | "active" | "published" | "completed" | "archived",
     completionCriteria: {
       minAttendancePercent: 75,
       minAssignmentScore: 60,
@@ -257,13 +257,13 @@ export default function CourseOverviewPage({
       name: "Sessions",
       icon: Calendar,
       href: `/lms/courses/${courseId}/sessions`,
-      color: "from-blue-600 to-cyan-600",
+      color: "from-[#0E8696] to-[#0E8696]",
     },
     {
       name: "Assignments",
       icon: FileText,
       href: `/lms/courses/${courseId}/assignments`,
-      color: "from-emerald-600 to-teal-600",
+      color: "from-green-600 to-[#0E8696]",
     },
     {
       name: "Quizzes",
@@ -275,7 +275,7 @@ export default function CourseOverviewPage({
       name: "Performance",
       icon: BookOpen,
       href: `/lms/courses/${courseId}/performance`,
-      color: "from-purple-600 to-pink-600",
+      color: "from-[#0E8696] to-[#0E8696]",
     },
   ];
 
@@ -284,7 +284,7 @@ export default function CourseOverviewPage({
       name: "Certificate Designer",
       icon: Edit2,
       href: `/lms/courses/${courseId}/certificate-template`,
-      color: "from-indigo-600 to-violet-600",
+      color: "from-[#0E8696] to-[#0E8696]",
     });
   }
 
@@ -293,7 +293,7 @@ export default function CourseOverviewPage({
     <div className="flex items-center mb-6">
       <Link
         href="/lms"
-        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-md hover:bg-blue-700 transition-all group active:scale-[0.98] shadow-blue-500/20"
+        className="inline-flex items-center gap-2 px-4 py-2 bg-[#0b6f7c] text-white text-sm font-bold rounded-xl shadow-md hover:bg-[#021F37] transition-all group active:scale-[0.98] shadow-[#0E8696]/20"
       >
         <ChevronLeft className="w-4 h-4 transform group-hover:-translate-x-0.5 transition-transform" />
         Back to Courses
@@ -302,7 +302,7 @@ export default function CourseOverviewPage({
     <div className="space-y-8">
     
       {/* Abstract Hero Section */}
-      <div className="relative w-full min-h-80 rounded-2xl overflow-hidden bg-white border border-slate-200">
+      <div className="relative w-full min-h-80 rounded-2xl overflow-hidden bg-white border border-[#d5e0e8]">
         {/* Abstract background patterns */}
         <svg
           className="absolute inset-0 w-full h-full"
@@ -370,10 +370,10 @@ export default function CourseOverviewPage({
                 <span
                   className={`text-xs font-bold tracking-wider px-3 py-1.5 rounded-full uppercase ${
                     currentCourse.status === "active"
-                      ? "bg-emerald-100 text-emerald-700 border border-emerald-300"
+                      ? "bg-green-100 text-green-700 border border-green-300"
                       : currentCourse.status === "draft"
                         ? "bg-amber-100 text-amber-700 border border-amber-300"
-                        : "bg-slate-100 text-slate-700 border border-slate-300"
+                        : "bg-slate-100 text-[#021F37] border border-slate-300"
                   }`}
                 >
                   {currentCourse.status}
@@ -381,10 +381,10 @@ export default function CourseOverviewPage({
               </div>
             )}
 
-            <h1 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-3 tracking-tight">
+            <h1 className="text-4xl lg:text-5xl font-bold text-[#021F37] mb-3 tracking-tight">
               {currentCourse.title}
             </h1>
-            <p className="text-lg text-slate-600 max-w-2xl leading-relaxed mb-8">
+            <p className="text-lg text-[#4d6477] max-w-2xl leading-relaxed mb-8">
               {currentCourse.description ||
                 "No description provided for this course."}
             </p>
@@ -394,12 +394,12 @@ export default function CourseOverviewPage({
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-8">
               {currentCourse.duration && (
-                <div className="flex items-center gap-2 text-slate-600">
+                <div className="flex items-center gap-2 text-[#4d6477]">
                   <Clock className="w-5 h-5" />
                   <span className="font-medium">{currentCourse.duration}</span>
                 </div>
               )}
-              <div className="flex items-center gap-2 text-slate-600">
+              <div className="flex items-center gap-2 text-[#4d6477]">
                 <Users className="w-5 h-5" />
                 <span className="font-medium">
                   {currentCourse.enrolledStudents?.length || 0} Enrolled
@@ -411,14 +411,14 @@ export default function CourseOverviewPage({
               <div className="flex gap-3">
                 <button
                   onClick={openEditModal}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-[#d5e0e8] text-[#021F37] font-semibold rounded-lg hover:bg-[#f4f8fb] transition-colors shadow-sm"
                 >
                   <Settings className="w-5 h-5" />
                   Edit Course
                 </button>
                 <button
                   onClick={() => setShowEnrollModal(true)}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#0E8696] text-white font-semibold rounded-lg hover:bg-[#0b6f7c] transition-colors shadow-md hover:shadow-lg"
                 >
                   <UserPlus className="w-5 h-5" />
                   Enroll Student
@@ -431,22 +431,22 @@ export default function CourseOverviewPage({
 
       {/* Primary Action - Course Content Navigation */}
       <div className="space-y-4 mb-2">
-        <h2 className="text-base font-semibold text-slate-900 tracking-tight">
+        <h2 className="text-base font-semibold text-[#021F37] tracking-tight">
           Course Content
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {navigationTabs.map((tab) => (
             <Link key={tab.name} href={tab.href}>
-              <div className="group bg-white border border-slate-200 rounded-lg p-5 hover:shadow-md hover:border-slate-300 transition-all h-full cursor-pointer hover:bg-slate-50/50">
+              <div className="group bg-white border border-[#d5e0e8] rounded-lg p-5 hover:shadow-md hover:border-slate-300 transition-all h-full cursor-pointer hover:bg-[#f4f8fb]/50">
                 <div
                   className={`w-11 h-11 rounded-lg bg-gradient-to-br ${tab.color} text-white flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
                 >
                   <tab.icon className="w-5 h-5" />
                 </div>
-                <h3 className="font-semibold text-slate-900 mb-1 text-sm">
+                <h3 className="font-semibold text-[#021F37] mb-1 text-sm">
                   {tab.name}
                 </h3>
-                <p className="text-xs text-slate-600 group-hover:text-slate-700 transition-colors">
+                <p className="text-xs text-[#4d6477] group-hover:text-[#021F37] transition-colors">
                   {isTeacherOrAdmin
                     ? `Manage ${tab.name.toLowerCase()}`
                     : `View ${tab.name.toLowerCase()}`}
@@ -463,25 +463,25 @@ export default function CourseOverviewPage({
       {/* Analytics Section - 4 Column Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Instructor Card */}
-        <div className="lg:col-span-1 bg-white border border-slate-200 rounded-lg p-6 flex flex-col hover:shadow-md hover:border-slate-300 transition-all">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-6">
+        <div className="lg:col-span-1 bg-white border border-[#d5e0e8] rounded-lg p-6 flex flex-col hover:shadow-md hover:border-slate-300 transition-all">
+          <p className="text-xs font-semibold text-[#4d6477] uppercase tracking-wider mb-6">
             Instructor
           </p>
 
           <div className="flex flex-col items-center text-center flex-1">
             {/* Avatar with gradient ring */}
             <div className="relative mb-4">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full blur-md opacity-50"></div>
-              <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-2xl shadow-md border-2 border-white">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#0b4a66] to-[#0E8696] rounded-full blur-md opacity-50"></div>
+              <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-[#0E8696] to-[#0E8696] flex items-center justify-center text-white font-bold text-2xl shadow-md border-2 border-white">
                 {currentCourse.instructor?.name?.charAt(0) || "I"}
               </div>
             </div>
 
             {/* Instructor Info */}
-            <h3 className="text-sm font-bold text-slate-900 mb-1 leading-snug">
+            <h3 className="text-sm font-bold text-[#021F37] mb-1 leading-snug">
               {currentCourse.instructor?.name || "Unassigned"}
             </h3>
-            <p className="text-xs text-slate-500 break-all line-clamp-2 mb-4">
+            <p className="text-xs text-[#4d6477] break-all line-clamp-2 mb-4">
               {currentCourse.instructor?.email || "No email provided"}
             </p>
 
@@ -492,34 +492,34 @@ export default function CourseOverviewPage({
             <div className="w-full space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                  <span className="text-xs text-slate-600 font-medium">
+                  <div className="w-2 h-2 rounded-full bg-[#0E8696]"></div>
+                  <span className="text-xs text-[#4d6477] font-medium">
                     Students
                   </span>
                 </div>
-                <span className="text-sm font-bold text-blue-600">
+                <span className="text-sm font-bold text-[#0E8696]">
                   {currentCourse.enrolledStudents?.length || 0}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
-                  <span className="text-xs text-slate-600 font-medium">
+                  <div className="w-2 h-2 rounded-full bg-[#0E8696]"></div>
+                  <span className="text-xs text-[#4d6477] font-medium">
                     Sessions
                   </span>
                 </div>
-                <span className="text-sm font-bold text-indigo-600">
+                <span className="text-sm font-bold text-[#0E8696]">
                   {currentCourse.stats?.sessions || 0}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                  <span className="text-xs text-slate-600 font-medium">
+                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  <span className="text-xs text-[#4d6477] font-medium">
                     Assignments
                   </span>
                 </div>
-                <span className="text-sm font-bold text-emerald-600">
+                <span className="text-sm font-bold text-green-600">
                   {currentCourse.stats?.assignments || 0}
                 </span>
               </div>
@@ -528,17 +528,17 @@ export default function CourseOverviewPage({
         </div>
 
         {/* Content Distribution Chart */}
-        <div className="lg:col-span-1 bg-white border border-slate-200 rounded-lg p-6 flex flex-col">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-6">
+        <div className="lg:col-span-1 bg-white border border-[#d5e0e8] rounded-lg p-6 flex flex-col">
+          <p className="text-xs font-semibold text-[#4d6477] uppercase tracking-wider mb-6">
             Content Distribution
           </p>
           {(currentCourse.stats?.sessions || 0) + (currentCourse.stats?.assignments || 0) + (currentCourse.stats?.quizzes || 0) === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center gap-3 min-h-[200px]">
-              <div className="w-16 h-16 rounded-full border-4 border-dashed border-slate-200 flex items-center justify-center">
-                <BookOpen className="w-7 h-7 text-slate-300" />
+              <div className="w-16 h-16 rounded-full border-4 border-dashed border-[#d5e0e8] flex items-center justify-center">
+                <BookOpen className="w-7 h-7 text-[#5f7587]" />
               </div>
-              <p className="text-sm font-medium text-slate-400">No content added yet</p>
-              <p className="text-xs text-slate-300">Sessions, assignments and quizzes will appear here</p>
+              <p className="text-sm font-medium text-[#5f7587]">No content added yet</p>
+              <p className="text-xs text-[#5f7587]">Sessions, assignments and quizzes will appear here</p>
             </div>
           ) : (
             <div style={{ height: "240px", position: "relative", width: "100%", flex: 1 }}>
@@ -548,41 +548,41 @@ export default function CourseOverviewPage({
         </div>
 
         {/* Quick Stats - 2 columns */}
-        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-lg p-6">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-6">
+        <div className="lg:col-span-2 bg-white border border-[#d5e0e8] rounded-lg p-6">
+          <p className="text-xs font-semibold text-[#4d6477] uppercase tracking-wider mb-6">
             Course Statistics
           </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-              <p className="text-2xl font-bold text-blue-600">
+            <div className="p-3 bg-[#f4f8fb] rounded-lg border border-[#eaf3f7]">
+              <p className="text-2xl font-bold text-[#0E8696]">
                 {currentCourse.enrolledStudents?.length || 0}
               </p>
-              <p className="text-xs text-slate-600 mt-1 font-medium uppercase leading-tight">
+              <p className="text-xs text-[#4d6477] mt-1 font-medium uppercase leading-tight">
                 {isTeacherOrAdmin ? "Students" : "Learners"}
               </p>
             </div>
-            <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-100">
-              <p className="text-2xl font-bold text-indigo-600">
+            <div className="p-3 bg-[#f4f8fb] rounded-lg border border-[#eaf3f7]">
+              <p className="text-2xl font-bold text-[#0E8696]">
                 {currentCourse.stats?.sessions || 0}
               </p>
-              <p className="text-xs text-slate-600 mt-1 font-medium uppercase leading-tight">
+              <p className="text-xs text-[#4d6477] mt-1 font-medium uppercase leading-tight">
                 Sessions
               </p>
             </div>
-            <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100">
-              <p className="text-2xl font-bold text-emerald-600">
+            <div className="p-3 bg-green-50 rounded-lg border border-green-100">
+              <p className="text-2xl font-bold text-green-600">
                 {currentCourse.stats?.assignments || 0}
               </p>
-              <p className="text-xs text-slate-600 mt-1 font-medium uppercase leading-tight">
+              <p className="text-xs text-[#4d6477] mt-1 font-medium uppercase leading-tight">
                 Assignments
               </p>
             </div>
-            <div className="p-3 bg-rose-50 rounded-lg border border-rose-100">
-              <p className="text-2xl font-bold text-rose-600">
+            <div className="p-3 bg-red-50 rounded-lg border border-red-100">
+              <p className="text-2xl font-bold text-red-600">
                 {currentCourse.stats?.quizzes || 0}
               </p>
-              <p className="text-xs text-slate-600 mt-1 font-medium uppercase leading-tight">
+              <p className="text-xs text-[#4d6477] mt-1 font-medium uppercase leading-tight">
                 Quizzes
               </p>
             </div>
@@ -594,17 +594,17 @@ export default function CourseOverviewPage({
               {
                 label: "Sessions",
                 value: currentCourse.stats?.sessions || 0,
-                color: "bg-blue-500",
+                color: "bg-[#0E8696]",
               },
               {
                 label: "Assignments",
                 value: currentCourse.stats?.assignments || 0,
-                color: "bg-emerald-500",
+                color: "bg-green-500",
               },
               {
                 label: "Quizzes",
                 value: currentCourse.stats?.quizzes || 0,
-                color: "bg-rose-500",
+                color: "bg-red-500",
               },
             ].map((item) => {
               const total =
@@ -617,10 +617,10 @@ export default function CourseOverviewPage({
               return (
                 <div key={item.label}>
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-medium text-slate-700">
+                    <span className="text-xs font-medium text-[#021F37]">
                       {item.label}
                     </span>
-                    <span className="text-xs font-semibold text-slate-600">
+                    <span className="text-xs font-semibold text-[#4d6477]">
                       {percentage}%
                     </span>
                   </div>
@@ -643,7 +643,7 @@ export default function CourseOverviewPage({
           <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-4 flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <Settings className="w-5 h-5 text-blue-400" />
+                <Settings className="w-5 h-5 text-[#0b4a66]" />
                 <h2 className="text-xl font-bold text-white">Edit Course Settings</h2>
               </div>
               <button
@@ -657,42 +657,42 @@ export default function CourseOverviewPage({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4 md:col-span-2">
                   <div>
-                    <label className="block text-sm font-semibold text-slate-900 mb-2">Course Title *</label>
+                    <label className="block text-sm font-semibold text-[#021F37] mb-2">Course Title *</label>
                     <input
                       required
                       type="text"
                       value={editFormData.title}
                       onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
-                      className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                      className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#0E8696] focus:border-transparent outline-none transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-slate-900 mb-2">Description</label>
+                    <label className="block text-sm font-semibold text-[#021F37] mb-2">Description</label>
                     <textarea
                       rows={4}
                       value={editFormData.description}
                       onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
-                      className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                      className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#0E8696] focus:border-transparent outline-none transition-all"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-slate-900 mb-2">Duration (e.g. 8 Weeks)</label>
+                  <label className="block text-sm font-semibold text-[#021F37] mb-2">Duration (e.g. 8 Weeks)</label>
                   <input
                     type="text"
                     value={editFormData.duration}
                     onChange={(e) => setEditFormData({ ...editFormData, duration: e.target.value })}
-                    className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                    className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#0E8696] focus:border-transparent outline-none transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-slate-900 mb-2">Course Status</label>
+                  <label className="block text-sm font-semibold text-[#021F37] mb-2">Course Status</label>
                   <select
                     value={editFormData.status}
                     onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value as any })}
-                    className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all bg-white"
+                    className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#0E8696] focus:border-transparent outline-none transition-all bg-white"
                   >
                     <option value="draft">Draft</option>
                     <option value="active">Active</option>
@@ -701,13 +701,13 @@ export default function CourseOverviewPage({
                 </div>
 
                 <div className="md:col-span-2 pt-4 border-t border-slate-100">
-                  <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-emerald-500" />
+                  <h3 className="text-sm font-bold text-[#021F37] mb-4 flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
                     Completion Criteria
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase">Min Attendance %</label>
+                      <label className="block text-xs font-semibold text-[#4d6477] mb-1.5 uppercase">Min Attendance %</label>
                       <input
                         type="number"
                         min="0"
@@ -717,11 +717,11 @@ export default function CourseOverviewPage({
                           ...editFormData,
                           completionCriteria: { ...editFormData.completionCriteria, minAttendancePercent: parseInt(e.target.value) }
                         })}
-                        className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                        className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#0E8696] focus:border-transparent outline-none transition-all"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase">Min Assignment Score %</label>
+                      <label className="block text-xs font-semibold text-[#4d6477] mb-1.5 uppercase">Min Assignment Score %</label>
                       <input
                         type="number"
                         min="0"
@@ -731,11 +731,11 @@ export default function CourseOverviewPage({
                           ...editFormData,
                           completionCriteria: { ...editFormData.completionCriteria, minAssignmentScore: parseInt(e.target.value) }
                         })}
-                        className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                        className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#0E8696] focus:border-transparent outline-none transition-all"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1.5 uppercase">Min Quiz Score %</label>
+                      <label className="block text-xs font-semibold text-[#4d6477] mb-1.5 uppercase">Min Quiz Score %</label>
                       <input
                         type="number"
                         min="0"
@@ -745,7 +745,7 @@ export default function CourseOverviewPage({
                           ...editFormData,
                           completionCriteria: { ...editFormData.completionCriteria, minQuizScore: parseInt(e.target.value) }
                         })}
-                        className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                        className="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#0E8696] focus:border-transparent outline-none transition-all"
                       />
                     </div>
                   </div>
@@ -756,14 +756,14 @@ export default function CourseOverviewPage({
                 <button
                   type="button"
                   onClick={() => setShowEditModal(false)}
-                  className="px-6 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                  className="px-6 py-2.5 text-sm font-semibold text-[#021F37] hover:bg-slate-100 rounded-lg transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isUpdating}
-                  className="px-6 py-2.5 bg-blue-600 text-sm font-semibold text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-md"
+                  className="px-6 py-2.5 bg-[#0b6f7c] text-sm font-semibold text-white rounded-lg hover:bg-[#021F37] disabled:opacity-50 transition-colors shadow-md"
                 >
                   {isUpdating ? <><Loader size="sm" /> Saving...</> : "Save Changes"}
                 </button>
@@ -777,7 +777,7 @@ export default function CourseOverviewPage({
       {showEnrollModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex justify-between items-center shrink-0">
+            <div className="bg-gradient-to-r from-[#0E8696] to-[#0b6f7c] px-6 py-4 flex justify-between items-center shrink-0">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
                 <Users className="w-5 h-5" />
                 Manage Course Students
@@ -792,14 +792,14 @@ export default function CourseOverviewPage({
 
             <div className="flex flex-col md:flex-row h-full overflow-hidden">
               {/* Left Side: Enroll by Email */}
-              <div className="w-full md:w-1/3 p-6 border-b md:border-b-0 md:border-r border-slate-200 bg-slate-50 shrink-0">
-                <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                  <UserPlus className="w-4 h-4 text-blue-600" />
+              <div className="w-full md:w-1/3 p-6 border-b md:border-b-0 md:border-r border-[#d5e0e8] bg-[#f4f8fb] shrink-0">
+                <h3 className="font-semibold text-[#021F37] mb-4 flex items-center gap-2">
+                  <UserPlus className="w-4 h-4 text-[#0E8696]" />
                   Quick Enroll
                 </h3>
                 <form onSubmit={handleEnroll} className="space-y-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-semibold text-[#4d6477] uppercase tracking-wider mb-2">
                       Student Email *
                     </label>
                     <input
@@ -807,14 +807,14 @@ export default function CourseOverviewPage({
                       type="email"
                       value={studentEmail}
                       onChange={(e) => setStudentEmail(e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all bg-white"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-[#0E8696] focus:border-transparent outline-none transition-all bg-white"
                       placeholder="name@example.com"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={isEnrolling}
-                    className="w-full py-2 bg-blue-600 text-sm font-semibold text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm flex justify-center items-center gap-2"
+                    className="w-full py-2 bg-[#0b6f7c] text-sm font-semibold text-white rounded-lg hover:bg-[#021F37] disabled:opacity-50 transition-colors shadow-sm flex justify-center items-center gap-2"
                   >
                     {isEnrolling ? <><Loader size="sm" /> Enrolling...</> : "Enroll via Email"}
                   </button>
@@ -823,8 +823,8 @@ export default function CourseOverviewPage({
 
               {/* Right Side: Student List */}
               <div className="w-full md:w-2/3 p-6 flex flex-col overflow-hidden">
-                <h3 className="font-semibold text-slate-800 mb-1">Registered Students</h3>
-                <p className="text-xs text-slate-500 mb-4">Students registered in {user?.tenantId || 'this college'}</p>
+                <h3 className="font-semibold text-[#021F37] mb-1">Registered Students</h3>
+                <p className="text-xs text-[#4d6477] mb-4">Students registered in {user?.tenantId || 'this college'}</p>
 
                 <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
                   {isLoadingStudents ? (
@@ -832,7 +832,7 @@ export default function CourseOverviewPage({
                       <Loader size="md" text="Loading students..." />
                     </div>
                   ) : tenantStudents.length === 0 ? (
-                    <div className="text-center py-8 text-slate-500 text-sm">
+                    <div className="text-center py-8 text-[#4d6477] text-sm">
                       No students found in this college.
                     </div>
                   ) : (
@@ -843,16 +843,16 @@ export default function CourseOverviewPage({
                       const isToggling = togglingStudentId === student._id;
 
                       return (
-                        <div key={student._id} className={`flex items-center justify-between p-3 rounded-xl border transition-all ${isEnrolled ? 'bg-blue-50/50 border-blue-100' : 'bg-white border-slate-200 hover:border-slate-300'}`}>
+                        <div key={student._id} className={`flex items-center justify-between p-3 rounded-xl border transition-all ${isEnrolled ? 'bg-[#f4f8fb]/50 border-[#eaf3f7]' : 'bg-white border-[#d5e0e8] hover:border-slate-300'}`}>
                           <div className="flex items-center gap-3 overflow-hidden">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${isEnrolled ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${isEnrolled ? 'bg-[#eaf3f7] text-[#0b6f7c]' : 'bg-slate-100 text-[#4d6477]'}`}>
                               {student.name?.charAt(0) || student.email?.charAt(0)}
                             </div>
                             <div className="min-w-0">
-                              <p className="font-semibold text-sm text-slate-900 truncate">
+                              <p className="font-semibold text-sm text-[#021F37] truncate">
                                 {student.name || "Unnamed Student"}
                               </p>
-                              <p className="text-xs text-slate-500 truncate">
+                              <p className="text-xs text-[#4d6477] truncate">
                                 {student.email}
                               </p>
                             </div>
@@ -863,8 +863,8 @@ export default function CourseOverviewPage({
                             disabled={isToggling}
                             className={`ml-3 shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
                               isEnrolled
-                                ? 'bg-rose-100 text-rose-700 hover:bg-rose-200'
-                                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                                : 'bg-slate-100 text-[#021F37] hover:bg-slate-200'
                             } disabled:opacity-50`}
                           >
                             {isToggling ? (

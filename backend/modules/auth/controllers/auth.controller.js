@@ -6,33 +6,23 @@ const registerValidation = [
   body('name').trim().notEmpty().withMessage('Name is required').escape(),
   body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-  body('tenantId').trim().notEmpty().withMessage('Tenant ID is required').escape(),
 ];
 
 const loginValidation = [
   body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
   body('password').notEmpty().withMessage('Password is required'),
-  body('tenantId').trim().notEmpty().withMessage('Tenant ID is required').escape(),
 ];
 
 const verifyValidation = [
   body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
-  body('code').notEmpty().withMessage('Verification code is required'),
-  body('tenantId').trim().notEmpty().withMessage('Tenant ID is required').escape(),
+  body('code').optional(),
 ];
 
 const registerAdminValidation = [
   body('name').trim().notEmpty().withMessage('Name is required').escape(),
   body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-  body('tenantId')
-    .trim()
-    .notEmpty()
-    .withMessage('Tenant ID is required')
-    .matches(/^[a-z0-9]{3,20}$/)
-    .withMessage('College code must be 3-20 lowercase letters/numbers')
-    .escape(),
-  body('secretKey').notEmpty().withMessage('Secret key is required'),
+  body('secretKey').optional(),
 ];
 
 const refreshValidation = [
@@ -59,8 +49,9 @@ const validate = (req, res) => {
 /** POST /api/auth/register/admin */
 const registerAdmin = async (req, res, next) => {
   try {
-    const { name, email, password, tenantId, secretKey } = req.body;
-    const result = await authService.registerAdmin({ name, email, password, tenantId }, secretKey);
+    if (!validate(req, res)) return;
+    const { name, email, password, secretKey } = req.body;
+    const result = await authService.registerAdmin({ name, email, password }, secretKey);
     
     res.status(201).json({ 
       success: true, 
@@ -124,7 +115,9 @@ const login = async (req, res, next) => {
     if (!validate(req, res)) return;
     
     const { tenantId, email, password } = req.body;
-    const result = await authService.loginUser({ tenantId, email, password });
+    const ip = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || req.ip || 'Unknown IP';
+    const userAgent = req.headers['user-agent'] || 'Web Browser';
+    const result = await authService.loginUser({ tenantId, email, password, meta: { ip, userAgent } });
     
     console.log(`[Auth] Login successful: ${result.user._id}`);
     

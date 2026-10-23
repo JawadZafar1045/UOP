@@ -85,8 +85,8 @@ export default function DashboardPage() {
       {
         label: 'Enrolled',
         data: courses.slice(0, 6).map(c => c.enrolledStudents?.length || 0),
-        backgroundColor: '#4F46E5', // Beautiful deep indigo
-        hoverBackgroundColor: '#6366F1', // Light indigo on hover
+        backgroundColor: '#2563eb', // Royal tech blue
+        hoverBackgroundColor: '#1d4ed8', // Darker blue on hover
         borderRadius: 8,
         borderSkipped: false,
       },
@@ -98,7 +98,7 @@ export default function DashboardPage() {
     datasets: [
       {
         data: [lmsStats.published, lmsStats.draft],
-        backgroundColor: ['#10B981', '#F59E0B'],
+        backgroundColor: ['#2563eb', '#f59e0b'],
         borderWidth: 4,
         borderColor: '#ffffff',
         hoverBorderWidth: 4,
@@ -183,55 +183,78 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8 max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-100 animate-fade-in-down">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
-            {isTeacherOrAdmin ? "Overview" : "Student Dashboard"}
+          <h1 className="text-3xl font-bold text-[#021F37] tracking-tight">
+            {user?.role === 'admin' ? "Admin Overview" : user?.role === 'teacher' ? "Instructor Overview" : "Student Dashboard"}
           </h1>
-          <p className="text-slate-500 mt-1">
-            {isTeacherOrAdmin 
-              ? "Monitor your platform's performance and educational growth." 
-              : `Welcome back, ${user?.name || 'Student'}! Track your learning progress.`}
+          <p className="text-[#4d6477] mt-1 text-sm">
+            {user?.role === 'admin'
+              ? "Platform metrics, paid course admissions, and content management."
+              : user?.role === 'teacher'
+              ? "Monitor student enrollments, submissions, and course delivery."
+              : `Welcome back, ${user?.name || 'Student'}! Track your progress and continue learning.`}
           </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {user?.role === 'admin' && (
+            <Link
+              href="/lms/admin"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0b6f7c] hover:bg-[#021F37] active:scale-95 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
+            >
+              <span>🛡️</span>
+              Admin Control Panel
+            </Link>
+          )}
+
+          {user?.role === 'student' && (
+            <Link
+              href="/courses"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0b6f7c] hover:bg-[#021F37] active:scale-95 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
+            >
+              Explore Course Catalog
+            </Link>
+          )}
         </div>
       </div>
 
       {/* Role-Based KPI Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in-up animation-delay-100">
         {isTeacherOrAdmin ? (
           <>
-            <div className="bg-blue-50/50 border border-blue-100 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="bg-[#f4f8fb]/50 border border-[#eaf3f7] p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                  <BookOpen className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 bg-[#eaf3f7] rounded-xl flex items-center justify-center">
+                  <BookOpen className="w-6 h-6 text-[#0E8696]" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-900 leading-none">{stats?.stats?.courses || lmsStats.total}</p>
-                  <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-1.5">LMS Courses</p>
+                  <p className="text-2xl font-bold text-[#021F37] leading-none">{stats?.stats?.courses || lmsStats.total}</p>
+                  <p className="text-[10px] font-bold text-[#0E8696] uppercase tracking-widest mt-1.5">Academy Courses</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-emerald-50/50 border border-emerald-100 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="bg-[#f4f8fb] border border-[#d5e0e8] p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-emerald-600" />
+                <div className="w-12 h-12 bg-[#f4f8fb] rounded-xl flex items-center justify-center border border-[#eaf3f7]">
+                  <CheckCircle className="w-6 h-6 text-[#0E8696]" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-900 leading-none">{stats?.stats?.active || lmsStats.published}</p>
-                  <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1.5">Live Content</p>
+                  <p className="text-2xl font-bold text-[#021F37] leading-none">{stats?.stats?.active || lmsStats.published}</p>
+                  <p className="text-[10px] font-bold text-[#4d6477] uppercase tracking-widest mt-1.5">Live Content</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-purple-50/50 border border-purple-100 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="bg-[#f4f8fb]/40 border border-[#eaf3f7]/80 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                  <Users className="w-6 h-6 text-purple-600" />
+                <div className="w-12 h-12 bg-[#eaf3f7]/70 rounded-xl flex items-center justify-center">
+                  <Users className="w-6 h-6 text-[#0b6f7c]" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-900 leading-none">{stats?.stats?.students || lmsStats.enrolled}</p>
-                  <p className="text-[10px] font-bold text-purple-600 uppercase tracking-widest mt-1.5">Students</p>
+                  <p className="text-2xl font-bold text-[#021F37] leading-none">{stats?.stats?.students || lmsStats.enrolled}</p>
+                  <p className="text-[10px] font-bold text-[#0b6f7c] uppercase tracking-widest mt-1.5">Students</p>
                 </div>
               </div>
             </div>
@@ -242,7 +265,7 @@ export default function DashboardPage() {
                   <TrendingUp className="w-6 h-6 text-amber-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-900 leading-none">+{Math.round(lmsStats.published * 1.5)}</p>
+                  <p className="text-2xl font-bold text-[#021F37] leading-none">+{Math.round(lmsStats.published * 1.5)}</p>
                   <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest mt-1.5">Growth Index</p>
                 </div>
               </div>
@@ -250,50 +273,50 @@ export default function DashboardPage() {
           </>
         ) : (
           <>
-            <div className="bg-indigo-50/50 border border-indigo-100 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="bg-[#f4f8fb]/50 border border-[#eaf3f7] p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
-                  <BookOpen className="w-6 h-6 text-indigo-600" />
+                <div className="w-12 h-12 bg-[#eaf3f7] rounded-xl flex items-center justify-center">
+                  <BookOpen className="w-6 h-6 text-[#0E8696]" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-900 leading-none">{stats?.stats?.enrolled || 0}</p>
-                  <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mt-1.5">Enrolled</p>
+                  <p className="text-2xl font-bold text-[#021F37] leading-none">{stats?.stats?.enrolled || 0}</p>
+                  <p className="text-[10px] font-bold text-[#0E8696] uppercase tracking-widest mt-1.5">Enrolled</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-emerald-50/50 border border-emerald-100 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="bg-[#f4f8fb] border border-[#d5e0e8] p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-emerald-600" />
+                <div className="w-12 h-12 bg-[#f4f8fb] rounded-xl flex items-center justify-center border border-[#eaf3f7]">
+                  <CheckCircle className="w-6 h-6 text-[#0E8696]" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-900 leading-none">{stats?.stats?.completed || 0}</p>
-                  <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-1.5">Completed</p>
+                  <p className="text-2xl font-bold text-[#021F37] leading-none">{stats?.stats?.completed || 0}</p>
+                  <p className="text-[10px] font-bold text-[#4d6477] uppercase tracking-widest mt-1.5">Completed</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-blue-50/50 border border-blue-100 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="bg-[#f4f8fb]/50 border border-[#eaf3f7] p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                  <BarChart3 className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 bg-[#eaf3f7] rounded-xl flex items-center justify-center">
+                  <BarChart3 className="w-6 h-6 text-[#0E8696]" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-900 leading-none">75%</p>
-                  <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-1.5">Avg Progress</p>
+                  <p className="text-2xl font-bold text-[#021F37] leading-none">75%</p>
+                  <p className="text-[10px] font-bold text-[#0E8696] uppercase tracking-widest mt-1.5">Avg Progress</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-purple-50/50 border border-purple-100 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="bg-[#f4f8fb] border border-[#d5e0e8] p-6 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                  <PieChart className="w-6 h-6 text-purple-600" />
+                <div className="w-12 h-12 bg-[#f4f8fb] rounded-xl flex items-center justify-center border border-[#eaf3f7]">
+                  <PieChart className="w-6 h-6 text-[#0E8696]" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-900 leading-none">{stats?.stats?.certificates || 0}</p>
-                  <p className="text-[10px] font-bold text-purple-600 uppercase tracking-widest mt-1.5">Certificates</p>
+                  <p className="text-2xl font-bold text-[#021F37] leading-none">{stats?.stats?.certificates || 0}</p>
+                  <p className="text-[10px] font-bold text-[#4d6477] uppercase tracking-widest mt-1.5">Certificates</p>
                 </div>
               </div>
             </div>
@@ -304,16 +327,16 @@ export default function DashboardPage() {
       {/* Analytics Row — Show only for Teachers/Admins */}
       {isTeacherOrAdmin && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 bg-white border border-slate-200/60 p-7 rounded-3xl shadow-sm">
-            <div className="flex items-center justify-between mb-8">
+          <div className="lg:col-span-2 bg-white border border-[#d5e0e8]/60 p-7 rounded-3xl shadow-sm">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
               <div>
-                <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-blue-500" />
+                <h3 className="font-bold text-[#021F37] text-lg flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-[#0E8696] shrink-0" />
                   Course Performance
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5 font-medium uppercase tracking-wider">Top 6 courses by enrollment</p>
+                <p className="text-xs text-[#5f7587] mt-0.5 font-medium uppercase tracking-wider">Top 6 courses by enrollment</p>
               </div>
-              <select className="text-xs font-bold text-slate-500 bg-slate-50 border-none rounded-lg py-2 px-3 focus:ring-0 cursor-pointer">
+              <select className="text-xs font-bold text-[#4d6477] bg-[#f4f8fb] border-none rounded-lg py-2 px-3 focus:ring-0 cursor-pointer w-full sm:w-auto">
                 <option>Top Enrolled</option>
                 <option>Recently Added</option>
               </select>
@@ -322,23 +345,23 @@ export default function DashboardPage() {
               {courses.length > 0 ? (
                 <Bar data={barChartData} options={chartOptions} />
               ) : (
-                <div className="h-full flex items-center justify-center text-slate-400 italic text-sm">No data available</div>
+                <div className="h-full flex items-center justify-center text-[#5f7587] italic text-sm">No data available</div>
               )}
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200/60 p-7 rounded-3xl shadow-sm">
+          <div className="bg-white border border-[#d5e0e8]/60 p-7 rounded-3xl shadow-sm">
             <div className="mb-8">
-              <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2">
-                <PieChart className="w-5 h-5 text-emerald-500" />
+              <h3 className="font-bold text-[#021F37] text-lg flex items-center gap-2">
+                <PieChart className="w-5 h-5 text-green-500" />
                 Published Courses
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5 font-medium uppercase tracking-wider">Publication status ratio</p>
+              <p className="text-xs text-[#5f7587] mt-0.5 font-medium uppercase tracking-wider">Publication status ratio</p>
             </div>
             {lmsStats.total === 0 ? (
               <div className="h-[240px] flex flex-col items-center justify-center text-center gap-3">
                 <PieChart className="w-10 h-10 text-slate-200" />
-                <p className="text-sm font-medium text-slate-400">No courses created yet</p>
+                <p className="text-sm font-medium text-[#5f7587]">No courses created yet</p>
               </div>
             ) : (
               <>
@@ -346,23 +369,23 @@ export default function DashboardPage() {
                   <div className="w-full max-w-[200px] relative">
                     <Doughnut data={doughnutData} options={doughnutOptions} />
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none -mt-1">
-                      <span className="text-3xl font-bold text-slate-900 leading-none">{lmsStats.published}</span>
-                      <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-tight mt-0.5">Live</span>
+                      <span className="text-3xl font-bold text-[#021F37] leading-none">{lmsStats.published}</span>
+                      <span className="text-[10px] font-bold text-green-500 uppercase tracking-tight mt-0.5">Live</span>
                     </div>
                   </div>
                 </div>
                 <div className="mt-8 space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-emerald-50/50 rounded-xl border border-emerald-100">
+                  <div className="flex items-center justify-between p-3 bg-green-50/50 rounded-xl border border-green-100">
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                      <span className="text-xs font-bold text-slate-700">Published</span>
+                      <div className="w-2 h-2 rounded-full bg-green-500" />
+                      <span className="text-xs font-bold text-[#021F37]">Published</span>
                     </div>
-                    <span className="text-sm font-bold text-emerald-700">{Math.round((lmsStats.published / lmsStats.total) * 100)}%</span>
+                    <span className="text-sm font-bold text-green-700">{Math.round((lmsStats.published / lmsStats.total) * 100)}%</span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-amber-50/50 rounded-xl border border-amber-100">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-amber-500" />
-                      <span className="text-xs font-bold text-slate-700">In Draft</span>
+                      <span className="text-xs font-bold text-[#021F37]">In Draft</span>
                     </div>
                     <span className="text-sm font-bold text-amber-700">{Math.round((lmsStats.draft / lmsStats.total) * 100)}%</span>
                   </div>
@@ -373,53 +396,80 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Student View — Continue Learning */}
+      {/* Student View — Continue Learning & Course Tracks */}
       {!isTeacherOrAdmin && (
-        <div className="bg-white border border-slate-200/60 p-8 rounded-3xl shadow-sm">
+        <div className="bg-white border border-[#d5e0e8]/60 p-8 rounded-3xl shadow-sm">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
             <div>
-              <h3 className="font-bold text-slate-900 text-xl tracking-tight">Continue Learning</h3>
-              <p className="text-sm text-slate-500 mt-1">Pick up right where you left off</p>
+              <h3 className="font-bold text-[#021F37] text-xl tracking-tight">My Active Learning</h3>
+              <p className="text-sm text-[#4d6477] mt-1">Pick up right where you left off in your courses</p>
             </div>
-            <Link href="/lms" className="text-sm font-bold text-blue-600 hover:text-blue-700 whitespace-nowrap">View All Courses</Link>
+            <Link href="/lms?tab=all" className="text-sm font-bold text-[#0E8696] hover:text-[#0b6f7c] whitespace-nowrap">
+              View All Courses →
+            </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {courses.slice(0, 4).map((course) => (
-              <Link key={course._id} href={`/lms/courses/${course._id}`} className="group">
-                <div className="flex items-center gap-4 p-4 border border-slate-100 rounded-2xl hover:border-blue-200 hover:shadow-lg hover:shadow-blue-500/5 transition-all">
-                  <div className="w-16 h-16 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 group-hover:bg-blue-100 transition-colors">
-                    <BookOpen className="w-8 h-8 text-blue-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors">{course.title}</h4>
-                    <p className="text-xs text-slate-500 mt-1 line-clamp-1">{course.description || 'No description available'}</p>
-                    <div className="mt-3 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-blue-500 rounded-full" style={{ width: '45%' }}></div>
+          {courses.filter((c: any) => !c.isLocked).length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {courses.filter((c: any) => !c.isLocked).slice(0, 4).map((course: any) => {
+                const safeSlug = (course.slug && !course.slug.startsWith('http') && !course.slug.includes('/'))
+                  ? course.slug
+                  : course._id;
+                const progress = course.progressPercent || 0;
+
+                return (
+                  <Link key={course._id} href={`/learn/${safeSlug}`} className="group">
+                    <div className="flex items-center gap-4 p-4 border border-slate-100 rounded-2xl hover:border-[#d5e0e8] hover:shadow-lg hover:shadow-[#0E8696]/5 transition-all bg-white">
+                      <div className="w-16 h-16 rounded-xl bg-[#f4f8fb] flex items-center justify-center shrink-0 group-hover:bg-[#eaf3f7] transition-colors">
+                        <BookOpen className="w-8 h-8 text-[#0E8696]" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-[#021F37] truncate group-hover:text-[#0E8696] transition-colors">
+                          {course.title}
+                        </h4>
+                        <p className="text-xs text-[#4d6477] mt-1 line-clamp-1">
+                          {course.shortDescription || course.description || 'Interactive cybersecurity & tech curriculum.'}
+                        </p>
+                        <div className="mt-3 flex items-center justify-between text-[10px] font-bold text-[#4d6477] mb-1">
+                          <span>Progress</span>
+                          <span className="text-[#0E8696] font-extrabold">{progress}%</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-[#0E8696] rounded-full transition-all" style={{ width: `${progress}%` }}></div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-10 bg-[#f4f8fb] rounded-2xl border border-slate-100 p-6 space-y-3">
+              <BookOpen className="w-8 h-8 text-[#5f7587] mx-auto" />
+              <p className="text-sm font-semibold text-[#021F37]">No active course progress yet</p>
+              <Link href="/lms" className="inline-block px-5 py-2 bg-[#0b6f7c] hover:bg-[#021F37] text-white font-bold text-xs rounded-xl shadow-xs">
+                Explore Available Courses
               </Link>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
       )}
 
       {/* Student Directory — Show only for Teachers/Admins */}
       {isTeacherOrAdmin && stats?.recentStudents?.length > 0 && (
-        <div className="bg-white border border-slate-200/60 p-8 rounded-3xl shadow-sm">
+        <div className="bg-white border border-[#d5e0e8]/60 p-8 rounded-3xl shadow-sm">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h3 className="font-bold text-slate-900 text-xl tracking-tight">Active Students</h3>
-              <p className="text-sm text-slate-500 mt-1">Directory of students across all courses</p>
+              <h3 className="font-bold text-[#021F37] text-xl tracking-tight">Active Students</h3>
+              <p className="text-sm text-[#4d6477] mt-1">Directory of students across all courses</p>
             </div>
             <div className="flex -space-x-2">
               {stats.recentStudents.slice(0, 5).map((s: any, i: number) => (
-                <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600 shadow-sm overflow-hidden">
+                <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-bold text-[#4d6477] shadow-sm overflow-hidden">
                   {s.avatar ? <img src={s.avatar} alt="" className="w-full h-full object-cover" /> : s.name[0]}
                 </div>
               ))}
               {stats.recentStudents.length > 5 && (
-                <div className="w-8 h-8 rounded-full border-2 border-white bg-blue-50 flex items-center justify-center text-[10px] font-bold text-blue-600 shadow-sm">
+                <div className="w-8 h-8 rounded-full border-2 border-white bg-[#f4f8fb] flex items-center justify-center text-[10px] font-bold text-[#0E8696] shadow-sm">
                   +{stats.recentStudents.length - 5}
                 </div>
               )}
@@ -429,16 +479,16 @@ export default function DashboardPage() {
           <div className="overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {stats.recentStudents.map((student: any) => (
-                <div key={student._id} className="p-4 bg-slate-50/50 border border-slate-100 rounded-2xl flex items-center gap-4 hover:bg-white hover:border-blue-200 hover:shadow-lg hover:shadow-blue-500/5 transition-all">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/20 overflow-hidden">
+                <div key={student._id} className="p-4 bg-[#f4f8fb]/50 border border-slate-100 rounded-2xl flex items-center gap-4 hover:bg-white hover:border-[#d5e0e8] hover:shadow-lg hover:shadow-[#0E8696]/5 transition-all">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0E8696] to-[#0E8696] flex items-center justify-center text-white font-bold shadow-md shadow-[#0E8696]/20 overflow-hidden">
                     {student.avatar ? <img src={student.avatar} alt="" className="w-full h-full object-cover" /> : student.name[0]}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-slate-900 truncate">{student.name}</h4>
-                    <p className="text-xs text-slate-400 truncate mt-0.5">{student.email}</p>
+                    <h4 className="font-bold text-[#021F37] truncate">{student.name}</h4>
+                    <p className="text-xs text-[#5f7587] truncate mt-0.5">{student.email}</p>
                     <div className="flex items-center gap-2 mt-2">
-                      <span className="px-2 py-0.5 bg-blue-100 text-blue-600 text-[10px] font-bold rounded-full uppercase tracking-wider">Student</span>
-                      <span className="text-[10px] text-slate-400 font-medium italic">Joined {new Date(student.createdAt).toLocaleDateString()}</span>
+                      <span className="px-2 py-0.5 bg-[#eaf3f7] text-[#0E8696] text-[10px] font-bold rounded-full uppercase tracking-wider">Student</span>
+                      <span className="text-[10px] text-[#5f7587] font-medium italic">Joined {new Date(student.createdAt).toLocaleDateString()}</span>
                     </div>
                   </div>
                 </div>
@@ -450,17 +500,17 @@ export default function DashboardPage() {
 
       {/* Activity Section — Show only if there are activities and user is teacher/admin */}
       {isTeacherOrAdmin && activities.length > 0 && (
-        <div className="bg-white border border-slate-200/60 p-8 rounded-3xl shadow-sm">
+        <div className="bg-white border border-[#d5e0e8]/60 p-8 rounded-3xl shadow-sm">
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h3 className="font-bold text-slate-900 text-lg">Platform Activity</h3>
-              <p className="text-xs text-slate-400 mt-0.5 font-medium uppercase tracking-wider">Real-time updates</p>
+              <h3 className="font-bold text-[#021F37] text-lg">Platform Activity</h3>
+              <p className="text-xs text-[#5f7587] mt-0.5 font-medium uppercase tracking-wider">Real-time updates</p>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {activities.map((act) => (
-              <div key={act._id} className="flex gap-4 p-4 hover:bg-slate-50 rounded-2xl transition-colors border border-transparent hover:border-slate-100">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-600 flex items-center justify-center text-sm font-bold shrink-0 border border-blue-100/50 overflow-hidden">
+              <div key={act._id} className="flex gap-4 p-4 hover:bg-[#f4f8fb] rounded-2xl transition-colors border border-transparent hover:border-slate-100">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#f4f8fb] to-[#f4f8fb] text-[#0E8696] flex items-center justify-center text-sm font-bold shrink-0 border border-[#eaf3f7]/50 overflow-hidden">
                   {act.userId?.avatar ? (
                     <img src={act.userId.avatar} alt="" className="w-full h-full object-cover" />
                   ) : (
@@ -468,10 +518,10 @@ export default function DashboardPage() {
                   )}
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-bold text-slate-800 leading-snug">
-                    {act.userId?.name || 'User'} <span className="font-medium text-slate-500 italic lowercase">{act.action.replace(/_/g, ' ')}</span>
+                  <p className="text-sm font-bold text-[#021F37] leading-snug">
+                    {act.userId?.name || 'User'} <span className="font-medium text-[#4d6477] italic lowercase">{act.action.replace(/_/g, ' ')}</span>
                   </p>
-                  <p className="text-xs text-slate-400 mt-1 font-medium">{new Date(act.createdAt).toLocaleString()}</p>
+                  <p className="text-xs text-[#5f7587] mt-1 font-medium">{new Date(act.createdAt).toLocaleString()}</p>
                 </div>
               </div>
             ))}

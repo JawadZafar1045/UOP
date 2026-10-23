@@ -47,8 +47,8 @@ function VerifyEmailForm() {
         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-2">
           <ShieldCheck className="w-8 h-8 text-green-600" />
         </div>
-        <h2 className="text-2xl font-bold text-slate-900">Email Verified!</h2>
-        <p className="text-slate-500">Your account is now active. Redirecting to login...</p>
+        <h2 className="text-2xl font-bold text-[#021F37]">Email Verified!</h2>
+        <p className="text-[#4d6477]">Your account is now active. Redirecting to login...</p>
       </div>
     );
   }
@@ -56,13 +56,13 @@ function VerifyEmailForm() {
   return (
     <>
       <div className="flex flex-col items-center mb-8">
-        <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-          <KeyRound className="w-8 h-8 text-blue-600" />
+        <div className="w-16 h-16 bg-[#eaf3f7] rounded-2xl flex items-center justify-center mb-6 shadow-sm">
+          <KeyRound className="w-8 h-8 text-[#0E8696]" />
         </div>
-        <h1 className="text-3xl font-bold text-slate-900">Verify your Email</h1>
-        <p className="text-slate-500 mt-2 text-center">
+        <h1 className="text-3xl font-bold text-[#021F37]">Verify your Email</h1>
+        <p className="text-[#4d6477] mt-2 text-center">
           We sent a 6-digit verification code to <br/>
-          <span className="font-semibold text-slate-700">{email || "your email"}</span>
+          <span className="font-semibold text-[#021F37]">{email || "your email"}</span>
         </p>
       </div>
 
@@ -75,14 +75,14 @@ function VerifyEmailForm() {
         )}
 
         <div className="space-y-1.5">
-          <label className="text-sm font-semibold text-slate-700 ml-1">Verification Code</label>
+          <label className="text-sm font-semibold text-[#021F37] ml-1">Verification Code</label>
           <input
             type="text"
             required
             maxLength={6}
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} // only allow numbers
-            className="block w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none text-center text-2xl tracking-[0.5em] font-mono placeholder:tracking-normal placeholder:font-sans placeholder:text-base placeholder:font-normal"
+            className="block w-full px-4 py-4 bg-[#f4f8fb] border border-[#d5e0e8] rounded-xl text-[#021F37] focus:ring-4 focus:ring-[#0E8696]/10 focus:border-[#0E8696] transition-all outline-none text-center text-2xl tracking-[0.5em] font-mono placeholder:tracking-normal placeholder:font-sans placeholder:text-base placeholder:font-normal"
             placeholder="Enter 6-digit code"
           />
         </div>
@@ -90,7 +90,7 @@ function VerifyEmailForm() {
         <button
           type="submit"
           disabled={loading || code.length !== 6}
-          className="w-full flex justify-center items-center gap-2 py-4 px-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 disabled:opacity-50 disabled:shadow-none group"
+          className="w-full flex justify-center items-center gap-2 py-4 px-4 bg-[#0E8696] text-white rounded-xl font-bold hover:bg-[#0b6f7c] transition-all shadow-lg shadow-[#0E8696]/20 disabled:opacity-50 disabled:shadow-none group"
         >
           {loading ? <><Loader size="sm" /> Verifying...</> : (
             <><span>Verify Email</span><ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>
@@ -99,9 +99,9 @@ function VerifyEmailForm() {
       </form>
 
       <div className="mt-8 text-center">
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-[#4d6477]">
           Didn't receive the code?{" "}
-          <Link href="/signup" className="text-blue-600 font-bold hover:underline">
+          <Link href="/signup" className="text-[#0E8696] font-bold hover:underline">
             Try registering again
           </Link>
         </p>
@@ -114,7 +114,7 @@ import Loader from "@/components/ui/Loader";
 
 export default function VerifyEmailPage() {
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-[#f4f8fb] flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100">
         <Suspense fallback={<div className="py-12"><Loader text="Loading..." /></div>}>
           <VerifyEmailForm />

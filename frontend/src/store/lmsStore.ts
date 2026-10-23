@@ -4,12 +4,25 @@ import * as lmsService from '../services/lms.service';
 interface Course {
   _id: string;
   title: string;
+  slug?: string;
   description?: string;
+  shortDescription?: string;
   instructor?: any;
+  instructorName?: string;
   thumbnail?: string;
   duration?: string;
-  isPublished: boolean;
-  status: 'draft' | 'active' | 'completed';
+  isPublished?: boolean;
+  isFeatured?: boolean;
+  type?: 'free' | 'paid';
+  price?: number;
+  currency?: string;
+  hasDiscount?: boolean;
+  discountPrice?: number;
+  discountPercent?: number;
+  category?: string;
+  level?: string;
+  whatYouWillLearn?: string[];
+  status: 'draft' | 'active' | 'published' | 'completed' | 'archived';
   startDate?: string;
   endDate?: string;
   completionCriteria?: {
@@ -20,6 +33,9 @@ interface Course {
   modules?: any[];
   enrolledStudents?: any[];
   students?: any[];
+  studentCount?: number;
+  moduleCount?: number;
+  lectureCount?: number;
   stats?: {
     sessions: number;
     assignments: number;

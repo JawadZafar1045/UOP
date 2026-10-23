@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema(
   {
-    tenantId: { type: String, required: true, index: true },
+    tenantId: { type: String, default: 'cszone', index: true },
     name:     { type: String, required: [true, 'Name is required'], trim: true },
     email:    { type: String, required: [true, 'Email is required'], lowercase: true, trim: true },
     password: { type: String, required: [true, 'Password is required'], minlength: 6, select: false },

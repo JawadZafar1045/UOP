@@ -24,10 +24,10 @@ export default function Loader({ size = "md", text, fullScreen = false }: Loader
   const content = (
     <div className="flex flex-col items-center justify-center gap-3">
       <div className="relative">
-        <Loader2 className={`animate-spin text-blue-600 ${sizeClasses[size]}`} />
+        <Loader2 className={`animate-spin text-[#0E8696] ${sizeClasses[size]}`} />
       </div>
       {text && (
-        <p className={`font-medium text-slate-500 animate-pulse ${textClasses[size]}`}>
+        <p className={`font-medium text-[#4d6477] animate-pulse ${textClasses[size]}`}>
           {text}
         </p>
       )}
@@ -36,7 +36,7 @@ export default function Loader({ size = "md", text, fullScreen = false }: Loader
 
   if (fullScreen) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-slate-50/80 backdrop-blur-sm fixed inset-0 z-50">
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#f4f8fb]/80 backdrop-blur-sm fixed inset-0 z-50">
         {content}
       </div>
     );

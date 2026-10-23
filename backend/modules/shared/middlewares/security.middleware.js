@@ -96,7 +96,7 @@ const ALLOWED_MIME_TYPES = [
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/vnd.ms-excel',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'image/jpeg', 'image/png', 'image/gif',
+  'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/avif',
   'text/plain',
   'video/mp4', 'video/webm', 'video/x-matroska', 'video/quicktime',
   'application/zip', 'application/x-zip-compressed'
@@ -111,6 +111,9 @@ const MIME_EXTENSION_MAP = {
   'image/jpeg': ['.jpg', '.jpeg'],
   'image/png': ['.png'],
   'image/gif': ['.gif'],
+  'image/webp': ['.webp'],
+  'image/svg+xml': ['.svg'],
+  'image/avif': ['.avif'],
   'text/plain': ['.txt'],
   'video/mp4': ['.mp4'],
   'video/webm': ['.webm'],

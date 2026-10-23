@@ -47,12 +47,12 @@ export default function NotificationBell() {
 
   const getIcon = (type: string) => {
     switch (type) {
-      case 'success': return <CheckCircle2 className="w-4 h-4 text-emerald-500" />;
+      case 'success': return <CheckCircle2 className="w-4 h-4 text-green-500" />;
       case 'warning': return <AlertTriangle className="w-4 h-4 text-amber-500" />;
       case 'error': return <XCircle className="w-4 h-4 text-red-500" />;
       case 'info':
       default:
-        return <Info className="w-4 h-4 text-blue-500" />;
+        return <Info className="w-4 h-4 text-[#0E8696]" />;
     }
   };
 
@@ -60,7 +60,7 @@ export default function NotificationBell() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={toggleOpen}
-        className="relative p-2 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-100"
+        className="relative p-3 text-[#5f7587] hover:text-[#4d6477] transition-colors rounded-full hover:bg-slate-100"
       >
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
@@ -71,16 +71,16 @@ export default function NotificationBell() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-[380px] bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-            <h3 className="font-bold text-slate-800">Notifications</h3>
+        <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-[380px] max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-[#f4f8fb]/50">
+            <h3 className="font-bold text-[#021F37]">Notifications</h3>
             {unreadCount > 0 && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   markAllRead();
                 }}
-                className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1"
+                className="text-xs font-medium text-[#0E8696] hover:text-[#021F37] transition-colors flex items-center gap-1"
               >
                 <Check className="w-3 h-3" />
                 Mark all read
@@ -109,39 +109,39 @@ export default function NotificationBell() {
                   <div
                     key={notif._id}
                     onClick={() => handleNotificationClick(notif._id, notif.isRead)}
-                    className={`p-4 cursor-pointer hover:bg-slate-50 transition-colors flex gap-3 ${
-                      !notif.isRead ? "bg-blue-50/30" : "bg-white"
+                    className={`p-4 cursor-pointer hover:bg-[#f4f8fb] transition-colors flex gap-3 ${
+                      !notif.isRead ? "bg-[#f4f8fb]/30" : "bg-white"
                     }`}
                   >
                     <div className={`mt-0.5 w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                       !notif.isRead ? "bg-white shadow-sm border border-slate-100" : "bg-slate-50"
+                       !notif.isRead ? "bg-white shadow-sm border border-slate-100" : "bg-[#f4f8fb]"
                     }`}>
                       {getIcon(notif.type)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-[13px] mb-0.5 ${!notif.isRead ? "font-bold text-slate-900" : "font-medium text-slate-700"}`}>
+                      <p className={`text-[13px] mb-0.5 ${!notif.isRead ? "font-bold text-[#021F37]" : "font-medium text-[#021F37]"}`}>
                         {notif.title}
                       </p>
-                      <p className={`text-[13px] line-clamp-2 ${!notif.isRead ? "text-slate-600" : "text-slate-500"}`}>
+                      <p className={`text-[13px] line-clamp-2 ${!notif.isRead ? "text-[#4d6477]" : "text-[#4d6477]"}`}>
                         {notif.message}
                       </p>
-                      <p className="text-[11px] text-slate-400 mt-1.5 font-medium">
+                      <p className="text-[11px] text-[#5f7587] mt-1.5 font-medium">
                         {formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true })}
                       </p>
                     </div>
                     {!notif.isRead && (
-                      <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-1.5" />
+                      <div className="w-2 h-2 rounded-full bg-[#0E8696] shrink-0 mt-1.5" />
                     )}
                   </div>
                 ))}
               </div>
             ) : (
               <div className="p-8 text-center flex flex-col items-center justify-center">
-                <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mb-3">
-                  <Bell className="w-5 h-5 text-slate-300" />
+                <div className="w-12 h-12 bg-[#f4f8fb] rounded-full flex items-center justify-center mb-3">
+                  <Bell className="w-5 h-5 text-[#5f7587]" />
                 </div>
-                <p className="text-sm font-medium text-slate-600">No notifications yet</p>
-                <p className="text-xs text-slate-400 mt-1">We'll let you know when something happens</p>
+                <p className="text-sm font-medium text-[#4d6477]">No notifications yet</p>
+                <p className="text-xs text-[#5f7587] mt-1">We'll let you know when something happens</p>
               </div>
             )}
           </div>
