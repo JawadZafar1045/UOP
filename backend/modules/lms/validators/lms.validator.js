@@ -48,6 +48,19 @@ const createCourseVal = [
     .optional()
     .isNumeric()
     .withMessage('Price must be a number'),
+  body('hasDiscount')
+    .optional()
+    .isBoolean()
+    .withMessage('hasDiscount must be a boolean'),
+  body('discountPrice')
+    .optional()
+    .isNumeric()
+    .withMessage('Discount price must be a number'),
+  body('discountPercent')
+    .optional()
+    .isNumeric()
+    .withMessage('Discount percent must be a number'),
+
   body('currency')
     .optional()
     .trim(),
@@ -102,6 +115,19 @@ const updateCourseVal = [
     .optional()
     .isNumeric()
     .withMessage('Price must be a number'),
+  body('hasDiscount')
+    .optional()
+    .isBoolean()
+    .withMessage('hasDiscount must be a boolean'),
+  body('discountPrice')
+    .optional()
+    .isNumeric()
+    .withMessage('Discount price must be a number'),
+  body('discountPercent')
+    .optional()
+    .isNumeric()
+    .withMessage('Discount percent must be a number'),
+
   body('currency')
     .optional()
     .trim(),

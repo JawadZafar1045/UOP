@@ -19,7 +19,7 @@ const mediaService = require('../../shared/services/media/media.service');
 const { uploadFile, deleteFile } = require('../../shared/services/fileService');
 const { sendNotification } = require('../../shared/services/notification.service');
 const { logActivity } = require('../../shared/services/activityLogger.service');
-const { sendEmail } = require('../../shared/services/emailService');
+const { sendEmail, sendUserApprovalEmail } = require('../../shared/services/emailService');
 
 // ── Helper ─────────────────────────────────────────────────────────────────────
 const err = (msg, code = 400) => Object.assign(new Error(msg), { statusCode: code });
@@ -167,7 +167,7 @@ const updateCourse = async (tenantId, courseId, data, userId, userRole) => {
     'title', 'slug', 'description', 'shortDescription', 'startDate', 'endDate',
     'status', 'isPublished', 'isFeatured', 'completionCriteria', 'category',
     'level', 'maxStudents', 'thumbnail', 'type', 'price', 'currency',
-    'instructor', 'instructorName', 'whatYouWillLearn', 'duration', 'modules', 'tags'
+    'instructor', 'instructorName', 'whatYouWillLearn', 'duration', 'modules', 'tags', 'hasDiscount', 'discountPrice', 'discountPercent'
   ];
 
   const safeUpdate = {};
@@ -1844,6 +1844,12 @@ const updateUserRole = async (tenantId, targetUserId, newRole, requesterId) => {
     { new: true }
   ).select('name email role isActive createdAt');
   if (!user) throw err('User not found.', 404);
+
+  // Send account approval email notification (non-blocking)
+  sendUserApprovalEmail(user).catch((emailErr) => {
+    console.warn('[LMS] User approval email delivery failed (non-fatal):', emailErr.message);
+  });
+
   return user;
 };
 

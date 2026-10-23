@@ -16,6 +16,9 @@ interface Course {
   type?: 'free' | 'paid';
   price?: number;
   currency?: string;
+  hasDiscount?: boolean;
+  discountPrice?: number;
+  discountPercent?: number;
   category?: string;
   level?: string;
   whatYouWillLearn?: string[];

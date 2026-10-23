@@ -91,6 +91,21 @@ const courseSchema = new mongoose.Schema(
       type: String,
       default: 'PKR'
     },
+    hasDiscount: {
+      type: Boolean,
+      default: false
+    },
+    discountPrice: {
+      type: Number,
+      default: 0,
+      min: [0, 'Discount price cannot be negative']
+    },
+    discountPercent: {
+      type: Number,
+      default: 0,
+      min: [0, 'Discount percent cannot be negative'],
+      max: [100, 'Discount percent cannot exceed 100']
+    },
     whatYouWillLearn: [{ type: String }],
 
     // ── Status & Schedule ────────────────────────────────────────────────────────

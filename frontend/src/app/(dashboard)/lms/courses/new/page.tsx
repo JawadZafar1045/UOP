@@ -89,6 +89,9 @@ export default function NewCoursePage() {
     thumbnail: '',
     type: 'free' as 'free' | 'paid',
     price: 0,
+    hasDiscount: false,
+    discountPrice: 0,
+    discountPercent: 0,
     currency: 'PKR',
     category: 'Certification Bootcamp',
     level: 'Intermediate',
@@ -249,6 +252,9 @@ export default function NewCoursePage() {
         level: formData.level,
         type: formData.type,
         price: formData.type === 'paid' ? Number(formData.price || 0) : 0,
+        hasDiscount: formData.type === 'paid' ? !!formData.hasDiscount : false,
+        discountPrice: formData.type === 'paid' && formData.hasDiscount ? Number(formData.discountPrice || 0) : 0,
+        discountPercent: formData.type === 'paid' && formData.hasDiscount ? Number(formData.discountPercent || 0) : 0,
         currency: formData.currency || 'PKR',
         duration: formData.duration || (formData.totalHours ? `${formData.totalHours} Hours` : 'Self-paced'),
         thumbnail: formData.thumbnail || '',
@@ -658,27 +664,99 @@ export default function NewCoursePage() {
                   </div>
 
                   {formData.type === 'paid' && (
-                    <div className="grid grid-cols-2 gap-4 p-4 bg-[#f4f8fb] border border-[#d5e0e8] rounded-2xl animate-fade-in-down">
-                      <div>
-                        <label className={lbl}>Tuition Fee Amount</label>
-                        <input
-                          type="number"
-                          min={1}
-                          value={formData.price}
-                          onChange={e => set('price', Number(e.target.value))}
-                          className={inputCls}
-                          placeholder="e.g. 15000"
-                        />
+                    <div className="p-4 bg-[#f4f8fb] border border-[#d5e0e8] rounded-2xl space-y-4 animate-fade-in-down">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className={lbl}>Tuition Fee Amount</label>
+                          <input
+                            type="number"
+                            min={1}
+                            value={formData.price}
+                            onChange={e => set('price', Number(e.target.value))}
+                            className={inputCls}
+                            placeholder="e.g. 15000"
+                          />
+                        </div>
+                        <div>
+                          <label className={lbl}>Currency</label>
+                          <input
+                            type="text"
+                            value={formData.currency}
+                            onChange={e => set('currency', e.target.value.toUpperCase())}
+                            className={inputCls}
+                            placeholder="PKR"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <label className={lbl}>Currency</label>
-                        <input
-                          type="text"
-                          value={formData.currency}
-                          onChange={e => set('currency', e.target.value.toUpperCase())}
-                          className={inputCls}
-                          placeholder="PKR"
-                        />
+
+                      {/* Discount Toggle & Inputs */}
+                      <div className="pt-3 border-t border-[#d5e0e8]">
+                        <label className="flex items-center gap-2 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={!!formData.hasDiscount}
+                            onChange={e => {
+                              const checked = e.target.checked;
+                              const p = Number(formData.price) || 0;
+                              set('hasDiscount', checked);
+                              if (checked) {
+                                set('discountPercent', formData.discountPercent || 20);
+                                set('discountPrice', formData.discountPrice || (p > 0 ? Math.round(p * 0.8) : 0));
+                              } else {
+                                set('discountPrice', 0);
+                                set('discountPercent', 0);
+                              }
+                            }}
+                            className="w-4 h-4 text-[#0E8696] rounded border-[#d5e0e8] focus:ring-[#0E8696] cursor-pointer"
+                          />
+                          <span className="text-xs font-bold text-[#021F37]">
+                            Apply Promotional Discount
+                          </span>
+                        </label>
+
+                        {formData.hasDiscount && (
+                          <div className="grid grid-cols-2 gap-4 mt-3 p-3 bg-white border border-[#d5e0e8] rounded-xl">
+                            <div>
+                              <label className="text-xs font-semibold text-[#4d6477] block mb-1">
+                                Discounted Price ({formData.currency})
+                              </label>
+                              <input
+                                type="number"
+                                min={0}
+                                value={formData.discountPrice}
+                                onChange={e => {
+                                  const dp = Number(e.target.value);
+                                  const p = Number(formData.price) || 0;
+                                  const pct = p > 0 && dp < p ? Math.round(((p - dp) / p) * 100) : 0;
+                                  set('discountPrice', dp);
+                                  set('discountPercent', pct);
+                                }}
+                                className={inputCls}
+                                placeholder="e.g. 12000"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-semibold text-[#4d6477] block mb-1">
+                                Discount Percent (%)
+                              </label>
+                              <input
+                                type="number"
+                                min={0}
+                                max={100}
+                                value={formData.discountPercent}
+                                onChange={e => {
+                                  const pct = Number(e.target.value);
+                                  const p = Number(formData.price) || 0;
+                                  const dp = p > 0 ? Math.round(p * (1 - pct / 100)) : 0;
+                                  set('discountPercent', pct);
+                                  set('discountPrice', dp);
+                                }}
+                                className={inputCls}
+                                placeholder="e.g. 20"
+                              />
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}

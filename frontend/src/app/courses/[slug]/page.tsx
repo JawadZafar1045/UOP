@@ -200,8 +200,11 @@ export default function CourseDetailsPage({
     );
   }
 
-  const isPaid = course.type === 'paid' || (course.price && Number(course.price) > 0);
-  const isFree = !isPaid;
+  const isTBC = course.type === 'paid' && (!course.price || Number(course.price) === 0);
+  const isPaid = !isTBC && (course.type === 'paid' || (course.price && Number(course.price) > 0));
+  const isFree = !isTBC && !isPaid;
+  const hasValidDiscount = isPaid && (course?.hasDiscount || (Number(course?.discountPrice) > 0)) && Number(course?.discountPrice) > 0 && Number(course?.discountPrice) < Number(course?.price || 0);
+  const discountPercent = course?.discountPercent || (hasValidDiscount && course?.price ? Math.round(((course.price - course.discountPrice) / course.price) * 100) : 0);
   const isEnrolled = regStatus?.status === 'enrolled';
   const isPending = regStatus?.status === 'pending';
   const isRejected = regStatus?.status === 'rejected';
@@ -229,7 +232,7 @@ export default function CourseDetailsPage({
                       : (isEnrolled ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-[#eaf3f7] text-[#021F37] border border-[#d5e0e8]')
                   }`}
                 >
-                  {isPaid
+                  {isTBC ? 'FEE TO BE CONFIRMED' : isPaid
                     ? (isEnrolled ? 'PAID TRACK • ENROLLED' : '🔒 LOCKED • PAID COURSE')
                     : (isEnrolled ? 'FREE ACCESS • ENROLLED' : 'FREE COURSE')}
                 </span>
@@ -283,9 +286,23 @@ export default function CourseDetailsPage({
                 <span className="text-xs font-bold uppercase tracking-wider text-[#5f7587]">
                   {isFree ? 'Tuition' : 'Tuition'}
                 </span>
-                <span className={`text-2xl font-black ${isFree ? 'text-[#0E8696]' : 'text-[#021F37]'}`}>
-                  {isFree ? 'FREE' : `${course.currency || 'PKR'} ${(course.price || 0).toLocaleString()}`}
-                </span>
+                {hasValidDiscount ? (
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    <span className="text-2xl font-black text-emerald-600">
+                      {course.currency || 'PKR'} {Number(course.discountPrice).toLocaleString()}
+                    </span>
+                    <span className="text-sm text-[#5f7587] line-through font-semibold">
+                      {course.currency || 'PKR'} {Number(course.price).toLocaleString()}
+                    </span>
+                    <span className="px-2 py-0.5 text-xs font-black bg-emerald-100 text-emerald-800 rounded-md">
+                      {discountPercent}% OFF
+                    </span>
+                  </div>
+                ) : (
+                  <span className={`text-2xl font-black ${isFree ? 'text-[#0E8696]' : 'text-[#021F37]'}`}>
+                    {isTBC ? 'To be confirmed' : isFree ? 'FREE' : `${course.currency || 'PKR'} ${(course.price || 0).toLocaleString()}`}
+                  </span>
+                )}
               </div>
               {isEnrolled && (
                 <div className="text-xs font-extrabold text-green-600 uppercase tracking-widest text-right">
@@ -593,9 +610,25 @@ export default function CourseDetailsPage({
                     <span className="text-[11px] font-black uppercase tracking-widest text-[#5f7587]">
                       TUITION
                     </span>
-                    <span className={`text-3xl font-black tracking-tight ${isFree ? 'text-[#0E8696]' : 'text-[#021F37]'}`}>
-                      {isFree ? 'FREE' : `${course.currency || 'PKR'} ${(course.price || 0).toLocaleString()}`}
-                    </span>
+                    {hasValidDiscount ? (
+                      <div className="space-y-1">
+                        <div className="flex items-baseline gap-2 flex-wrap">
+                          <span className="text-3xl font-black text-emerald-600">
+                            {course.currency || 'PKR'} {Number(course.discountPrice).toLocaleString()}
+                          </span>
+                          <span className="text-sm text-[#5f7587] line-through font-semibold">
+                            {course.currency || 'PKR'} {Number(course.price).toLocaleString()}
+                          </span>
+                        </div>
+                        <span className="inline-block px-2.5 py-0.5 text-[11px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-lg">
+                          🎉 Save {course.currency || 'PKR'} {(Number(course.price) - Number(course.discountPrice)).toLocaleString()} ({discountPercent}% OFF)
+                        </span>
+                      </div>
+                    ) : (
+                      <span className={`text-3xl font-black tracking-tight ${isFree ? 'text-[#0E8696]' : 'text-[#021F37]'}`}>
+                        {isTBC ? 'To be confirmed' : isFree ? 'FREE' : `${course.currency || 'PKR'} ${(course.price || 0).toLocaleString()}`}
+                      </span>
+                    )}
                   </div>
                   {isEnrolled && (
                     <p className="text-right text-[11px] font-extrabold uppercase tracking-widest text-green-600 pt-1">

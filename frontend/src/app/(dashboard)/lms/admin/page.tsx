@@ -9,7 +9,7 @@ import {
   CheckCircle, XCircle, Trash2, Eye, MoreVertical, Search,
   BarChart3, TrendingUp, UserCheck, UserX, Clock, Check,
   AlertCircle, Plus, Upload, Play, Edit, ArrowRight, Video,
-  Layers, DollarSign, Sparkles, Filter, X, Send, Loader2, Image as ImageIcon
+  Layers, DollarSign, Tag, Percent, Sparkles, Filter, X, Send, Loader2, Image as ImageIcon
 } from "lucide-react";
 import Loader from "@/components/ui/Loader";
 import CourseThumbnailUpload from "@/components/ui/CourseThumbnailUpload";
@@ -64,6 +64,9 @@ export default function AdminDashboardPage() {
     thumbnail: "",
     type: "free",
     price: 0,
+    hasDiscount: false,
+    discountPrice: 0,
+    discountPercent: 0,
     currency: "PKR",
     category: "Certification Bootcamp",
     level: "Beginner",
@@ -198,6 +201,9 @@ export default function AdminDashboardPage() {
         thumbnail: courseToEdit.thumbnail || "",
         type: courseToEdit.type || "free",
         price: courseToEdit.price || 0,
+        hasDiscount: !!courseToEdit.hasDiscount || (Number(courseToEdit.discountPrice) > 0),
+        discountPrice: courseToEdit.discountPrice || 0,
+        discountPercent: courseToEdit.discountPercent || (courseToEdit.price && courseToEdit.discountPrice ? Math.round(((courseToEdit.price - courseToEdit.discountPrice) / courseToEdit.price) * 100) : 0),
         currency: courseToEdit.currency || "PKR",
         category: courseToEdit.category || "Certification Bootcamp",
         level: courseToEdit.level || "Beginner",
@@ -229,6 +235,9 @@ export default function AdminDashboardPage() {
         thumbnail: "",
         type: "free",
         price: 0,
+        hasDiscount: false,
+        discountPrice: 0,
+        discountPercent: 0,
         currency: "PKR",
         category: "Certification Bootcamp",
         level: "Beginner",
@@ -262,6 +271,9 @@ export default function AdminDashboardPage() {
         thumbnail: courseForm.thumbnail || "",
         type: courseForm.type,
         price: courseForm.type === 'paid' ? Number(courseForm.price || 0) : 0,
+        hasDiscount: courseForm.type === 'paid' ? !!courseForm.hasDiscount : false,
+        discountPrice: courseForm.type === 'paid' && courseForm.hasDiscount ? Number(courseForm.discountPrice || 0) : 0,
+        discountPercent: courseForm.type === 'paid' && courseForm.hasDiscount ? Number(courseForm.discountPercent || 0) : 0,
         currency: courseForm.currency || "PKR",
         category: courseForm.category,
         level: courseForm.level,
@@ -774,11 +786,19 @@ export default function AdminDashboardPage() {
 
                     {/* Floating Badges */}
                     <div className="absolute top-2.5 left-2.5 z-10 flex flex-wrap items-center gap-1.5">
-                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
-                        isFree ? "bg-[#0b6f7c] text-white" : "bg-slate-900 text-white"
-                      }`}>
-                        {isFree ? "FREE" : `${c.currency || "PKR"} ${(c.price || 0).toLocaleString()}`}
-                      </span>
+                      {c.hasDiscount && c.discountPrice > 0 ? (
+                        <div className="flex items-center gap-1.5 bg-emerald-600 text-white px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider shadow-xs">
+                          <span>{c.currency || "PKR"} {Number(c.discountPrice).toLocaleString()}</span>
+                          <span className="line-through text-emerald-200 text-[9px] font-semibold opacity-90">{Number(c.price || 0).toLocaleString()}</span>
+                          {c.discountPercent > 0 && <span className="bg-emerald-800 text-white px-1 rounded text-[8px]">-{c.discountPercent}%</span>}
+                        </div>
+                      ) : (
+                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
+                          isFree ? "bg-[#0b6f7c] text-white" : "bg-slate-900 text-white"
+                        }`}>
+                          {isFree ? "FREE" : `${c.currency || "PKR"} ${(c.price || 0).toLocaleString()}`}
+                        </span>
+                      )}
 
                       {c.isFeatured && (
                         <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500 text-white shadow-xs">
@@ -1509,6 +1529,102 @@ export default function AdminDashboardPage() {
                   />
                 </div>
               </div>
+
+              {/* Promotional Discount (Only for Paid Courses) */}
+              {courseForm.type === "paid" && (
+                <div className="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={!!courseForm.hasDiscount}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          const currentPrice = Number(courseForm.price) || 0;
+                          const defaultDiscount = currentPrice > 0 ? Math.round(currentPrice * 0.8) : 0;
+                          setCourseForm({
+                            ...courseForm,
+                            hasDiscount: checked,
+                            discountPrice: checked ? (courseForm.discountPrice > 0 ? courseForm.discountPrice : defaultDiscount) : 0,
+                            discountPercent: checked ? (courseForm.discountPercent > 0 ? courseForm.discountPercent : 20) : 0,
+                          });
+                        }}
+                        className="w-4 h-4 text-emerald-600 rounded border-[#d5e0e8] focus:ring-emerald-500 cursor-pointer"
+                      />
+                      <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                        <Tag className="w-3.5 h-3.5 text-emerald-600" />
+                        Apply Promotional Discount
+                      </span>
+                    </label>
+
+                    {courseForm.hasDiscount && courseForm.discountPercent > 0 && (
+                      <span className="px-2 py-0.5 bg-emerald-600 text-white text-[10px] font-extrabold rounded-md shadow-xs flex items-center gap-1">
+                        <Percent className="w-2.5 h-2.5" />
+                        {courseForm.discountPercent}% OFF
+                      </span>
+                    )}
+                  </div>
+
+                  {courseForm.hasDiscount && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                      <div>
+                        <label className="text-[11px] font-bold text-[#021F37] block mb-1">
+                          Discounted Price ({courseForm.currency})
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={courseForm.discountPrice}
+                          onChange={(e) => {
+                            const newDiscountPrice = Number(e.target.value);
+                            const origPrice = Number(courseForm.price) || 0;
+                            const pct = origPrice > 0 && newDiscountPrice < origPrice
+                              ? Math.max(0, Math.min(100, Math.round(((origPrice - newDiscountPrice) / origPrice) * 100)))
+                              : 0;
+                            setCourseForm({
+                              ...courseForm,
+                              discountPrice: newDiscountPrice,
+                              discountPercent: pct,
+                            });
+                          }}
+                          placeholder="e.g. 24999"
+                          className="w-full p-2.5 bg-white border border-emerald-300 rounded-xl text-xs font-bold text-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                        />
+                        <span className="text-[10px] text-emerald-700 mt-1 block">
+                          Final amount the student pays
+                        </span>
+                      </div>
+
+                      <div>
+                        <label className="text-[11px] font-bold text-[#021F37] block mb-1">
+                          Discount Percentage (%)
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          value={courseForm.discountPercent}
+                          onChange={(e) => {
+                            const pct = Number(e.target.value);
+                            const origPrice = Number(courseForm.price) || 0;
+                            const newPrice = origPrice > 0 ? Math.round(origPrice * (1 - pct / 100)) : 0;
+                            setCourseForm({
+                              ...courseForm,
+                              discountPercent: pct,
+                              discountPrice: newPrice,
+                            });
+                          }}
+                          placeholder="e.g. 20"
+                          className="w-full p-2.5 bg-white border border-emerald-300 rounded-xl text-xs font-bold text-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                        />
+                        <span className="text-[10px] text-emerald-700 mt-1 block">
+                          Auto-computes discounted price from {courseForm.price || 0}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Category, Level & Status */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

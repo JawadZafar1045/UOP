@@ -115,7 +115,9 @@ const login = async (req, res, next) => {
     if (!validate(req, res)) return;
     
     const { tenantId, email, password } = req.body;
-    const result = await authService.loginUser({ tenantId, email, password });
+    const ip = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || req.ip || 'Unknown IP';
+    const userAgent = req.headers['user-agent'] || 'Web Browser';
+    const result = await authService.loginUser({ tenantId, email, password, meta: { ip, userAgent } });
     
     console.log(`[Auth] Login successful: ${result.user._id}`);
     

@@ -21,13 +21,19 @@ interface CourseCardProps {
     isFeatured?: boolean;
     whatYouWillLearn?: string[];
     tags?: string[];
+    hasDiscount?: boolean;
+    discountPrice?: number;
+    discountPercent?: number;
   };
 }
 
 export default function CourseCard({ course }: CourseCardProps) {
   const courseSlug = (course.slug && !course.slug.startsWith('http') && !course.slug.includes('/')) ? course.slug : course._id;
-  const isFree = course.type === 'free' || !course.price || course.price === 0;
-  const priceFormatted = isFree ? 'FREE' : `${course.currency || 'PKR'} ${(course.price || 0).toLocaleString()}`;
+  const isTBC = course.type === 'paid' && (!course.price || course.price === 0);
+  const isFree = !isTBC && (course.type === 'free' || !course.price || course.price === 0);
+  const priceFormatted = isTBC ? 'To be confirmed' : isFree ? 'FREE' : `${course.currency || 'PKR'} ${(course.price || 0).toLocaleString()}`;
+  const hasValidDiscount = !isFree && !isTBC && (course.hasDiscount || (typeof course.discountPrice === 'number' && course.discountPrice > 0)) && typeof course.discountPrice === 'number' && course.discountPrice > 0 && course.discountPrice < (course.price || 0);
+  const discountPercent = course.discountPercent || (hasValidDiscount && course.price ? Math.round(((course.price - course.discountPrice!) / course.price) * 100) : 0);
   const category = course.category || 'Cyber Security';
   const level = course.level || 'Beginner to Advanced';
 
@@ -110,13 +116,16 @@ export default function CourseCard({ course }: CourseCardProps) {
         <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5">
           <span
             className={`px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-wider uppercase shadow-xs ${
-              isFree
-                ? 'bg-[#0b6f7c] text-white'
-                : 'bg-slate-900 text-white'
+              isTBC ? 'bg-amber-600 text-white' : isFree ? 'bg-[#0b6f7c] text-white' : 'bg-slate-900 text-white'
             }`}
           >
-            {isFree ? 'FREE ENROLLMENT' : 'PRO TRACK'}
+            {isTBC ? 'FEE TBC' : isFree ? 'FREE ENROLLMENT' : 'PRO TRACK'}
           </span>
+          {hasValidDiscount && (
+            <span className="px-2 py-1 rounded-lg text-[10px] font-black bg-emerald-600 text-white shadow-xs">
+              {discountPercent}% OFF
+            </span>
+          )}
           {course.isFeatured && (
             <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-500 text-white shadow-xs animate-pulse-glow">
               <Sparkles className="w-3 h-3" />
@@ -150,7 +159,7 @@ export default function CourseCard({ course }: CourseCardProps) {
             </div>
             <div className="flex items-center gap-1">
               <Clock className="w-3.5 h-3.5 text-[#5f7587]" />
-              <span>{course.totalDuration || '4 Hours'}</span>
+              <span>{course.totalDuration || (course as any).duration || 'To be confirmed'}</span>
             </div>
           </div>
 
@@ -197,9 +206,20 @@ export default function CourseCard({ course }: CourseCardProps) {
         <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
           <div>
             <span className="text-[10px] uppercase font-bold text-[#5f7587] block tracking-wider">Tuition</span>
-            <span className={`text-base sm:text-lg font-black ${isFree ? 'text-[#0E8696]' : 'text-[#021F37]'}`}>
-              {priceFormatted}
-            </span>
+            {hasValidDiscount ? (
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <span className="text-base sm:text-lg font-black text-emerald-700">
+                  {course.currency || 'PKR'} {course.discountPrice!.toLocaleString()}
+                </span>
+                <span className="text-xs text-[#5f7587] line-through font-semibold">
+                  {course.currency || 'PKR'} {(course.price || 0).toLocaleString()}
+                </span>
+              </div>
+            ) : (
+              <span className={`text-base sm:text-lg font-black ${isFree ? 'text-[#0E8696]' : 'text-[#021F37]'}`}>
+                {priceFormatted}
+              </span>
+            )}
           </div>
 
           <Link

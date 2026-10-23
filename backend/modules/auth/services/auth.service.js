@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { Resend } = require('resend');
 const User = require('../models/user.model');
+const { sendLoginNotificationEmail } = require('../../shared/services/emailService');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -154,7 +155,7 @@ const verifyEmail = async (email, code) => {
 /**
  * Login with email + password for CSZone LMS.
  */
-const loginUser = async ({ email, password }) => {
+const loginUser = async ({ email, password, meta = {} }) => {
   const normalizedEmail = email ? email.toLowerCase().trim() : '';
 
   const user = await User.findOne({ email: normalizedEmail }).select('+password');
@@ -179,6 +180,11 @@ const loginUser = async ({ email, password }) => {
     .digest('hex');
   user.lastLogin = new Date();
   await user.save();
+
+  // Dispatch login notification email (non-blocking)
+  sendLoginNotificationEmail(user, meta).catch((emailErr) => {
+    console.warn('[Auth] Login notification email failed (non-fatal):', emailErr.message);
+  });
 
   return {
     accessToken,
