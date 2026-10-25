@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useRef, use } from "react";
+import { useEffect, useState, useMemo, use } from "react";
 import { useStore } from "@/store/useStore";
 import { useLmsStore } from "@/store/lmsStore";
 import * as lmsService from "@/services/lms.service";
@@ -8,7 +8,6 @@ import Loader from "@/components/ui/Loader";
 import Link from "next/link";
 import {
   ChevronLeft,
-  ChevronRight,
   Video,
   Play,
   CheckCircle2,
@@ -27,7 +26,6 @@ import {
   HelpCircle,
   X,
   Share2,
-  SlidersHorizontal,
 } from "lucide-react";
 
 interface ResourceItem {
@@ -78,35 +76,6 @@ export default function CourseVideoLecturesPage({
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedModule, setSelectedModule] = useState<string>("All");
-  const [layoutMode, setLayoutMode] = useState<"top" | "side">("top");
-  const playlistScrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("lecture_playlist_layout");
-      if (saved === "top" || saved === "side") {
-        setLayoutMode(saved);
-      }
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  const handleLayoutChange = (mode: "top" | "side") => {
-    setLayoutMode(mode);
-    try {
-      localStorage.setItem("lecture_playlist_layout", mode);
-    } catch {
-      // ignore
-    }
-  };
-
-  const scrollPlaylist = (direction: "left" | "right") => {
-    if (playlistScrollRef.current) {
-      const scrollAmount = direction === "left" ? -340 : 340;
-      playlistScrollRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
-    }
-  };
 
   // Modal State
   const [showModal, setShowModal] = useState(false);
@@ -389,239 +358,12 @@ export default function CourseVideoLecturesPage({
           </div>
         ) : (
           <div className="space-y-6">
-            {layoutMode === "top" ? (
-              /* ======================================================== */
-              /* TOP ROW PLAYLIST LAYOUT (Playlist Above Video Player)     */
-              /* ======================================================== */
-              <div className="space-y-6">
-                {/* Top Row Playlist Box */}
-                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-6 space-y-4">
-                  {/* Header Bar: Title, Search, Layout Switch & Scroll Arrows */}
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl bg-green-50 text-green-600 flex items-center justify-center font-bold shadow-inner">
-                        <Layers className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-slate-900 text-base sm:text-lg flex items-center gap-2">
-                          Course Playlist
-                          <span className="text-xs px-2.5 py-0.5 rounded-full bg-green-50 text-green-700 font-bold border border-green-100">
-                            {filteredLectures.length} of {lectures.length}
-                          </span>
-                        </h3>
-                        <p className="text-xs text-slate-500 mt-0.5">
-                          Select any lecture below to play • Showing row format above video
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-3">
-                      {/* Search input */}
-                      <div className="relative min-w-[200px] sm:min-w-[240px]">
-                        <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                        <input
-                          type="text"
-                          placeholder="Search lectures or topics..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
-                        />
-                        {searchQuery && (
-                          <button
-                            onClick={() => setSearchQuery("")}
-                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Layout Setting Toggle */}
-                      <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-semibold">
-                        <button
-                          onClick={() => handleLayoutChange("top")}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-                            (layoutMode as string) === "top"
-                              ? "bg-white text-green-600 shadow-sm font-bold"
-                              : "text-slate-600 hover:text-slate-900"
-                          }`}
-                          title="Row Layout (Above Video)"
-                        >
-                          <SlidersHorizontal className="w-3.5 h-3.5" />
-                          <span>Top Row</span>
-                        </button>
-                        <button
-                          onClick={() => handleLayoutChange("side")}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-                            (layoutMode as string) === "side"
-                              ? "bg-white text-green-600 shadow-sm font-bold"
-                              : "text-slate-600 hover:text-slate-900"
-                          }`}
-                          title="Sidebar Layout (Right Column)"
-                        >
-                          <Layers className="w-3.5 h-3.5" />
-                          <span>Sidebar</span>
-                        </button>
-                      </div>
-
-                      {/* Row Navigation Arrows */}
-                      <div className="hidden sm:flex items-center gap-1">
-                        <button
-                          onClick={() => scrollPlaylist("left")}
-                          className="p-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 active:scale-95 transition-all shadow-sm"
-                          title="Scroll Left"
-                        >
-                          <ChevronLeft className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => scrollPlaylist("right")}
-                          className="p-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 active:scale-95 transition-all shadow-sm"
-                          title="Scroll Right"
-                        >
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Module Filter Pills */}
-                  {modulesList.length > 2 && (
-                    <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-                      {modulesList.map((mod) => (
-                        <button
-                          key={mod}
-                          onClick={() => setSelectedModule(mod)}
-                          className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                            selectedModule === mod
-                              ? "bg-green-600 text-white shadow-sm font-bold"
-                              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                          }`}
-                        >
-                          {mod}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Horizontal Scrollable Row of Video Cards */}
-                  {filteredLectures.length === 0 ? (
-                    <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-slate-500 text-xs font-medium">
-                      No lectures match your search or filter.
-                    </div>
-                  ) : (
-                    <div
-                      ref={playlistScrollRef}
-                      className="flex items-stretch gap-4 overflow-x-auto pb-2 pt-1 scroll-smooth scrollbar-thin scrollbar-thumb-slate-200"
-                    >
-                      {filteredLectures.map((lec, idx) => {
-                        const isActive = activeLecture?._id === lec._id;
-                        const ytId = lec.youtubeVideoId || extractYouTubeId(lec.videoUrl);
-                        const thumbnail = ytId
-                          ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`
-                          : "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300&auto=format&fit=crop&q=60";
-
-                        return (
-                          <div
-                            key={lec._id}
-                            onClick={() => setActiveLecture(lec)}
-                            className={`group relative w-72 sm:w-80 shrink-0 p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
-                              isActive
-                                ? "bg-green-50/70 border-green-300 ring-2 ring-green-500/30 shadow-md -translate-y-0.5"
-                                : "bg-white hover:bg-slate-50 border-slate-200 hover:border-slate-300 shadow-sm"
-                            }`}
-                          >
-                            <div>
-                              {/* Thumbnail */}
-                              <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-slate-900 shrink-0 flex items-center justify-center">
-                                <img
-                                  src={thumbnail}
-                                  alt={lec.title}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                />
-                                <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                                  <div
-                                    className={`w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm transition-transform ${
-                                      isActive
-                                        ? "bg-green-600 text-white scale-110 shadow-lg"
-                                        : "bg-black/50 text-white group-hover:scale-110"
-                                    }`}
-                                  >
-                                    <Play className="w-5 h-5 fill-current ml-0.5" />
-                                  </div>
-                                </div>
-
-                                {/* Duration Badge */}
-                                {lec.durationMinutes ? (
-                                  <span className="absolute bottom-2 right-2 bg-black/80 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md">
-                                    {lec.durationMinutes}m
-                                  </span>
-                                ) : null}
-
-                                {/* Active Playing Badge */}
-                                {isActive && (
-                                  <span className="absolute top-2 left-2 bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 shadow">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
-                                    Now Playing
-                                  </span>
-                                )}
-                              </div>
-
-                              {/* Metadata */}
-                              <div className="mt-3">
-                                <div className="flex items-center gap-1 text-[10px] font-bold text-green-600 uppercase tracking-tight">
-                                  <span>#{idx + 1}</span>
-                                  <span>•</span>
-                                  <span className="truncate">{lec.moduleName || "General"}</span>
-                                </div>
-                                <h4
-                                  className={`text-xs font-bold mt-1 line-clamp-2 transition-colors ${
-                                    isActive ? "text-green-950 font-extrabold" : "text-slate-800 group-hover:text-green-600"
-                                  }`}
-                                >
-                                  {lec.title}
-                                </h4>
-                              </div>
-                            </div>
-
-                            {/* Status Footer */}
-                            <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between">
-                              {lec.isCompleted ? (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                                  <Check className="w-3 h-3" /> Watched
-                                </span>
-                              ) : (
-                                <span className="text-[10px] font-medium text-slate-400">
-                                  Not watched
-                                </span>
-                              )}
-
-                              {isTeacherOrAdmin && (
-                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <button
-                                    onClick={(e) => handleOpenEditModal(lec, e)}
-                                    className="p-1 text-slate-500 hover:text-green-600 rounded"
-                                    title="Edit"
-                                  >
-                                    <Edit3 className="w-3.5 h-3.5" />
-                                  </button>
-                                  <button
-                                    onClick={(e) => handleDeleteLecture(lec._id, e)}
-                                    className="p-1 text-slate-500 hover:text-red-600 rounded"
-                                    title="Delete"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                {/* Video Player & Active Lecture Details */}
+            {/* ======================================================== */}
+            {/* SIDEBAR PLAYLIST LAYOUT (Side-by-side)                    */}
+            {/* ======================================================== */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Left Column: Player & Active Lecture Details (8 cols) */}
+              <div className="lg:col-span-8 space-y-6">
                 {activeLecture ? (
                   <div className="bg-white rounded-3xl border border-slate-200/80 shadow-md overflow-hidden transition-all">
                     {/* Video Player Container (16:9 Aspect Ratio) */}
@@ -783,234 +525,62 @@ export default function CourseVideoLecturesPage({
                   </div>
                 ) : null}
               </div>
-            ) : (
-              /* ======================================================== */
-              /* SIDEBAR PLAYLIST LAYOUT (Side-by-side)                    */
-              /* ======================================================== */
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                {/* Left Column: Player & Active Lecture Details (8 cols) */}
-                <div className="lg:col-span-8 space-y-6">
-                  {activeLecture ? (
-                    <div className="bg-white rounded-3xl border border-slate-200/80 shadow-md overflow-hidden transition-all">
-                      {/* Video Player Container (16:9 Aspect Ratio) */}
-                      <div className="relative w-full aspect-video bg-black flex items-center justify-center overflow-hidden">
-                        {activeYtId ? (
-                          <iframe
-                            src={`https://www.youtube-nocookie.com/embed/${activeYtId}?rel=0&modestbranding=1&enablejsapi=1`}
-                            title={activeLecture.title}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                            allowFullScreen
-                            className="w-full h-full border-0"
-                          ></iframe>
-                        ) : activeLecture.videoUrl.endsWith(".mp4") || activeLecture.videoUrl.includes("commondatastorage") ? (
-                          <video
-                            controls
-                            className="w-full h-full object-contain"
-                            src={activeLecture.videoUrl}
-                            poster={`https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1200&auto=format&fit=crop&q=80`}
-                          >
-                            Your browser does not support HTML5 video.
-                          </video>
-                        ) : (
-                          <div className="p-8 text-center text-white space-y-4">
-                            <Play className="w-16 h-16 text-green-400 mx-auto opacity-80" />
-                            <p className="text-sm font-semibold">{activeLecture.title}</p>
-                            <a
-                              href={activeLecture.videoUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-xl text-xs font-bold hover:bg-green-700 transition-all shadow-md"
-                            >
-                              <ExternalLink className="w-4 h-4" />
-                              Open Video in New Tab
-                            </a>
-                          </div>
-                        )}
-                      </div>
 
-                      {/* Player Controls Bar */}
-                      <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-wrap items-center justify-between gap-4">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={handlePrevLecture}
-                            disabled={activeIndex <= 0}
-                            className="px-3.5 py-2 bg-white border border-slate-200 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold rounded-xl hover:bg-slate-100 transition-all shadow-sm"
-                          >
-                            ◀ Previous
-                          </button>
-                          <button
-                            onClick={handleNextLecture}
-                            disabled={activeIndex >= filteredLectures.length - 1}
-                            className="px-3.5 py-2 bg-white border border-slate-200 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold rounded-xl hover:bg-slate-100 transition-all shadow-sm"
-                          >
-                            Next ▶
-                          </button>
-                        </div>
-
-                        {!isTeacherOrAdmin && (
-                          <button
-                            onClick={handleToggleProgress}
-                            disabled={isTogglingProgress}
-                            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-[0.98] ${
-                              activeLecture.isCompleted
-                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
-                                : "bg-green-600 text-white hover:bg-green-700 shadow-green-500/20"
-                            }`}
-                          >
-                            <CheckCircle2 className="w-4 h-4" />
-                            {activeLecture.isCompleted ? "Completed ✓" : "Mark as Completed"}
-                          </button>
-                        )}
-
-                        {isTeacherOrAdmin && (
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={(e) => handleOpenEditModal(activeLecture, e)}
-                              className="p-2 text-slate-600 hover:text-green-600 bg-white border border-slate-200 rounded-xl hover:bg-green-50 transition-all"
-                              title="Edit Video Lecture"
-                            >
-                              <Edit3 className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={(e) => handleDeleteLecture(activeLecture._id, e)}
-                              className="p-2 text-slate-600 hover:text-red-600 bg-white border border-slate-200 rounded-xl hover:bg-red-50 transition-all"
-                              title="Delete Video Lecture"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Lecture Details & Description */}
-                      <div className="p-6 sm:p-8 space-y-6">
-                        <div>
-                          <div className="flex flex-wrap items-center gap-2 mb-2">
-                            <span className="px-2.5 py-1 bg-green-50 text-green-700 font-bold text-xs rounded-lg border border-green-200">
-                              {activeLecture.moduleName || "General Topic"}
-                            </span>
-                            {activeLecture.durationMinutes ? (
-                              <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-500">
-                                <Clock className="w-3.5 h-3.5" />
-                                {activeLecture.durationMinutes} minutes
-                              </span>
-                            ) : null}
-                          </div>
-                          <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-                            {activeLecture.title}
-                          </h2>
-                          {activeLecture.description && (
-                            <p className="text-slate-600 text-sm mt-3 leading-relaxed">
-                              {activeLecture.description}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Lecture Notes Section */}
-                        {activeLecture.notes && (
-                          <div className="p-5 bg-amber-50/60 rounded-2xl border border-amber-200/80">
-                            <h4 className="text-xs font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1.5 mb-2">
-                              <BookOpen className="w-4 h-4 text-amber-700" />
-                              Key Lecture Notes & Takeaways
-                            </h4>
-                            <div className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">
-                              {activeLecture.notes}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Supplementary Resources */}
-                        {activeLecture.resources && activeLecture.resources.length > 0 && (
-                          <div>
-                            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                              <FileText className="w-4 h-4 text-green-600" />
-                              Lecture Materials & Downloads
-                            </h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              {activeLecture.resources.map((res, idx) => (
-                                <a
-                                  key={idx}
-                                  href={res.url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-green-50 border border-slate-200 hover:border-green-300 rounded-xl transition-all group"
-                                >
-                                  <div className="flex items-center gap-2.5 min-w-0">
-                                    <FileText className="w-4 h-4 text-slate-400 group-hover:text-green-600 shrink-0" />
-                                    <span className="text-sm font-semibold text-slate-800 group-hover:text-green-600 truncate">
-                                      {res.title}
-                                    </span>
-                                  </div>
-                                  <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-green-600 shrink-0" />
-                                </a>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
+              {/* Right Column: Lecture Playlist & Module List (4 cols) */}
+              <div className="lg:col-span-4 space-y-4">
+                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4 sticky top-6">
+                  {/* Playlist Header */}
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2">
+                        <Layers className="w-5 h-5 text-green-600" />
+                        Course Playlist
+                      </h3>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {filteredLectures.length} of {lectures.length} lectures
+                      </p>
                     </div>
-                  ) : null}
-                </div>
+                  </div>
 
-                {/* Right Column: Lecture Playlist & Module List (4 cols) */}
-                <div className="lg:col-span-4 space-y-4">
-                  <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4 sticky top-6">
-                    {/* Playlist Header */}
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                      <div>
-                        <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2">
-                          <Layers className="w-5 h-5 text-green-600" />
-                          Course Playlist
-                        </h3>
-                        <p className="text-xs text-slate-500 mt-0.5">
-                          {filteredLectures.length} of {lectures.length} lectures
-                        </p>
-                      </div>
+                  {/* Search Bar */}
+                  <div className="relative">
+                    <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      placeholder="Search lectures or topics..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
+                    />
+                  </div>
 
-                      {/* Layout switch button in sidebar */}
-                      <button
-                        onClick={() => handleLayoutChange("top")}
-                        className="p-2 text-slate-500 hover:text-green-600 hover:bg-green-50 rounded-xl transition-all border border-slate-200"
-                        title="Switch to Top Row Layout (Above Video)"
-                      >
-                        <SlidersHorizontal className="w-4 h-4" />
-                      </button>
+                  {/* Module Pill Filter */}
+                  {modulesList.length > 2 && (
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                      {modulesList.map((mod) => (
+                        <button
+                          key={mod}
+                          onClick={() => setSelectedModule(mod)}
+                          className={`px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                            selectedModule === mod
+                              ? "bg-green-600 text-white shadow-sm"
+                              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          }`}
+                        >
+                          {mod}
+                        </button>
+                      ))}
                     </div>
+                  )}
 
-                    {/* Search Bar */}
-                    <div className="relative">
-                      <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="text"
-                        placeholder="Search lectures or topics..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
-                      />
-                    </div>
-
-                    {/* Module Pill Filter */}
-                    {modulesList.length > 2 && (
-                      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-                        {modulesList.map((mod) => (
-                          <button
-                            key={mod}
-                            onClick={() => setSelectedModule(mod)}
-                            className={`px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
-                              selectedModule === mod
-                                ? "bg-green-600 text-white shadow-sm"
-                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                            }`}
-                          >
-                            {mod}
-                          </button>
-                        ))}
+                  {/* Lecture Playlist Items */}
+                  <div className="space-y-2.5 max-h-[580px] overflow-y-auto pr-1">
+                    {filteredLectures.length === 0 ? (
+                      <div className="p-6 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-slate-500 text-xs font-medium">
+                        No lectures match your search or filter.
                       </div>
-                    )}
-
-                    {/* Lecture Playlist Items */}
-                    <div className="space-y-2.5 max-h-[580px] overflow-y-auto pr-1">
-                      {filteredLectures.map((lec, idx) => {
+                    ) : (
+                      filteredLectures.map((lec, idx) => {
                         const isActive = activeLecture?._id === lec._id;
                         const ytId = lec.youtubeVideoId || extractYouTubeId(lec.videoUrl);
                         const thumbnail = ytId
@@ -1072,14 +642,34 @@ export default function CourseVideoLecturesPage({
                                 )}
                               </div>
                             </div>
+
+                            {/* Teacher/Admin Edit & Delete (same actions as before) */}
+                            {isTeacherOrAdmin && (
+                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                                <button
+                                  onClick={(e) => handleOpenEditModal(lec, e)}
+                                  className="p-1 text-slate-500 hover:text-green-600 rounded"
+                                  title="Edit"
+                                >
+                                  <Edit3 className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={(e) => handleDeleteLecture(lec._id, e)}
+                                  className="p-1 text-slate-500 hover:text-red-600 rounded"
+                                  title="Delete"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            )}
                           </div>
                         );
-                      })}
-                    </div>
+                      })
+                    )}
                   </div>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         )}
 
