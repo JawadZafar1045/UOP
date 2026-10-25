@@ -32,7 +32,8 @@ export default function LoginPage() {
       const { accessToken, refreshToken, user } = res.data;
 
       setAuth(user, accessToken, refreshToken);
-      router.push("/dashboard");
+      //router.push("/dashboard");
+      router.push("/lms");
     } catch (err: any) {
       setError(
         err?.response?.data?.message ||
