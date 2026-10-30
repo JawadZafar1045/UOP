@@ -32,7 +32,7 @@ const getTransporter = () => {
  * Returns formatted sender address
  */
 const getFromAddress = () => {
-  const name = process.env.EMAIL_FROM_NAME || 'CSZone Academy';
+  const name = process.env.EMAIL_FROM_NAME || 'School of Information Security';
   const address =
     process.env.EMAIL_FROM ||
     process.env.EMAIL_USER ||
@@ -214,8 +214,109 @@ const sendUserApprovalEmail = async (user) => {
   }
 };
 
+/**
+ * Send an official Certificate of Completion email to a student.
+ */
+const sendCertificateEmail = async ({
+  to,
+  studentName,
+  courseTitle,
+  certificateNumber,
+  verificationCode,
+  downloadUrl,
+}) => {
+  const portalUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const myCertificatesUrl = `${portalUrl}/lms/certificates`;
+  const verifyUrl = `${portalUrl}/verify/${verificationCode}`;
+  const directDownload = downloadUrl || myCertificatesUrl;
+
+  const subject = `🎓 Congratulations! Your Certificate for "${courseTitle}" is Ready`;
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Certificate of Completion</title>
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f8fb; margin: 0; padding: 24px; color: #1e293b; }
+        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #d5e0e8; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04); }
+        .header { background: linear-gradient(135deg, #021F37 0%, #0b4a66 100%); padding: 36px 32px; text-align: center; color: #ffffff; }
+        .badge { display: inline-block; font-size: 40px; margin-bottom: 8px; }
+        .header h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: 0.5px; }
+        .header p { margin: 8px 0 0; color: #94a3b8; font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px; }
+        .content { padding: 32px; line-height: 1.6; }
+        .greeting { font-size: 18px; font-weight: 600; color: #021F37; margin-bottom: 12px; }
+        .message { font-size: 15px; color: #475569; margin-bottom: 24px; }
+        .cert-card { background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #0E8696; border-radius: 10px; padding: 20px; margin-bottom: 28px; }
+        .cert-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+        .cert-row:last-child { margin-bottom: 0; }
+        .cert-label { color: #64748b; font-weight: 500; }
+        .cert-value { color: #021F37; font-weight: 700; }
+        .cta-box { text-align: center; margin: 32px 0 24px; }
+        .btn-primary { display: inline-block; background-color: #0b6f7c; color: #ffffff !important; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-weight: 700; font-size: 15px; box-shadow: 0 4px 10px rgba(14, 134, 150, 0.25); }
+        .btn-secondary { display: inline-block; margin-top: 12px; color: #0E8696; text-decoration: underline; font-size: 13px; font-weight: 600; }
+        .notice-box { background: #eff6ff; border: 1px dashed #bfdbfe; border-radius: 8px; padding: 14px 16px; font-size: 13px; color: #1e40af; margin-top: 24px; }
+        .footer { background: #f8fafc; padding: 20px 32px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #f1f5f9; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <div class="badge">🎓</div>
+          <h1>Certificate of Completion</h1>
+          <p>Official Verification</p>
+        </div>
+        <div class="content">
+          <div class="greeting">Congratulations, ${studentName || 'Student'}!</div>
+          <p class="message">
+            You have successfully completed all course modules and requirements for <strong>${courseTitle}</strong>. 
+            Your official certificate has been issued and registered in the system.
+          </p>
+
+          <div class="cert-card">
+            <div class="cert-row">
+              <span class="cert-label">Course:</span>
+              <span class="cert-value">${courseTitle}</span>
+            </div>
+            <div class="cert-row">
+              <span class="cert-label">Certificate ID:</span>
+              <span class="cert-value">${certificateNumber}</span>
+            </div>
+            <div class="cert-row">
+              <span class="cert-label">Issue Date:</span>
+              <span class="cert-value">${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            </div>
+          </div>
+
+          <div class="cta-box">
+            <a href="${directDownload}" class="btn-primary" target="_blank">Download Your Certificate (PDF)</a>
+            <br>
+            <a href="${verifyUrl}" class="btn-secondary" target="_blank">Verify Certificate Authenticity Online &rarr;</a>
+          </div>
+
+          <div class="notice-box">
+            💾 <strong>Permanent LMS Backup:</strong> If you ever misplace this email, don't worry! You can always view and re-download your certificate anytime by logging in to the LMS portal under the <strong>My Certificates</strong> section.
+          </div>
+        </div>
+        <div class="footer">
+          &copy; ${new Date().getFullYear()} School of Information Security. All rights reserved.<br>
+          This is an automated academic credential verification email.
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const text = `Congratulations, ${studentName || 'Student'}!\n\nYou have completed the course: ${courseTitle}.\nCertificate ID: ${certificateNumber}\n\nYou can download and view your certificate anytime by logging into the LMS portal under 'My Certificates':\n${myCertificatesUrl}\n\nVerify certificate online: ${verifyUrl}\n`;
+
+  return sendEmail(to, subject, text, html);
+};
+
 module.exports = {
   sendEmail,
   sendLoginNotificationEmail,
   sendUserApprovalEmail,
+  sendCertificateEmail,
 };

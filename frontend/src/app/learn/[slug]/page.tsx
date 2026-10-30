@@ -20,7 +20,9 @@ import {
   Sparkles,
   ArrowLeft,
   Check,
-  AlertCircle
+  AlertCircle,
+  Award,
+  Download
 } from 'lucide-react';
 import Loader from '@/components/ui/Loader';
 import { formatDuration } from '@/utils/formatDuration';
@@ -407,6 +409,31 @@ export default function CourseLearningClassroom({
           {/* Lecture Info & Actions Under Video */}
           {currentLecture && (
             <div className="p-6 sm:p-8 space-y-6 max-w-4xl">
+              {courseData?.overallProgressPercent === 100 && (
+                <div className="bg-gradient-to-r from-[#021F37] via-[#0b4a66] to-[#0E8696] rounded-2xl p-5 border border-[#0E8696]/40 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center shrink-0 border border-white/20">
+                      <Award className="w-6 h-6 text-[#38e1f5]" />
+                    </div>
+                    <div>
+                      <div className="text-white font-extrabold text-base flex items-center gap-2">
+                        <span>🎉 Course Completed!</span>
+                        <span className="text-xs bg-[#0E8696] text-white px-2 py-0.5 rounded-full font-bold">100% Complete</span>
+                      </div>
+                      <p className="text-slate-300 text-xs mt-0.5">
+                        Your official certificate has been generated and sent to your registered email. You can also view or download it anytime here.
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    href="/lms/certificates"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-[#021F37] hover:bg-slate-100 font-bold text-xs rounded-xl shadow-lg transition-all shrink-0 cursor-pointer"
+                  >
+                    <Download className="w-4 h-4 text-[#0E8696]" />
+                    Download Certificate
+                  </Link>
+                </div>
+              )}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
                 <div>
                   <div className="flex items-center gap-2 text-xs text-[#0b4a66] font-bold uppercase tracking-wider mb-1">

@@ -19,7 +19,7 @@ const mediaService = require('../../shared/services/media/media.service');
 const { uploadFile, deleteFile } = require('../../shared/services/fileService');
 const { sendNotification } = require('../../shared/services/notification.service');
 const { logActivity } = require('../../shared/services/activityLogger.service');
-const { sendEmail, sendUserApprovalEmail } = require('../../shared/services/emailService');
+const { sendEmail, sendUserApprovalEmail, sendCertificateEmail } = require('../../shared/services/emailService');
 
 // ── Helper ─────────────────────────────────────────────────────────────────────
 const err = (msg, code = 400) => Object.assign(new Error(msg), { statusCode: code });
@@ -1164,7 +1164,48 @@ const updateLectureProgress = async (tenantId, courseId, lectureId, userId, prog
     { new: true, upsert: true }
   );
 
-  return record;
+  let courseCompleted = false;
+  let certificateIssued = false;
+
+  // If this lecture is completed, check if all lectures in course are now completed
+  if (isCompleted || (record && record.completed)) {
+    try {
+      const course = await Course.findOne({ _id: courseId, tenantId });
+      if (course) {
+        let totalLectures = 0;
+        (course.modules || []).forEach(m => {
+          (m.lectures || m.lessons || []).forEach(() => {
+            totalLectures++;
+          });
+        });
+
+        if (totalLectures > 0) {
+          const completedCount = await LectureProgress.countDocuments({
+            tenantId,
+            userId,
+            courseId,
+            completed: true
+          });
+
+          if (completedCount >= totalLectures) {
+            courseCompleted = true;
+            // Auto issue certificate and send email
+            const certResult = await issueCertificateInternal(tenantId, courseId, userId);
+            certificateIssued = certResult.newlyIssued;
+          }
+        }
+      }
+    } catch (checkErr) {
+      console.warn('[LMS] Error during automatic course completion check:', checkErr.message);
+    }
+  }
+
+  const resultObj = record && record.toObject ? record.toObject() : { ...record };
+  return {
+    ...resultObj,
+    courseCompleted,
+    certificateIssued
+  };
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1754,26 +1795,124 @@ const getMyPerformance = async (tenantId, courseId, userId) => {
   return { attendance: summary };
 };
 
+const issueCertificateInternal = async (tenantId, courseId, studentId) => {
+  // Check if certificate already exists
+  let cert = await Certificate.findOne({ tenantId, courseId, studentId });
+  if (cert) {
+    return { cert, newlyIssued: false };
+  }
+
+  // Fetch student, course, and optional template
+  const [student, course, template] = await Promise.all([
+    User.findById(studentId).select('name email'),
+    Course.findOne({ _id: courseId, tenantId }).populate('instructor', 'name email'),
+    CertificateTemplate.findOne({ courseId, tenantId }),
+  ]);
+
+  if (!student || !course) {
+    throw err('Student or Course not found.', 404);
+  }
+
+  const certNumber = `CERT-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const verificationCode = uuidv4();
+  const issuedDate = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  let fileUrl = '';
+  let publicId = '';
+
+  try {
+    const generated = await certificateGenerator.generate({
+      studentName: student.name || 'Student',
+      courseName: course.title,
+      issuedDate,
+      certificateNumber: certNumber,
+      verificationCode,
+      attendancePercent: 100,
+      averageScore: 100,
+      template,
+    });
+    fileUrl = generated?.fileUrl || '';
+    publicId = generated?.publicId || '';
+  } catch (genErr) {
+    console.error('[Certificate] PDF generation/upload error:', genErr);
+  }
+
+  cert = await Certificate.create({
+    tenantId,
+    courseId,
+    studentId,
+    certificateNumber: certNumber,
+    verificationCode,
+    issuedAt: new Date(),
+    attendancePercent: 100,
+    averageAssignmentScore: 100,
+    averageQuizScore: 100,
+    fileUrl,
+    publicId,
+    isValid: true,
+  });
+
+  // Auto-send email to student's registered email
+  if (student.email) {
+    try {
+      await sendCertificateEmail({
+        to: student.email,
+        studentName: student.name,
+        courseTitle: course.title,
+        certificateNumber: certNumber,
+        verificationCode,
+        downloadUrl: fileUrl,
+      });
+      console.log(`[Certificate] Successfully sent certificate email to ${student.email}`);
+    } catch (emailErr) {
+      console.warn(`[Certificate] Failed to send certificate email to ${student.email}:`, emailErr.message);
+    }
+  }
+
+  // Send in-app notification
+  try {
+    await sendNotification({
+      tenantId,
+      userId: studentId,
+      title: '🎓 Certificate Earned!',
+      message: `Congratulations! You completed "${course.title}". Your official certificate has been issued and emailed to you.`,
+      type: 'achievement',
+      link: '/lms/certificates',
+    });
+  } catch (notifErr) {
+    // Non-fatal
+  }
+
+  return { cert, newlyIssued: true };
+};
+
 const checkEligibility = async (tenantId, courseId, studentId) => {
   return { eligible: true };
 };
 
 const generateCertificate = async (tenantId, courseId, studentId) => {
-  const certCode = uuidv4();
-  const cert = await Certificate.create({
-    tenantId,
-    courseId,
-    studentId,
-    certificateNumber: `CERT-${Date.now()}`,
-    verificationCode: certCode,
-    issuedAt: new Date(),
-    isValid: true,
-  });
-  return cert;
+  const result = await issueCertificateInternal(tenantId, courseId, studentId);
+  return result.cert;
 };
 
 const generateAllCertificates = async (tenantId, courseId) => {
-  return { success: true };
+  const course = await Course.findOne({ _id: courseId, tenantId });
+  if (!course) throw err('Course not found.', 404);
+  const studentIds = course.enrolledStudents || course.students || [];
+  const results = { generated: [], skipped: [] };
+  for (const sid of studentIds) {
+    const res = await issueCertificateInternal(tenantId, courseId, sid);
+    if (res.newlyIssued) {
+      results.generated.push(sid);
+    } else {
+      results.skipped.push(sid);
+    }
+  }
+  return results;
 };
 
 const getCourseCertificates = async (tenantId, courseId) => {
@@ -1781,7 +1920,9 @@ const getCourseCertificates = async (tenantId, courseId) => {
 };
 
 const getMyCertificates = async (tenantId, userId) => {
-  return Certificate.find({ studentId: userId, tenantId }).populate('courseId', 'title');
+  return Certificate.find({ studentId: userId, tenantId })
+    .populate('courseId', 'title slug thumbnail')
+    .sort({ issuedAt: -1 });
 };
 
 const verifyCertificate = async (code) => {
